@@ -26,7 +26,7 @@ standards are good at, inference above all, and drop what makes them hard?
 | 2 | **Data without knowledge.** Vague, generic links reused for unrelated meanings (`uses`, `relatedTo`) add lines but nothing can be concluded from them. | Specific links, grouped under general ones; a one-sentence definition each; names that read as verb phrases with a direction. |
 | 3 | **The jargon and perspective are unintuitive.** Familiar words mean other things: a class is a set, a property is not a field, domain and range draw conclusions instead of checking, a missing fact is unknown rather than false. | Teach the false friends first; checks that reject for "is this allowed", inference only for "what follows". |
 | 4 | **The learning curve is steep** and most developers will not climb it: the payoff is late, hard to see, and rarely asked for. | A few people model, everyone else uses the result; a subset that fits on one page; a payoff on the first day. |
-| 5 | **An ontology cannot hold a whole product.** It is weak at why, at workflows, and at context. | Checkable facts in the model; reasoning and sequences in Markdown. Docs link to terms by hand; the reverse links are generated. |
+| 5 | **An ontology cannot hold a whole product.** It is weak at why, at workflows, and at context. | Checkable facts in the model; reasoning and sequences in Markdown beside it. Docs link to or embed definitions by hand; the reverse links are generated. |
 | 6 | **No tools fit a software factory.** Existing editors are built for logicians or draw unreadable whole-graph pictures. | Text files in git, checks in CI (continuous integration), editor support, one page per term, impact views, generated code and docs. |
 | 7 | **Product is the hardest reader.** Product owns many meanings but cannot read the format. | Generated sentences, examples and non-examples, ownership that follows from where a term lives, review on a rendered page. |
 | 8 | **The filesystem has one dimension**; the graph has many groupings. | Folders follow who reviews a change; every other grouping is a property of the term; views are generated. |
@@ -115,11 +115,13 @@ data-model/                        # a types package
   definitions/
     job.yaml                       # Job, and the links that come out of it
     table.yaml                     # Table, its links, the rules about tables
+    table.md                       # why tables work as they do; embeds parts of table.yaml
     database.yaml
     application.yaml               # Application, its links, the rules about applications
+    application.md
     reading-across-applications.yaml
                                    # a constraint spanning jobs, tables and applications
-  docs/                            # Markdown: why and how, linking to terms
+    reading-across-applications.md
   tests/
     questions/                     # questions with expected answers
     examples/                      # data that must pass, data that must fail
@@ -134,8 +136,8 @@ data-facts/                        # a facts package
 **Place things next to what they are about.** A link sits with the kind it
 comes out of. A constraint, rule or mapping sits with the kind it concerns;
 one that concerns several sits a level up, where it can be seen beside all of
-them. This is guidance for the author, not a check: the language enforces no
-folder structure.
+them. A doc sits next to the YAML it explains. This is guidance for the
+author, not a check: the language enforces no folder structure.
 
 **Every entry says what it is.** Each top-level entry in a file is keyed by
 its name and states its type with `is:` — `Kind`, `Link`, `Constraint`,
@@ -177,6 +179,33 @@ import:
   everything it depends on, and every name leads to its definition.
 - `as` renames an import when two names clash.
 - `import` is reserved: no entry may be named `import`.
+
+**Docs sit next to the definitions they explain.** Why, how and context live
+in Markdown files beside the YAML files (reason 5). A doc links to a
+definition or embeds it, so prose and definitions read side by side, like a
+notebook:
+
+````markdown
+# Tables
+
+A table holds rows with one schema. Every table sits in exactly one database:
+
+![](table.yaml#Table)
+
+Teams kept breaking each other by reading internal tables, so reading across
+applications needs a contract — see
+[crossAppReadNeedsContract](reading-across-applications.yaml#crossAppReadNeedsContract).
+````
+
+- `[text](file.yaml#Name)` links to a definition.
+- `![](file.yaml#Name)` embeds that entry where it stands; `![](file.yaml)`
+  embeds the whole file.
+- The part after `#` is an entry's name, not a line number, so an embed
+  follows its definition wherever it moves in the file.
+- Both are standard Markdown. A viewer that does not know the convention still
+  shows a working link to the file.
+- A link or embed pointing at a missing file or entry is an error. Each
+  definition's generated page lists the docs that link to it or embed it.
 
 The manifest:
 
@@ -232,7 +261,6 @@ Table:
   links:
     inDatabase: exactly 1
     hasColumn:  at least 1
-  docs: docs/tables.md
 
 Database:
   is: Kind
@@ -809,34 +837,30 @@ changed, for approval on that page.
    sources: `order_lines` came from the catalog export, and someone later added
    a link to it by hand. Is one source per record enough, or does each link
    need its own source and confirmation?
-2. **Where do the Markdown docs live?** The draft puts `docs/` inside each
-   package, so docs are versioned and reviewed with the model. The alternative
-   is a separate set of pages beside the packages that link into them, the way
-   OKF does it. Are docs part of the package or not?
-3. **What does a facts package's version mean?** A types package has clear
+2. **What does a facts package's version mean?** A types package has clear
    versions: removing a term is a breaking change. Facts change all the time —
    rows are added, jobs change, tables are dropped. Does a facts package have
    versions at all, and if so, what makes one version different from the
    next?
-4. **Can a technical package add rules about product kinds?** `Table` lives
+3. **Can a technical package add rules about product kinds?** `Table` lives
    in a product package. The platform team wants a rule such as "a table with
    more than 1,000 columns is oversized". Ownership comes from location, so
    the rule cannot go in the product package without product approving it. May
    the platform team put that rule in their own package, through an extension
    point, or must every rule about `Table` go through product?
-5. **Optional links in a pattern.** Every link in a pattern must exist, or
+4. **Optional links in a pattern.** Every link in a pattern must exist, or
    there is no match. A rule that wants "every table, and its team if it has
    one" loses the tables without a team. Should a link in a pattern be markable
    as optional, or should authors work around it with two rules or `any of`?
-6. **Limits on chains.** `repeated: true` follows a link any number of steps:
+5. **Limits on chains.** `repeated: true` follows a link any number of steps:
    table to table to table. Sometimes only nearby things matter, such as
    "tables at most two steps upstream". Should chains take a limit
    (`at most: 2`), or stay unlimited?
-7. **Variables only for the sentence.** An author might write "…owned by team
+6. **Variables only for the sentence.** An author might write "…owned by team
    $team…" in `says` because the sentence reads better, without using `$team`
    in the logic. The draft treats an unused variable as an error. Should it
    stay strict, or allow variables used only to make the sentence read well?
-8. **Dates and durations.** Conditions compare a value with another value.
+7. **Dates and durations.** Conditions compare a value with another value.
    They cannot say "a job that has not run for 30 days", because that needs
    "now minus 30 days". Should conditions gain date arithmetic, and if so, in
    what YAML form?
