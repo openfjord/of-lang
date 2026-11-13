@@ -84,7 +84,8 @@ closed-world checking and adds inference by rules.
 |---|---|---|
 | **package** | a versioned unit with one namespace and one manifest; who owns it follows from where it sits | an ontology with `owl:imports` |
 | **kind** | a kind of thing (database, table, application) | `owl:Class` |
-| **field** | a value of the thing itself (a name, a format) | an attribute (`owl:DatatypeProperty`) |
+| **field** | a value of the thing itself (a name, a format), described with JSON Schema | an attribute (`owl:DatatypeProperty`) |
+| **value type** | a named, reusable description of a field's value | `rdfs:Datatype` |
 | **link** | a named, directed relationship between two things | `owl:ObjectProperty` |
 | **constraint** | a rule that rejects data | a SHACL shape |
 | **rule** | a pattern that derives new links, kinds or field values | a SHACL rule |
@@ -140,9 +141,9 @@ them. A doc sits next to the YAML it explains. This is guidance for the
 author, not a check: the language enforces no folder structure.
 
 **Every entry says what it is.** Each top-level entry in a file is keyed by
-its name and states its type with `is:` — `Kind`, `Link`, `Constraint`,
-`Rule` or `Mapping` for definitions, and one of the package's kinds for a
-fact. Names are unique within a package.
+its name and states its type with `is:` — `Kind`, `Link`, `ValueType`,
+`Constraint`, `Rule` or `Mapping` for definitions, and one of the package's
+kinds for a fact. Names are unique within a package.
 
 ```yaml
 Table:
@@ -219,6 +220,7 @@ dependsOn:
 exports:                          # what other packages may use; the rest is internal
   kinds: [Database, Table, Application, Job]
   links: [inDatabase, hasTable, readsTable, writesTable, jobOf]
+  valueTypes: [Name]
 openFor:                          # extension points: what other packages may add to
   - extend: Table                 #   another package may declare a kind of table
   - under: readsTable             #   another package may declare a narrower link under readsTable
@@ -255,9 +257,16 @@ Table:
     - a temporary copy a test run makes and throws away
     - a view computed on read
   fields:
-    name:       { type: name }
-    format:     { oneOf: [row, columnar] }
-    visibility: { oneOf: [public, internal], default: internal }
+    name:
+      type: Name
+    format:
+      enum: [row, columnar]
+    visibility:
+      enum: [public, internal]
+      default: internal
+    retentionDays:
+      type: RetentionDays
+      optional: true
   links:
     inDatabase: exactly 1
     hasColumn:  at least 1
@@ -266,7 +275,8 @@ Database:
   is: Kind
   definition: A named store of tables, owned by one team.
   fields:
-    name: { type: name }
+    name:
+      type: Name
   links:
     ownedByTeam: exactly 1
 
@@ -274,17 +284,95 @@ Job:
   is: Kind
   definition: A unit of work an application runs, reading and writing tables.
   fields:
-    name: { type: name }
+    name:
+      type: Name
   links:
     jobOf: exactly 1
 ```
 
 A sub-kind names its parent: `PartitionedTable: { is: Kind, extends: Table, … }`.
 
-Every field and link a kind lists is required unless a count or a default
-says otherwise, and anything not listed is rejected. The counts are
-constraints, not inference: a database naming two teams is rejected, never
-read as "the two teams are the same".
+Every field is required unless it says `optional: true` or has a `default`;
+every link is required unless its count says otherwise; anything not listed
+is rejected. The counts are constraints, not inference: a database naming two
+teams is rejected, never read as "the two teams are the same".
+
+### Fields and value types
+
+A field's value is described with JSON Schema — the keywords below, with the
+meaning JSON Schema gives them. Only field values use it: kinds, links,
+constraints and rules are this language's own, because JSON Schema describes
+one document and has no links between things.
+
+| Kept | For |
+|---|---|
+| `type`: `string`, `integer`, `number`, `boolean`, `array`, `object` | the kind of value |
+| `enum`, `const`, `default` | fixed values |
+| `pattern`, `minLength`, `maxLength`, `format` (`date`, `date-time`, `duration`) | text |
+| `minimum`, `maximum` | numbers |
+| `items` | the values of an `array` |
+| `properties` | the parts of an `object` |
+
+Five differences from JSON Schema, each to keep a decision made elsewhere in
+this draft:
+
+| JSON Schema | Here | Why |
+|---|---|---|
+| `required: [ … ]` lists required parts | every field and every part of an `object` is required unless it says `optional: true` | required is the default everywhere in the language |
+| `$ref` points at another schema | `type: Name` names an imported value type | names come from imports |
+| `null` is a type | there is none | a field with no value has none; no third state |
+| `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | not available | hard to read; conditional logic belongs in constraints |
+| `additionalProperties` decides whether unlisted parts are allowed | always false | anything not listed is rejected |
+
+`number` is exact: it is exported as `xsd:decimal`, never as a floating-point
+type. A structured value is an `object` whose `properties` are its parts:
+
+```yaml
+address:
+  type: object
+  properties:
+    street: { type: string, optional: true }
+    city:   { type: string }
+```
+
+**Value types** name a schema once so fields can reuse it. They are entries
+like any other, imported like any other:
+
+```yaml
+# definitions/names.yaml
+
+Name:
+  is: ValueType
+  definition: A lowercase identifier used for databases, tables and jobs.
+  type: string
+  pattern: "^[a-z][a-z0-9_]*$"
+  maxLength: 63
+
+RetentionDays:
+  is: ValueType
+  definition: How long rows are kept, in days.
+  type: integer
+  minimum: 1
+  maximum: 3650
+```
+
+```yaml
+# definitions/table.yaml
+
+import:
+  - from: file:names.yaml
+    use: [Name, RetentionDays]
+```
+
+- `type: Name` means the imported value type `Name`. Built-in types need no
+  import, and no value type may take a built-in type's name.
+- A field may narrow a value type, never widen it: `type: Name` with
+  `maxLength: 30` is allowed; with `maxLength: 100` it is an error.
+- A value type has a `definition`, so product's pages can say what a field
+  holds.
+- A value type can be exported from its package and imported elsewhere with
+  `pkg:`.
+- Conditions compare only values of the same type.
 
 ### Links
 
@@ -784,7 +872,9 @@ changed, for approval on that page.
 | package | an ontology with a version and `owl:imports`; its statements in their own named graph |
 | kind | `owl:Class`, plus a closed `sh:NodeShape` for its fields and links |
 | `extends` | `rdfs:subClassOf` |
-| field | `owl:DatatypeProperty`, checked by a `sh:property` |
+| field | `owl:DatatypeProperty`, checked by a `sh:property` built from its JSON Schema keywords |
+| value type | `rdfs:Datatype` with restrictions (`xsd:pattern`, `xsd:maxLength`, `xsd:minInclusive` and the like) |
+| `string`, `integer`, `number`, `boolean`, `date`, `date-time`, `duration` | `xsd:string`, `xsd:integer`, `xsd:decimal`, `xsd:boolean`, `xsd:date`, `xsd:dateTime`, `xsd:duration` |
 | link | `owl:ObjectProperty`; `from` and `to` as SHACL checks, never `rdfs:domain` or `rdfs:range` |
 | `under` | `rdfs:subPropertyOf` |
 | `inverse` | `owl:inverseOf` |
