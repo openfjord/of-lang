@@ -804,19 +804,39 @@ changed, for approval on that page.
 
 ## Open questions
 
-1. Are trust fields per record enough, or must a single link carry its own
-   source?
-2. Should Markdown docs be part of a package (as drafted) or live beside the
-   packages, as OKF pages linking to terms?
-3. What does a facts package's version mean, if facts change constantly?
-4. May a technical package add constraints or rules about a product package's
-   kinds, through an extension point, or must every rule about a product kind
-   live in a product package?
-5. Should a pattern allow an optional link — matched when present, without
-   failing the match when absent — or are `any of` and `is not set` enough?
-6. Is `repeated: true` enough for chains, or are bounds needed, such as at most
-   three steps?
-7. When `says` mentions a variable only so the sentence reads well, and the
-   logic has no use for it, should that be allowed?
-8. Should conditions gain arithmetic for durations and dates — "a job that has
-   not run for 30 days" — and if so, in what form?
+1. **Trust per record, or per link?** A fact records where it came from and
+   who confirmed it, once for the whole record. But one record can mix
+   sources: `order_lines` came from the catalog export, and someone later added
+   a link to it by hand. Is one source per record enough, or does each link
+   need its own source and confirmation?
+2. **Where do the Markdown docs live?** The draft puts `docs/` inside each
+   package, so docs are versioned and reviewed with the model. The alternative
+   is a separate set of pages beside the packages that link into them, the way
+   OKF does it. Are docs part of the package or not?
+3. **What does a facts package's version mean?** A types package has clear
+   versions: removing a term is a breaking change. Facts change all the time —
+   rows are added, jobs change, tables are dropped. Does a facts package have
+   versions at all, and if so, what makes one version different from the
+   next?
+4. **Can a technical package add rules about product kinds?** `Table` lives
+   in a product package. The platform team wants a rule such as "a table with
+   more than 1,000 columns is oversized". Ownership comes from location, so
+   the rule cannot go in the product package without product approving it. May
+   the platform team put that rule in their own package, through an extension
+   point, or must every rule about `Table` go through product?
+5. **Optional links in a pattern.** Every link in a pattern must exist, or
+   there is no match. A rule that wants "every table, and its team if it has
+   one" loses the tables without a team. Should a link in a pattern be markable
+   as optional, or should authors work around it with two rules or `any of`?
+6. **Limits on chains.** `repeated: true` follows a link any number of steps:
+   table to table to table. Sometimes only nearby things matter, such as
+   "tables at most two steps upstream". Should chains take a limit
+   (`at most: 2`), or stay unlimited?
+7. **Variables only for the sentence.** An author might write "…owned by team
+   $team…" in `says` because the sentence reads better, without using `$team`
+   in the logic. The draft treats an unused variable as an error. Should it
+   stay strict, or allow variables used only to make the sentence read well?
+8. **Dates and durations.** Conditions compare a value with another value.
+   They cannot say "a job that has not run for 30 days", because that needs
+   "now minus 30 days". Should conditions gain date arithmetic, and if so, in
+   what YAML form?
