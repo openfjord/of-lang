@@ -26,7 +26,7 @@ standards are good at, inference above all, and drop what makes them hard?
 | 2 | **Data without knowledge.** Vague, generic links reused for unrelated meanings (`uses`, `relatedTo`) add lines but nothing can be concluded from them. | Specific links, grouped under general ones; a one-sentence definition each; names that read as verb phrases with a direction. |
 | 3 | **The jargon and perspective are unintuitive.** Familiar words mean other things: a class is a set, a property is not a field, domain and range draw conclusions instead of checking, a missing fact is unknown rather than false. | Teach the false friends first; checks that reject for "is this allowed", inference only for "what follows". |
 | 4 | **The learning curve is steep** and most developers will not climb it: the payoff is late, hard to see, and rarely asked for. | A few people model, everyone else uses the result; a subset that fits on one page; a payoff on the first day. |
-| 5 | **An ontology cannot hold a whole product.** It is weak at why, at workflows, and at context. | Checkable facts in the model; reasoning and sequences in Markdown beside it. Docs link to or embed definitions by hand; the reverse links are generated. |
+| 5 | **An ontology cannot hold a whole product.** It is weak at why, at workflows, and at context. | Checkable facts in the model; reasoning and sequences in Markdown, in a tree of its own. Docs link to or embed definitions by hand; the reverse links are generated. |
 | 6 | **No tools fit a software factory.** Existing editors are built for logicians or draw unreadable whole-graph pictures. | Text files in git, checks in CI (continuous integration), editor support, one page per term, impact views, generated code and docs. |
 | 7 | **Product is the hardest reader.** Product owns many meanings but cannot read the format. | Generated sentences, examples and non-examples, ownership that follows from where a term lives, review on a rendered page. |
 | 8 | **The filesystem has one dimension**; the graph has many groupings. | Folders follow who reviews a change; every other grouping is a property of the term; views are generated. |
@@ -116,12 +116,12 @@ data-model/                        # a types package
   definitions/
     job.yaml                       # Job, and the links that come out of it
     table.yaml                     # Table, its links, the rules about tables
-    table.md                       # why tables work as they do; embeds parts of table.yaml
     database.yaml
     application.yaml               # Application, its links, the rules about applications
-    application.md
     reading-across-applications.yaml
                                    # a constraint spanning jobs, tables and applications
+  docs/
+    tables.md                      # why tables work as they do; embeds parts of table.yaml
     reading-across-applications.md
   tests/
     questions/                     # questions with expected answers
@@ -137,8 +137,8 @@ data-facts/                        # a facts package
 **Place things next to what they are about.** A link sits with the kind it
 comes out of. A constraint, rule or mapping sits with the kind it concerns;
 one that concerns several sits a level up, where it can be seen beside all of
-them. A doc sits next to the YAML it explains. This is guidance for the
-author, not a check: the language enforces no folder structure.
+them. This is guidance for the author, not a check: the language enforces no
+folder structure.
 
 **Every entry says what it is.** Each top-level entry in a file is keyed by
 its name and states its type with `is:` — `Kind`, `Link`, `ValueType`,
@@ -181,26 +181,27 @@ import:
 - `as` renames an import when two names clash.
 - `import` is reserved: no entry may be named `import`.
 
-**Docs sit next to the definitions they explain.** Why, how and context live
-in Markdown files beside the YAML files (reason 5). A doc links to a
-definition or embeds it, so prose and definitions read side by side, like a
-notebook:
+**Docs live in their own tree.** Why, how and context live in Markdown files
+in a tree of their own beside the definitions, laid out however the author
+likes (reason 5). A doc links to a definition or embeds it, so prose and
+definitions read side by side, like a notebook:
 
 ````markdown
 # Tables
 
 A table holds rows with one schema. Every table sits in exactly one database:
 
-![](table.yaml#Table)
+![](../definitions/table.yaml#Table)
 
 Teams kept breaking each other by reading internal tables, so reading across
 applications needs a contract — see
-[crossAppReadNeedsContract](reading-across-applications.yaml#crossAppReadNeedsContract).
+[crossAppReadNeedsContract](../definitions/reading-across-applications.yaml#crossAppReadNeedsContract).
 ````
 
-- `[text](file.yaml#Name)` links to a definition.
-- `![](file.yaml#Name)` embeds that entry where it stands; `![](file.yaml)`
-  embeds the whole file.
+- `[text](path/to/file.yaml#Name)` links to a definition.
+- `![](path/to/file.yaml#Name)` embeds that entry where it stands;
+  `![](path/to/file.yaml)` embeds the whole file.
+- Paths are relative to the doc, as in any Markdown file.
 - The part after `#` is an entry's name, not a line number, so an embed
   follows its definition wherever it moves in the file.
 - Both are standard Markdown. A viewer that does not know the convention still
