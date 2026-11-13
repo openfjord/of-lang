@@ -1,0 +1,71 @@
+import:
+  - from: file:../../definitions/team.yaml
+    use: [Team]
+  - from: file:../../definitions/database.yaml
+    use: [Database, ownedByTeam]
+  - from: file:../../definitions/table.yaml
+    use: [Table, CriticalTable, inDatabase]
+  - from: file:../../definitions/job.yaml
+    use: [Job, jobOf, readsTable]
+  - from: file:../../definitions/application.yaml
+    use: [Application]
+
+tableReadByThreeJobs:
+  is: Test
+  says: A table read by three jobs is critical; one read by a single job is not.
+  expect:
+    derived:
+      - node:    db/sales/table/customers
+        becomes: CriticalTable
+    notDerived:
+      - node:    db/sales/table/regions
+        becomes: CriticalTable
+
+team/commerce:
+  is: Fact
+  kind: Team
+  name: commerce
+
+db/sales:
+  is: Fact
+  kind: Database
+  name: sales
+  ownedByTeam: team/commerce
+
+db/sales/table/customers:
+  is: Fact
+  kind: Table
+  name: customers
+  inDatabase: db/sales
+
+db/sales/table/regions:
+  is: Fact
+  kind: Table
+  name: regions
+  inDatabase: db/sales
+
+app/crm:
+  is: Fact
+  kind: Application
+  name: crm
+
+app/crm/job/score:
+  is: Fact
+  kind: Job
+  name: score
+  jobOf: app/crm
+  readsTable: [db/sales/table/customers, db/sales/table/regions]
+
+app/crm/job/segment:
+  is: Fact
+  kind: Job
+  name: segment
+  jobOf: app/crm
+  readsTable: db/sales/table/customers
+
+app/crm/job/export:
+  is: Fact
+  kind: Job
+  name: export
+  jobOf: app/crm
+  readsTable: db/sales/table/customers

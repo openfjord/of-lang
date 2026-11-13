@@ -1,0 +1,27 @@
+import:
+  - from: file:names.yaml
+    use: [Name, RetentionDays]
+  - from: file:team.yaml
+    use: [Team]
+
+Database:
+  is: Kind
+  definition: A named store of tables, owned by one team.
+  examples:
+    - the sales database
+  fields:
+    name:
+      type: Name
+    retentionDays:
+      type: RetentionDays
+      optional: true
+  links:
+    ownedByTeam: exactly 1
+
+ownedByTeam:
+  is: Link
+  from: Database
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that answers for the database.
+  inverse: ownsDatabase

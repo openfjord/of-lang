@@ -1,0 +1,104 @@
+import:
+  - from: file:names.yaml
+    use: [Name, RetentionDays]
+  - from: file:team.yaml
+    use: [Team]
+  - from: file:database.yaml
+    use: [Database, ownedByTeam]
+  - from: file:job.yaml
+    use: [readsTable, writesTable]
+
+Table:
+  is: Kind
+  definition: A set of rows with one schema, stored in a database.
+  examples:
+    - the order_lines table in the sales database
+  notExamples:
+    - a temporary copy a test run makes and throws away
+    - a view computed on read
+  fields:
+    name:
+      type: Name
+    visibility:
+      enum: [public, internal]
+      default: internal
+    retentionDays:
+      type: RetentionDays
+      optional: true
+  links:
+    inDatabase: exactly 1
+    belongsToTeam: at most 1
+    feedsTable: any number
+
+CriticalTable:
+  is: Kind
+  extends: Table
+  definition: A table read by so many jobs that a change to it needs extra care.
+
+inDatabase:
+  is: Link
+  from: Table
+  to: Database
+  reads: "{from} is in {to}"
+  definition: The database that stores the table.
+  inverse: hasTable
+
+belongsToTeam:
+  is: Link
+  from: Table
+  to: Team
+  reads: "{from} belongs to {to}"
+  definition: The team that answers for the table, through its database.
+
+feedsTable:
+  is: Link
+  from: Table
+  to: Table
+  reads: "{from} feeds {to}"
+  definition: Rows of the first table flow, directly or through other tables, into the second.
+  chains: true
+
+tableTeamFromDatabase:
+  is: Rule
+  says: A table $table belongs to the team $team that owns its database $database.
+  links:
+    - from: $table
+      link: inDatabase
+      to:   $database
+    - from: $database
+      link: ownedByTeam
+      to:   $team
+  derive:
+    - from: $table
+      link: belongsToTeam
+      to:   $team
+
+tableFeedsTable:
+  is: Rule
+  says: A table $source feeds every table $target that a job $job reading it writes.
+  links:
+    - from: $job
+      link: readsTable
+      to:   $source
+    - from: $job
+      link: writesTable
+      to:   $target
+  derive:
+    - from: $source
+      link: feedsTable
+      to:   $target
+
+criticalTable:
+  is: Rule
+  says: A table $table read by more than two jobs $reader is critical.
+  where:
+    - count:
+        links:
+          - from: $reader
+            link: readsTable
+            to:   $table
+      is above:
+        value: 2
+  derive:
+    - node: $table
+      becomes: CriticalTable

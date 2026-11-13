@@ -1,0 +1,62 @@
+import:
+  - from: file:../../definitions/team.yaml
+    use: [Team]
+  - from: file:../../definitions/database.yaml
+    use: [Database, ownedByTeam]
+  - from: file:../../definitions/table.yaml
+    use: [Table, inDatabase]
+  - from: file:../../definitions/job.yaml
+    use: [Job, jobOf, readsTable, writesTable]
+  - from: file:../../definitions/application.yaml
+    use: [Application]
+  - from: file:../../definitions/reading-across-applications.yaml
+    use: [crossAppReadNeedsContract]
+
+crossAppReadWithoutContract:
+  is: Test
+  says: >
+    Revenue reporting reads an internal table of order intake with no
+    contract, so the read is rejected.
+  expect:
+    rejected: [crossAppReadNeedsContract]
+
+team/commerce:
+  is: Fact
+  kind: Team
+  name: commerce
+
+db/sales:
+  is: Fact
+  kind: Database
+  name: sales
+  ownedByTeam: team/commerce
+
+db/sales/table/order_lines:
+  is: Fact
+  kind: Table
+  name: order_lines
+  inDatabase: db/sales
+
+app/order_intake:
+  is: Fact
+  kind: Application
+  name: order_intake
+
+app/revenue_report:
+  is: Fact
+  kind: Application
+  name: revenue_report
+
+app/order_intake/job/ingest_orders:
+  is: Fact
+  kind: Job
+  name: ingest_orders
+  jobOf: app/order_intake
+  writesTable: db/sales/table/order_lines
+
+app/revenue_report/job/compute_revenue:
+  is: Fact
+  kind: Job
+  name: compute_revenue
+  jobOf: app/revenue_report
+  readsTable: db/sales/table/order_lines

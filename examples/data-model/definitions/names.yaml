@@ -1,0 +1,13 @@
+Name:
+  is: ValueType
+  definition: A lowercase identifier used for teams, databases, tables, applications and jobs.
+  type: string
+  pattern: "^[a-z][a-z0-9_]*$"
+  maxLength: 63
+
+RetentionDays:
+  is: ValueType
+  definition: How long rows are kept, in days.
+  type: integer
+  minimum: 1
+  maximum: 3650

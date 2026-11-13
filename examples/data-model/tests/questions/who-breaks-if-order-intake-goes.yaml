@@ -1,0 +1,18 @@
+import:
+  - from: file:../../definitions/application.yaml
+    use: [dependsOnApp]
+
+whoBreaksIfOrderIntakeGoes:
+  is: Question
+  asks: Which applications $app depend on the application $target?
+  given: file:../examples/two-apps-sharing-a-table.yaml
+  links:
+    - from: $app
+      link: dependsOnApp
+      to:   $target
+  where:
+    - node: $target
+      equals:
+        value: app/order_intake
+  expect:
+    $app: [app/revenue_report]

@@ -1,0 +1,89 @@
+import:
+  - from: file:../../definitions/team.yaml
+    use: [Team]
+  - from: file:../../definitions/database.yaml
+    use: [Database, ownedByTeam]
+  - from: file:../../definitions/table.yaml
+    use: [Table, inDatabase, belongsToTeam, feedsTable]
+  - from: file:../../definitions/job.yaml
+    use: [Job, jobOf, readsTable, writesTable]
+  - from: file:../../definitions/application.yaml
+    use: [Application, Contract, consumesContract, coversTable, dependsOnApp]
+
+twoAppsSharingATable:
+  is: Test
+  says: >
+    Revenue reporting reads the orders table that order intake writes, under a
+    contract, so it depends on order intake and breaks no constraint.
+  expect:
+    derived:
+      - from: app/revenue_report
+        link: dependsOnApp
+        to:   app/order_intake
+      - from: db/sales/table/order_lines
+        link: feedsTable
+        to:   db/sales/table/revenue_daily
+      - from: db/sales/table/order_lines
+        link: belongsToTeam
+        to:   team/commerce
+    notDerived:
+      - from: app/order_intake
+        link: dependsOnApp
+        to:   app/revenue_report
+    rejected: []
+
+team/commerce:
+  is: Fact
+  kind: Team
+  name: commerce
+
+db/sales:
+  is: Fact
+  kind: Database
+  name: sales
+  ownedByTeam: team/commerce
+
+db/sales/table/order_lines:
+  is: Fact
+  kind: Table
+  name: order_lines
+  visibility: public
+  inDatabase: db/sales
+
+db/sales/table/revenue_daily:
+  is: Fact
+  kind: Table
+  name: revenue_daily
+  inDatabase: db/sales
+
+app/order_intake:
+  is: Fact
+  kind: Application
+  name: order_intake
+
+app/revenue_report:
+  is: Fact
+  kind: Application
+  name: revenue_report
+  consumesContract: contract/orders
+
+contract/orders:
+  is: Fact
+  kind: Contract
+  name: orders
+  coversTable: db/sales/table/order_lines
+
+app/order_intake/job/ingest_orders:
+  is: Fact
+  kind: Job
+  name: ingest_orders
+  jobOf: app/order_intake
+  writesTable: db/sales/table/order_lines
+
+app/revenue_report/job/compute_revenue:
+  is: Fact
+  kind: Job
+  name: compute_revenue
+  jobOf: app/revenue_report
+  readsTable: db/sales/table/order_lines
+  writesTable: db/sales/table/revenue_daily

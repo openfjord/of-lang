@@ -1,0 +1,74 @@
+import:
+  - from: file:names.yaml
+    use: [Name]
+  - from: file:table.yaml
+    use: [Table]
+  - from: file:job.yaml
+    use: [hasJob, jobOf, readsTable, writesTable]
+
+Application:
+  is: Kind
+  definition: A deployable program that runs jobs.
+  fields:
+    name:
+      type: Name
+  links:
+    dependsOnApp: any number
+    consumesContract: any number
+
+Contract:
+  is: Kind
+  definition: An application's promise to keep some of its tables stable for others to read.
+  fields:
+    name:
+      type: Name
+  links:
+    coversTable: at least 1
+
+dependsOnApp:
+  is: Link
+  from: Application
+  to: Application
+  reads: "{from} depends on {to}"
+  definition: The first application breaks if the second one changes the tables it writes.
+
+consumesContract:
+  is: Link
+  from: Application
+  to: Contract
+  reads: "{from} consumes {to}"
+  definition: The application relies on the contract's tables.
+
+coversTable:
+  is: Link
+  from: Contract
+  to: Table
+  reads: "{from} covers {to}"
+  definition: The table is one the contract keeps stable.
+
+appDependsOnWriter:
+  is: Rule
+  says: >
+    An application $app depends on every other application $other whose job
+    $writer writes a table $table that a job $reader of $app reads.
+  links:
+    - from: $app
+      link: hasJob
+      to:   $reader
+    - from: $reader
+      link: readsTable
+      to:   $table
+    - from: $writer
+      link: writesTable
+      to:   $table
+    - from: $writer
+      link: jobOf
+      to:   $other
+  where:
+    - node: $other
+      does not equal:
+        same as: $app
+  derive:
+    - from: $app
+      link: dependsOnApp
+      to:   $other

@@ -9,6 +9,9 @@ title: A modeling language for software people — Research
 > sketches a language that answers each reason. Nothing here is binding. The
 > examples use a small made-up domain — teams, databases, tables, applications
 > and the jobs that read and write tables. Written 2026-11-13.
+>
+> A command-line tool, `of-lang`, implements the draft: [cli/](cli/), with an
+> example package in [examples/data-model/](examples/data-model/).
 
 ## The question
 
@@ -36,7 +39,7 @@ standards are good at, inference above all, and drop what makes them hard?
 | 12 | **Adding data has invisible effects.** Hidden conclusions, and nothing ever fails. | A report of what a change concludes, before it lands; checks that reject; a small set of inference rules; guided entry. |
 | 13 | **Mechanics, lint and business rules look alike.** An OWL "exactly one owner" merges two owners into one instead of rejecting. | One construct per kind of rule, each with its own owner and its own behavior on failure. |
 | 14 | **The type system and the knowledge are mixed** (the TBox, terminology, and the ABox, assertions). | Separate packages for types and for facts, reviewed differently. |
-| 15 | **Schema changes and data changes are the same language** — there is no DDL/DML (data definition / data manipulation language) split. | Types arrive only by release; runtime writes go through a gateway that accepts facts only. |
+| 15 | **Schema changes and data changes are the same language** — there is no DDL/DML (data definition / data manipulation language) split. | Facts can never define anything. How facts written at runtime are kept from changing the types is deferred, with runtime facts. |
 | 16 | **No separation of concerns,** and no tests. | Each concern a separate entry — kind, link, constraint, rule — placed next to what it is about; competency questions and example data as tests. |
 | 17 | **Trust and freshness are not modeled.** Every fact looks equally sure and equally current. | Source, confirmation and expiry per fact; trust levels; views filtered by trust. |
 | 18 | **Inference must be visible.** Its value is the knowledge nobody wrote down, which only counts if people see it when they add something. | Every change reports what is newly derived and what is no longer derived, each derived fact with its explanation. |
@@ -71,9 +74,7 @@ closed-world checking and adds inference by rules.
    tests.
 4. **Every change says what it means.** What was stated, what follows, what no
    longer follows, what is rejected, and why.
-5. **Every fact says how far to trust it.** Where it came from, who confirmed
-   it, when to check it again.
-6. **The standards are the export, not the source.** RDF, OWL and SHACL are
+5. **The standards are the export, not the source.** RDF, OWL and SHACL are
    generated for exchange and for existing tools; nobody writes them.
 
 ## The language
@@ -89,7 +90,7 @@ closed-world checking and adds inference by rules.
 | **link** | a named, directed relationship between two things | `owl:ObjectProperty` |
 | **constraint** | a rule that rejects data | a SHACL shape |
 | **rule** | a pattern that derives new links, kinds or field values | a SHACL rule |
-| **fact** | a stated thing with its fields and links | RDF triples |
+| **fact** | a stated thing with its fields and links; used in tests and examples | RDF triples |
 | **derived fact** | a link produced by a rule | RDF triples in a separate graph |
 
 Fields and links stay apart: a field is a value of the thing, a link points
@@ -97,8 +98,9 @@ at another thing.
 
 ### Packages
 
-A package is a folder. It holds either **types** (kinds, links, constraints,
-rules) or **facts**, never both (reasons 14 and 15).
+A package is a folder of definitions: kinds, links, value types,
+constraints, rules and mappings. Facts appear only in its tests and examples
+(reason 14); facts written at runtime are deferred.
 
 **Ownership is decided by location.** Packages sit in folders, and a folder
 says who must approve a change to everything in it — product or not. Nothing
@@ -125,13 +127,7 @@ data-model/                        # a types package
     reading-across-applications.md
   tests/
     questions/                     # questions with expected answers
-    examples/                      # data that must pass, data that must fail
-
-data-facts/                        # a facts package
-  package.yaml
-  databases.yaml
-  tables.yaml
-  applications.yaml
+    examples/                      # facts with what they must derive and reject
 ```
 
 **Place things next to what they are about.** A link sits with the kind it
@@ -141,9 +137,9 @@ them. This is guidance for the author, not a check: the language enforces no
 folder structure.
 
 **Every entry says what it is.** Each top-level entry in a file is keyed by
-its name and states its type with `is:` — `Kind`, `Link`, `ValueType`,
-`Constraint`, `Rule` or `Mapping` for definitions, and one of the package's
-kinds for a fact. Names are unique within a package.
+its name and states what it is with `is:` — `Kind`, `Link`, `ValueType`,
+`Constraint`, `Rule` or `Mapping` for definitions; `Fact`, `Test` or
+`Question` in tests. Names are unique within a package.
 
 ```yaml
 Table:
@@ -155,7 +151,8 @@ inDatabase:
   …
 
 db/sales/table/order_lines:
-  is: Table
+  is: Fact
+  kind: Table
   …
 ```
 
@@ -179,6 +176,8 @@ import:
 - Imports from the same package are required too, so the top of a file shows
   everything it depends on, and every name leads to its definition.
 - `as` renames an import when two names clash.
+- A link's inverse is a name like any other: `hasJob`, the inverse declared on
+  `jobOf`, can be imported on its own.
 - `import` is reserved: no entry may be named `import`.
 
 **Docs live in their own tree.** Why, how and context live in Markdown files
@@ -215,7 +214,6 @@ The manifest:
 package: data-model
 version: 0.3.0
 namespace: data                   # used only in exported RDF, never in the files
-holds: types                      # types | facts
 dependsOn:
   org-model: ^1.2                 # semantic-version range, pinned in a lock file
 exports:                          # what other packages may use; the rest is internal
@@ -232,14 +230,13 @@ Checks on packages, all in CI:
 - A package uses only terms it defines or that a dependency exports.
 - A package states things only about its own terms, except through the
   extension points its dependencies open (reason 11).
-- A facts package defines no kinds, links, constraints or rules.
 - Dependencies follow allowed directions; a cycle is an error.
 - Version changes match what changed: removing or renaming a term, or
   tightening a constraint, is a breaking change; adding a term or loosening a
   constraint is not.
 
-Ids are names, not links (reason 10). Files use plain names — `Table` in
-types, `db/sales/table/order_lines` for facts — and imports say where each
+Ids are names, not links (reason 10). Files use plain names — `Table` for
+a kind, `db/sales/table/order_lines` for a fact — and imports say where each
 comes from. The full IRI, built from the package's namespace, appears only in
 the exported RDF.
 
@@ -732,76 +729,103 @@ variables of the top-level match may be quoted.
   `count`.
 - A message quoting a variable that belongs to a nested block.
 
-### Facts
+### Facts in tests
 
-Facts are records in a facts package. Each says what kind it is, its fields,
-its links, and how far to trust it.
+Facts appear only in a package's tests and examples. A fact is an entry
+keyed by its id, with `is: Fact` and its kind:
 
 ```yaml
 import:
-  - from: pkg:data-model
-    use: [Table]
+  - from: file:../../definitions/table.yaml
+    use: [Table, inDatabase, hasColumn]
 
 db/sales/table/order_lines:
-  is: Table
+  is: Fact
+  kind: Table
   name: order_lines
   format: columnar
   visibility: public
   inDatabase: db/sales
   hasColumn: [order_id, sku, quantity]
-  source: catalog-export/2026-11-10.json       # where this came from
-  generated: { by: catalog-importer/2.1, at: 2026-11-10T09:12:00Z }
-  verified:  { by: human:data-owner, at: 2026-11-11T14:00:00Z }
-  staleAfter: 2027-02-01T00:00:00Z             # recheck after this
 ```
 
-- **Trust levels** come from `verified`: unverified, confirmed by a machine,
-  reviewed by a person (reason 17).
-- **Stale facts** are flagged, not hidden.
-- A derived fact is as trusted as the least trusted fact it came from.
+- `kind` names an imported kind, and no field may be called `kind`.
+- Fields belong to the kind, so they need no import. Links are entries of
+  their own, so every link used as a key is imported.
+- A link's value is one id or a list of ids, each a fact in the same set of
+  facts, whose kind the link allows.
+- The fact is checked against its kind: every field and link it must have,
+  every value its field type allows, nothing that is not listed.
 
 ### Tests
 
-A types package proves itself with three kinds of test (reason 16):
+A package proves itself with two kinds of test (reason 16).
 
-```yaml
-# tests/questions/who-breaks-if-order-intake-goes.yaml
-asks: Which applications $app depend on the application $target?
-given: tests/examples/two-apps-sharing-a-table.yaml
-links:
-  - from: $app
-    link: dependsOnApp
-    to:   $target
-where:
-  - node: $target
-    equals:
-      value: app/order-intake
-expect:
-  $app: [app/revenue-report]
-```
-
-```yaml
-# tests/examples/cross-app-read-without-contract.yaml
-expect:
-  rejected:
-    - crossAppReadNeedsContract
-facts:
-  - …
-```
+**An example** is a file of facts with one `Test` entry saying what they
+must derive and which constraints they must break:
 
 ```yaml
 # tests/examples/table-inherits-database-team.yaml
-expect:
-  derived:
-    - db/sales/table/order_lines belongsToTeam team/commerce
-facts:
-  - …
+import:
+  - from: file:../../definitions/table.yaml
+    use: [Table, inDatabase, belongsToTeam]
+  - from: file:../../definitions/database.yaml
+    use: [Database, ownedByTeam, Team]
+
+tableInheritsDatabaseTeam:
+  is: Test
+  says: A table belongs to the team that owns its database.
+  expect:
+    derived:
+      - from: db/sales/table/order_lines
+        link: belongsToTeam
+        to:   team/commerce
+    rejected: []
+
+team/commerce:
+  is: Fact
+  kind: Team
+  …
 ```
+
+- `derived` lists links, kinds (`node`, `becomes`) or field values (`node`,
+  `field`, `set to`) that must be derived. `notDerived` lists ones that must
+  not be.
+- `rejected` lists every constraint the facts must break; breaking any other
+  fails the test. Leaving it out means none.
+
+**A question** asks the facts of an example something, written as a pattern,
+with the answer it expects for each variable:
+
+```yaml
+# tests/questions/who-breaks-if-order-intake-goes.yaml
+import:
+  - from: file:../../definitions/application.yaml
+    use: [dependsOnApp]
+
+whoBreaksIfOrderIntakeGoes:
+  is: Question
+  asks: Which applications $app depend on the application $target?
+  given: file:../examples/two-apps-sharing-a-table.yaml
+  links:
+    - from: $app
+      link: dependsOnApp
+      to:   $target
+  where:
+    - node: $target
+      equals:
+        value: app/order-intake
+  expect:
+    $app: [app/revenue-report]
+```
+
+Variables are declared in `asks`, as in `says`. The answer must be exactly
+the listed things.
 
 ### The change report
 
-Every change — a pull request to a types or facts package, or a write through
-the gateway — returns one report before it lands (reasons 12 and 18):
+Every change to a package returns one report, for the facts in its tests and
+examples, before it lands (reasons 12 and 18):
 
 ```
 Stated (1)
@@ -831,18 +855,6 @@ Rejected (1)
 
 Large results are grouped by link, with new kinds of conclusion and
 rejections listed first.
-
-### The gateway
-
-Running systems never write files. They write facts through a gateway that:
-
-1. accepts facts only — a write that names a kind, link, constraint or rule
-   as its subject is refused;
-2. runs the constraints and rejects what fails;
-3. runs the rules and returns the change report;
-4. stamps `generated` and stores the facts in the writer's package graph.
-
-Types arrive only by publishing a package version from CI.
 
 ### Product's reading
 
@@ -886,7 +898,6 @@ changed, for approval on that page.
 | definition, `reads` | `rdfs:comment`, and the generated sentence as a label for readers |
 | facts | RDF triples in the package's named graph |
 | derived facts | RDF triples in a derived graph, with PROV-O (the W3C provenance vocabulary) linking each to its rule |
-| `source`, `generated`, `verified`, `staleAfter` | PROV-O statements on the fact's record |
 | mappings | `owl:equivalentClass`, `owl:equivalentProperty`, `skos:closeMatch` |
 
 ## What it leaves out, and why
@@ -897,7 +908,8 @@ changed, for approval on that page.
   would silently join two records.
 - **Domain and range as inference.** They become checks.
 - **OWL restrictions as constraints.** Counts and allowed values are SHACL.
-- **Facts and types in one file.** Ruled out by the package split.
+- **Facts as definitions.** Facts appear only in tests and examples, and
+  define nothing.
 
 ## Roads not taken
 
@@ -921,37 +933,37 @@ changed, for approval on that page.
   reuse it, at the cost of a second schema interface to keep in step; the
   logic is written against this language's own kinds and links instead.
 
+## Deferred: facts at runtime
+
+Facts written by running systems are set aside for now. Two answers in the
+reasons table wait on them:
+
+- **Trust and freshness** (reason 17): source, confirmation and expiry per
+  fact, trust levels, and whether a single link carries its own source.
+- **Runtime writes and types** (reason 15): how facts written at runtime are
+  kept from changing kinds, links, constraints or rules.
+
 ## Open questions
 
-1. **Trust per record, or per link?** A fact records where it came from and
-   who confirmed it, once for the whole record. But one record can mix
-   sources: `order_lines` came from the catalog export, and someone later added
-   a link to it by hand. Is one source per record enough, or does each link
-   need its own source and confirmation?
-2. **What does a facts package's version mean?** A types package has clear
-   versions: removing a term is a breaking change. Facts change all the time —
-   rows are added, jobs change, tables are dropped. Does a facts package have
-   versions at all, and if so, what makes one version different from the
-   next?
-3. **Can a technical package add rules about product kinds?** `Table` lives
+1. **Can a technical package add rules about product kinds?** `Table` lives
    in a product package. The platform team wants a rule such as "a table with
    more than 1,000 columns is oversized". Ownership comes from location, so
    the rule cannot go in the product package without product approving it. May
    the platform team put that rule in their own package, through an extension
    point, or must every rule about `Table` go through product?
-4. **Optional links in a pattern.** Every link in a pattern must exist, or
+2. **Optional links in a pattern.** Every link in a pattern must exist, or
    there is no match. A rule that wants "every table, and its team if it has
    one" loses the tables without a team. Should a link in a pattern be markable
    as optional, or should authors work around it with two rules or `any of`?
-5. **Limits on chains.** `repeated: true` follows a link any number of steps:
+3. **Limits on chains.** `repeated: true` follows a link any number of steps:
    table to table to table. Sometimes only nearby things matter, such as
    "tables at most two steps upstream". Should chains take a limit
    (`at most: 2`), or stay unlimited?
-6. **Variables only for the sentence.** An author might write "…owned by team
+4. **Variables only for the sentence.** An author might write "…owned by team
    $team…" in `says` because the sentence reads better, without using `$team`
    in the logic. The draft treats an unused variable as an error. Should it
    stay strict, or allow variables used only to make the sentence read well?
-7. **Dates and durations.** Conditions compare a value with another value.
+5. **Dates and durations.** Conditions compare a value with another value.
    They cannot say "a job that has not run for 30 days", because that needs
    "now minus 30 days". Should conditions gain date arithmetic, and if so, in
    what YAML form?

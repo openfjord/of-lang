@@ -1,0 +1,10 @@
+import:
+  - from: file:names.yaml
+    use: [Name]
+
+Team:
+  is: Kind
+  definition: A group of people who answer for databases and applications.
+  fields:
+    name:
+      type: Name
