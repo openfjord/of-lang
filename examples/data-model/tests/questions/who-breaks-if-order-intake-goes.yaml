@@ -9,7 +9,7 @@ whoBreaksIfOrderIntakeGoes:
   match:
     - link: dependsOnApp
       from: {$app: Application}
-      to:   {$target: Table}
+      to:   {$target: Application}
   filter:
     - node: $target
       equals:

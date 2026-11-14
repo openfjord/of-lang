@@ -10,8 +10,10 @@ title: A modeling language for software people — Research
 > examples use a small made-up domain — teams, databases, tables, applications
 > and the jobs that read and write tables. Written 2026-11-13.
 >
-> A command-line tool, `of-lang`, implements the draft: [cli/](cli/), with an
-> example package in [examples/data-model/](examples/data-model/).
+> **[The language specification](language/README.md)** teaches and defines
+> the language: a tour, a reference and a cheat sheet. A command-line tool,
+> [`of-lang`](cli/README.md), implements an earlier version of it, and
+> [examples/data-model/](examples/data-model/) is an example package.
 
 ## The question
 
@@ -63,20 +65,90 @@ standards are good at, inference above all, and drop what makes them hard?
 Both platforms chose closed-world checking and no inference. This draft keeps
 closed-world checking and adds inference by rules.
 
-## The draft, file by file
+## The draft
 
-- [The language](language.md): principles, vocabulary, entries and imports, ids.
-- Terms, one file each:
-  - [Packages](terms/package.md): ownership, manifests, exports, docs.
-  - [Kinds](terms/kind.md): fields, link counts, `extends`.
-  - [Fields and value types](terms/field.md): the JSON Schema subset.
-  - [Links](terms/link.md): `under`, `inverse`, `chains`.
-  - [Patterns](terms/pattern.md): what constraints, rules and questions share.
-  - [Constraints](terms/constraint.md): `require` and messages.
-  - [Rules](terms/rule.md): `derive`.
-  - [Facts](terms/fact.md): stated facts in tests, and derived facts.
-  - [Tests](terms/test.md): examples and questions.
-- [What it outputs](outputs.md): the change report, product's pages, the RDF
-  export.
-- [Scope and open questions](scope.md): what it leaves out, roads not taken,
-  what is deferred, and what is still open.
+- [The language specification](language/README.md): what the language is,
+  its principles and vocabulary, with
+  - [a tour](language/tour/README.md) in seven steps,
+  - [a reference](language/reference/README.md) with every rule, and
+  - [a cheat sheet](language/cheatsheet.md).
+- [The `of-lang` tool](cli/README.md): commands, output, and the outputs
+  planned — the change report, product's pages and the RDF export.
+- [The example package](examples/data-model/).
+
+## What it leaves out, and why
+
+- **Open-world reasoning.** No "either this or that", no "something exists but
+  is unnamed". It cannot be explained in a change report.
+- **`owl:sameAs` and anything that merges things.** One mistaken statement
+  would silently join two records.
+- **Domain and range as inference.** They become checks.
+- **OWL restrictions as constraints.** Counts and allowed values are SHACL.
+- **Facts as definitions.** Facts appear only in tests and examples, and
+  define nothing.
+
+## Roads not taken
+
+- **Write RDF, OWL and SHACL directly.** Exact and standard, and every reason
+  in [the table](#why-ontologies-are-hard-for-software-people)
+  applies in full.
+- **Prose pages with untyped links, as in OKF.** Easy to read and write;
+  nothing can be checked or concluded.
+- **A platform-owned model, as in Palantir Foundry.** Typed and governed, but
+  managed outside the codebase and without inference.
+- **An expression language for constraints and rules,** such as CEL (Common
+  Expression Language) or a string syntax of our own. Shorter, but a reader
+  must parse operators and paths in their head, and dotted paths hide the
+  things they pass through.
+- **Datalog as written.** The semantics wanted, but variables threaded through
+  terse lines few developers read comfortably.
+- **MongoDB-style operators, as in Mingo.** YAML-native, but one document at a
+  time, with no derivation or explanations.
+- **A graph query language,** such as GQL (Graph Query Language) or Cypher.
+  Readable patterns, but as strings, and for querying rather than deriving.
+- **A separate specification for the logic.** It would let other languages
+  reuse it, at the cost of a second schema interface to keep in step; the
+  logic is written against this language's own kinds and links instead.
+- **Fields on links, as in a property graph.** It lets a link say when it
+  started or how much it carries. But derived and chained links would have
+  nothing to fill the fields with, and patterns would need a way to reach
+  them. A link stays only its link, from and to; anything said about it
+  becomes a thing in the middle, such as a `Read` between a job and a table.
+
+## Deferred: mappings to outside vocabularies
+
+Saying that a definition means the same as a term in another vocabulary —
+`Table` as a class in someone else's ontology — is left out of the
+specification until it is designed.
+
+## Deferred: facts at runtime
+
+Facts written by running systems are set aside for now. Two answers in the
+reasons table wait on them:
+
+- **Trust and freshness** (reason 17): source, confirmation and expiry per
+  fact, trust levels, and whether a single link carries its own source.
+- **Runtime writes and types** (reason 15): how facts written at runtime are
+  kept from changing kinds, links, constraints or rules.
+
+## Open questions
+
+1. **Can a technical package add rules about product kinds?** `Table` lives
+   in a product package. The platform team wants a rule such as "a table with
+   more than 1,000 columns is oversized". Everything in a package is owned by
+   its owner, so the rule cannot go in the product package without product
+   approving it. May the platform team put that rule in their own package,
+   through an extension point, or must every rule about `Table` go through
+   product?
+2. **Optional links in a pattern.** Every link in a pattern must exist, or
+   there is no match. A rule that wants "every table, and its team if it has
+   one" loses the tables without a team. Should a link in a pattern be markable
+   as optional, or should authors work around it with two rules or `any of`?
+3. **Limits on chains.** `repeated: true` follows a link any number of steps:
+   table to table to table. Sometimes only nearby things matter, such as
+   "tables at most two steps upstream". Should chains take a limit
+   (`at most: 2`), or stay unlimited?
+4. **Dates and durations.** Conditions compare a value with another value.
+   They cannot say "a job that has not run for 30 days", because that needs
+   "now minus 30 days". Should conditions gain date arithmetic, and if so, in
+   what YAML form?
