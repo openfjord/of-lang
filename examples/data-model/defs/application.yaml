@@ -4,7 +4,7 @@ import:
   - from: file:table.yaml
     use: [Table]
   - from: file:job.yaml
-    use: [hasJob, jobOf, readsTable, writesTable]
+    use: [Job, hasJob, jobOf, readsTable, writesTable]
 
 Application:
   is: Kind
@@ -49,27 +49,26 @@ coversTable:
 appDependsOnWriter:
   is: Rule
   says: >
-    An application ($app) depends on every other application ($other) whose job
-    ($writer) writes a table ($table) that a job ($reader) of the application
-    ($app) reads.
-  links:
-    - from: $app
-      link: hasJob
-      to:   $reader
-    - from: $reader
-      link: readsTable
-      to:   $table
-    - from: $writer
-      link: writesTable
-      to:   $table
-    - from: $writer
-      link: jobOf
-      to:   $other
-  where:
+    An application depends on every other application whose jobs write a
+    table that one of its own jobs reads.
+  match:
+    - link: hasJob
+      from: {$app: Application}
+      to:   {$reader: Job}
+    - link: readsTable
+      from: {$reader: Job}
+      to:   {$table: Table}
+    - link: writesTable
+      from: {$writer: Job}
+      to:   {$table: Table}
+    - link: jobOf
+      from: {$writer: Job}
+      to:   {$other: Application}
+  filter:
     - node: $other
       does not equal:
         same as: $app
   derive:
-    - from: $app
-      link: dependsOnApp
+    - link: dependsOnApp
+      from: $app
       to:   $other

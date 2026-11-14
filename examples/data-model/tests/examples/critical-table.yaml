@@ -1,13 +1,13 @@
 import:
-  - from: file:../../definitions/team.yaml
+  - from: file:../../defs/team.yaml
     use: [Team]
-  - from: file:../../definitions/database.yaml
+  - from: file:../../defs/database.yaml
     use: [Database, ownedByTeam]
-  - from: file:../../definitions/table.yaml
+  - from: file:../../defs/table.yaml
     use: [Table, CriticalTable, inDatabase]
-  - from: file:../../definitions/job.yaml
+  - from: file:../../defs/job.yaml
     use: [Job, jobOf, readsTable]
-  - from: file:../../definitions/application.yaml
+  - from: file:../../defs/application.yaml
     use: [Application]
 
 tableReadByThreeJobs:

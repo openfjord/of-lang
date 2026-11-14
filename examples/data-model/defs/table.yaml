@@ -6,7 +6,7 @@ import:
   - from: file:database.yaml
     use: [Database, ownedByTeam]
   - from: file:job.yaml
-    use: [readsTable, writesTable]
+    use: [Job, readsTable, writesTable]
 
 Table:
   is: Kind
@@ -60,43 +60,43 @@ feedsTable:
 
 tableTeamFromDatabase:
   is: Rule
-  says: A table ($table) belongs to the team ($team) that owns its database ($database).
-  links:
-    - from: $table
-      link: inDatabase
-      to:   $database
-    - from: $database
-      link: ownedByTeam
-      to:   $team
+  says: A table belongs to the team that owns its database.
+  match:
+    - link: inDatabase
+      from: {$table: Table}
+      to:   {$database: Database}
+    - link: ownedByTeam
+      from: {$database: Database}
+      to:   {$team: Team}
   derive:
-    - from: $table
-      link: belongsToTeam
+    - link: belongsToTeam
+      from: $table
       to:   $team
 
 tableFeedsTable:
   is: Rule
-  says: A table ($source) feeds every table ($target) that a job ($job) reading it writes.
-  links:
-    - from: $job
-      link: readsTable
-      to:   $source
-    - from: $job
-      link: writesTable
-      to:   $target
+  says: A table feeds every table that a job reading it writes.
+  match:
+    - link: readsTable
+      from: {$job: Job}
+      to:   {$source: Table}
+    - link: writesTable
+      from: {$job: Job}
+      to:   {$target: Table}
   derive:
-    - from: $source
-      link: feedsTable
+    - link: feedsTable
+      from: $source
       to:   $target
 
 criticalTable:
   is: Rule
-  says: A table ($table) read by more than two jobs ($reader) is critical.
-  where:
+  says: A table read by more than two jobs is critical.
+  filter:
     - count:
-        links:
-          - from: $reader
-            link: readsTable
-            to:   $table
+        match:
+          - link: readsTable
+            from: {$reader: Job}
+            to:   {$table: Table}
       is above:
         value: 2
   derive:

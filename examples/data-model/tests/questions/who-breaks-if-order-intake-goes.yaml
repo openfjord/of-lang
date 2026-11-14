@@ -1,16 +1,16 @@
 import:
-  - from: file:../../definitions/application.yaml
-    use: [dependsOnApp]
+  - from: file:../../defs/application.yaml
+    use: [Application, dependsOnApp]
 
 whoBreaksIfOrderIntakeGoes:
   is: Question
-  asks: Which applications ($app) depend on the application ($target)?
+  asks: Which applications depend on order intake?
   given: file:../examples/two-apps-sharing-a-table.yaml
-  links:
-    - from: $app
-      link: dependsOnApp
-      to:   $target
-  where:
+  match:
+    - link: dependsOnApp
+      from: {$app: Application}
+      to:   {$target: Table}
+  filter:
     - node: $target
       equals:
         value: app/order_intake

@@ -1,0 +1,45 @@
+import:
+  - from: file:job.yaml
+    use: [Job, jobOf, readsTable, writesTable]
+  - from: file:application.yaml
+    use: [Application, Contract, consumesContract, coversTable]
+  - from: file:table.yaml
+    use: [Table]
+
+crossAppReadNeedsContract:
+  is: Constraint
+  says: >
+    A job of one application may read a table that a job of another
+    application writes, only if the table is public and the reading
+    application consumes a contract that covers the table.
+  match:
+    - link: jobOf
+      from: {$job: Job}
+      to:   {$jobApp: Application}
+    - link: readsTable
+      from: {$job: Job}
+      to:   {$table: Table}
+    - link: writesTable
+      from: {$writer: Job}
+      to:   {$table: Table}
+    - link: jobOf
+      from: {$writer: Job}
+      to:   {$writerApp: Application}
+  filter:
+    - node: $writerApp
+      does not equal:
+        same as: $jobApp
+  require:
+    - node:  $table
+      field: visibility
+      equals:
+        value: public
+    - at least one:
+        match:
+          - link: consumesContract
+            from: {$jobApp: Application}
+            to:   {$contract: Contract}
+          - link: coversTable
+            from: {$contract: Contract}
+            to:   {$table: Table}
+  message: "{$job} must not read {$table} from {$writerApp} without a contract."

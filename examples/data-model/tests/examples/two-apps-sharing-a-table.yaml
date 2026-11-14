@@ -1,13 +1,13 @@
 import:
-  - from: file:../../definitions/team.yaml
+  - from: file:../../defs/team.yaml
     use: [Team]
-  - from: file:../../definitions/database.yaml
+  - from: file:../../defs/database.yaml
     use: [Database, ownedByTeam]
-  - from: file:../../definitions/table.yaml
+  - from: file:../../defs/table.yaml
     use: [Table, inDatabase, belongsToTeam, feedsTable]
-  - from: file:../../definitions/job.yaml
+  - from: file:../../defs/job.yaml
     use: [Job, jobOf, readsTable, writesTable]
-  - from: file:../../definitions/application.yaml
+  - from: file:../../defs/application.yaml
     use: [Application, Contract, consumesContract, coversTable, dependsOnApp]
 
 twoAppsSharingATable:
@@ -17,18 +17,18 @@ twoAppsSharingATable:
     contract, so it depends on order intake and breaks no constraint.
   expect:
     derived:
-      - from: app/revenue_report
-        link: dependsOnApp
+      - link: dependsOnApp
+        from: app/revenue_report
         to:   app/order_intake
-      - from: db/sales/table/order_lines
-        link: feedsTable
+      - link: feedsTable
+        from: db/sales/table/order_lines
         to:   db/sales/table/revenue_daily
-      - from: db/sales/table/order_lines
-        link: belongsToTeam
+      - link: belongsToTeam
+        from: db/sales/table/order_lines
         to:   team/commerce
     notDerived:
-      - from: app/order_intake
-        link: dependsOnApp
+      - link: dependsOnApp
+        from: app/order_intake
         to:   app/revenue_report
     rejected: []
 
