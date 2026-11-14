@@ -932,6 +932,11 @@ changed, for approval on that page.
 - **A separate specification for the logic.** It would let other languages
   reuse it, at the cost of a second schema interface to keep in step; the
   logic is written against this language's own kinds and links instead.
+- **Fields on links, as in a property graph.** It lets a link say when it
+  started or how much it carries. But derived and chained links would have
+  nothing to fill the fields with, and patterns would need a way to reach
+  them. A link stays only its from, link and to; anything said about it
+  becomes a thing in the middle, such as a `Read` between a job and a table.
 
 ## Deferred: facts at runtime
 
