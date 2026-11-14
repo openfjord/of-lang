@@ -97,7 +97,7 @@ tableFeedsTable:
 
 ## Rules
 
-- **RL1.** A rule MUST have `derive`, with at least one entry.
+- **RL1.** A rule MUST have `derive`, with at least one item.
 - **RL2.** A derived link MUST join variables whose kinds the link allows
   ([LK3](link.md#rules)). A derived kind MUST be a kind. A derived field MUST
   be a field of the thing's kind, and its value MUST be one the field allows.

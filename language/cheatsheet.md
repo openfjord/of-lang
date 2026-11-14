@@ -43,7 +43,7 @@ import:
   - from: pkg:@openfjord/org-model            # must be in dependsOn and exported there
     use: [Contract, { name: Team, as: OrgTeam }]
 
-SomeEntry:
+SomeStatement:
   is: Kind        # or Link, ValueType, Constraint, Rule — Fact, Test, Question in tests/
 ```
 
@@ -174,5 +174,5 @@ someQuestion:
 ## How it runs
 
 Rules repeat until nothing new follows; `under` and `chains` add their facts
-too. Then constraints check everything. Whatever is not stated or derived is
-false. Every derived fact and every rejection comes with its explanation.
+too. Then constraints check everything. Whatever is not stated or derived
+is false. Every derived fact and every rejection comes with its explanation.

@@ -102,7 +102,7 @@ A rejection makes `run` exit with 1.
 
 ### `explain`
 
-The fact, the statement's `says`, what each variable stood for, and the facts
+The fact, the rule's `says`, what each variable stood for, and the facts
 the match used. A derived fact among them unfolds into its own explanation,
 indented below it.
 
@@ -197,6 +197,29 @@ stood for:
   ]
 }
 ```
+
+### Derived facts
+
+When the tool writes facts out, a derived fact is a fact with
+`derived: true`; `derived` is `false` by default. The flag exists only in
+the tool's output: the language has no such key, so a file that writes it is
+rejected like any unknown key.
+
+A thing that is partly stated and partly derived has two facts under one id:
+the stated one, as written, and one derived fact beside it holding only what
+was derived, never repeating the stated one. Its `kind` is the kind a rule
+made the thing, or the stated kind if no rule did.
+
+```yaml
+db/sales/table/order_lines:
+  is: Fact
+  kind: CriticalTable              # a rule made it a critical table
+  derived: true
+  belongsToTeam: team/commerce     # from tableTeamFromDatabase
+  feedsTable: [db/sales/table/revenue_daily]
+```
+
+The tool does not write facts in this form yet.
 
 ## Planned outputs
 

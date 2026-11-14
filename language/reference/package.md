@@ -139,15 +139,15 @@ applications needs a contract — see
 
 | Written | Means |
 |---|---|
-| `[text](path/file.yaml#Name)` | a link to the entry `Name` |
-| `![](path/file.yaml#Name)` | the entry `Name`, embedded where it stands |
+| `[text](path/file.yaml#Name)` | a link to the statement `Name` |
+| `![](path/file.yaml#Name)` | the statement `Name`, embedded where it stands |
 | `![](path/file.yaml)` | the whole file, embedded |
 
 Both are standard Markdown, so a viewer that does not know the convention
-still shows a working link. The part after `#` is an entry's name, not a line
+still shows a working link. The part after `#` is a statement's name, not a line
 number, so an embed follows its definition wherever it moves in the file.
 Each definition's generated page lists the docs that link to it or embed it.
 
 - **DC1.** Paths MUST be relative to the doc.
 - **DC2.** A link or embed MUST point at a file that exists, and the part
-  after `#`, when present, MUST be the name of an entry in that file.
+  after `#`, when present, MUST be the name of a statement in that file.

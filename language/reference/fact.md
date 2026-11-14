@@ -6,9 +6,10 @@ title: Facts — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A fact is a thing, stated: its kind, its fields and its links. Facts appear
-only in a package's tests, where they are the data examples and questions run
-over. Facts written by running systems are set aside for now (see
+A fact says what a thing is: its kind, its fields and its links. Facts
+written in files are stated, and appear only in a package's tests, where they
+are the data examples and questions run over. Facts that rules add are
+[derived](#derived-facts). Facts written by running systems are set aside for now (see
 [the research](../../README.md#deferred-facts-at-runtime)).
 
 ```yaml
@@ -26,7 +27,7 @@ db/sales/table/order_lines:
 
 | Key | Required | Value |
 |---|---|---|
-| the fact's id | — | the entry's name: any text, usually a path such as `db/sales/table/order_lines` |
+| the fact's id | — | the statement's name: any text, usually a path such as `db/sales/table/order_lines` |
 | `is` | yes | `Fact` |
 | `kind` | yes | the kind of thing it is |
 | a field's name | as the kind says | the field's value |
@@ -37,9 +38,10 @@ db/sales/table/order_lines:
 - **FC1.** A fact MUST name its `kind`, and the kind MUST be imported.
 - **FC2.** Each other key MUST be a field of the kind (inherited ones
   included) or a link the file imports. Fields need no import; links do.
-- **FC3.** A fact MUST have every field its kind requires and every link its
-  kind's counts require, and nothing its kind does not list. A field left out
-  takes its `default`, if it has one.
+- **FC3.** A thing's facts, stated and derived together, MUST have every
+  field its kind requires and every link its kind's counts require, and
+  nothing its kind does not list. A field left out takes its `default`, if it
+  has one.
 - **FC4.** Every field value MUST be one its field allows.
 - **FC5.** A link's value MUST be the id of a fact in the same file, or a
   list of such ids, and each MUST be of the kind the link ends at. An inverse
@@ -51,8 +53,14 @@ db/sales/table/order_lines:
 ## Derived facts
 
 A derived fact is added by a [rule](rule.md), or by a link's `under` or
-`chains` ([what links imply](link.md#what-links-imply)); it is never written
-in a file. Derived facts live in a graph of their own, apart from stated
-facts, and each records why it holds: the rule or declaration that added it,
-what each variable stood for, and the facts it came from. That record is what
-an explanation shows.
+`chains` ([what links imply](link.md#what-links-imply)). No file declares
+one, or it would not be derived: it exists only once the rules have run, and
+the tool shows it in its output
+([how the tool shows derived facts](../../cli/README.md#derived-facts)).
+A test can expect one, or expect its absence, under `expect`
+([tests](test.md#examples)). Constraints and questions see stated and derived
+facts alike.
+
+Each derived fact records why it holds: the rule or declaration that added
+it, what each variable stood for, and the facts it came from. That record is
+what an explanation shows.

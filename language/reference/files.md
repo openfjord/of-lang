@@ -1,13 +1,13 @@
 ---
-title: Files and entries — The OpenFjord modeling language
+title: Files and statements — The OpenFjord modeling language
 ---
 
-# Files and entries
+# Files and statements
 
 > Part of [the reference](README.md).
 
 Everything in the language is written in YAML files. A file is a mapping:
-an optional `import` block, then entries, each keyed by its name.
+an optional `import` block, then statements, each keyed by its name.
 
 ```yaml
 import:
@@ -29,9 +29,9 @@ inDatabase:
   definition: The database that stores the table.
 ```
 
-## Entries
+## Statements
 
-Every entry says what it is with `is:`.
+Every statement says what it is with `is:`.
 
 | `is:` | Where | Described in |
 |---|---|---|
@@ -44,19 +44,19 @@ Every entry says what it is with `is:`.
 | `Test` | `tests/` | [Tests](test.md) |
 | `Question` | `tests/` | [Tests](test.md#questions) |
 
-- **FL1.** Every top-level key other than `import` MUST be an entry: a
+- **FL1.** Every top-level key other than `import` MUST be a statement: a
   mapping with an `is:` key whose value is one of the table above.
-- **FL2.** An entry MUST NOT have a key its page does not list. Anything not
+- **FL2.** A statement MUST NOT have a key its page does not list. Anything not
   listed is rejected, so a misspelled key is an error, never ignored.
 - **FL3.** A YAML file MUST NOT repeat a key in the same mapping.
-- **FL4.** Entries in `defs/` MUST be `Kind`, `Link`, `ValueType`,
-  `Constraint` or `Rule`. Entries in `tests/` MUST be `Fact`, `Test` or
+- **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
+  `Constraint` or `Rule`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
-- **FL5.** No entry MAY be named `import`.
+- **FL5.** No statement MAY be named `import`.
 
 ## Names
 
-| Entry | Written as | Examples |
+| Statement | Written as | Examples |
 |---|---|---|
 | kind, value type | UpperCamelCase | `Table`, `CriticalTable`, `RetentionDays` |
 | link, link inverse | lowerCamelCase, two words or more | `inDatabase`, `readsTable`, `hasJob` |
@@ -68,8 +68,8 @@ Every entry says what it is with `is:`.
 - **FL7.** Kind and value type names MUST be UpperCamelCase; constraint,
   rule, test and question names MUST be lowerCamelCase. Link names are
   covered by [LK1](link.md#rules).
-- **FL8.** The name of an entry in a test file MUST NOT be the name of a
-  definition in the package. Entries in a test file are local to that file.
+- **FL8.** The name of a statement in a test file MUST NOT be the name of a
+  definition in the package. Statements in a test file are local to that file.
 
 ## Imports
 

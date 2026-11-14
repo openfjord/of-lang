@@ -42,7 +42,7 @@ standards are good at, inference above all, and drop what makes them hard?
 | 13 | **Mechanics, lint and business rules look alike.** An OWL "exactly one owner" merges two owners into one instead of rejecting. | One construct per kind of rule, each with its own owner and its own behavior on failure. |
 | 14 | **The type system and the knowledge are mixed** (the TBox, terminology, and the ABox, assertions). | Separate packages for types and for facts, reviewed differently. |
 | 15 | **Schema changes and data changes are the same language** — there is no DDL/DML (data definition / data manipulation language) split. | Facts can never define anything. How facts written at runtime are kept from changing the types is deferred, with runtime facts. |
-| 16 | **No separation of concerns,** and no tests. | Each concern a separate entry — kind, link, constraint, rule — placed next to what it is about; competency questions and example data as tests. |
+| 16 | **No separation of concerns,** and no tests. | Each concern a separate statement — kind, link, constraint, rule — placed next to what it is about; competency questions and example data as tests. |
 | 17 | **Trust and freshness are not modeled.** Every fact looks equally sure and equally current. | Source, confirmation and expiry per fact; trust levels; views filtered by trust. |
 | 18 | **Inference must be visible.** Its value is the knowledge nobody wrote down, which only counts if people see it when they add something. | Every change reports what is newly derived and what is no longer derived, each derived fact with its explanation. |
 

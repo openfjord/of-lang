@@ -44,7 +44,7 @@ Team:
       type: string
 ```
 
-Every entry in a file has a name (`Team`) and says what it is with `is:`.
+Every statement in a file has a name (`Team`) and says what it is with `is:`.
 Every kind needs a `definition`: one sentence that product reads.
 
 `fields` lists the values a team has. A field is described with JSON Schema,

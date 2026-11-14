@@ -74,7 +74,7 @@ the language:
 
 ## Value types
 
-A value type names a schema once so fields can reuse it. It is an entry like
+A value type names a schema once so fields can reuse it. It is a statement like
 any other, imported like any other:
 
 ```yaml

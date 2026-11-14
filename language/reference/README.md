@@ -13,7 +13,7 @@ takes, and the requirements the tool checks.
 
 | Page | Covers | Codes |
 |---|---|---|
-| [Files and entries](files.md) | YAML files, entries, `is:`, names, imports, ids | FL |
+| [Files and statements](files.md) | YAML files, statements, `is:`, names, imports, ids | FL |
 | [Packages](package.md) | the manifest, owners, namespaces, the fixed layout, exports, docs | PK, DC |
 | [Kinds](kind.md) | kinds, `extends`, link counts | KD |
 | [Fields and value types](field.md) | the JSON Schema subset, value types | FD, VT |

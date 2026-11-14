@@ -73,9 +73,9 @@ applications needs a contract — see
 [crossAppReadNeedsContract](../defs/reading-across-applications.yaml#crossAppReadNeedsContract).
 ```
 
-`![](file#Name)` embeds the entry; `[text](file#Name)` links to it. Both are
+`![](file#Name)` embeds the statement; `[text](file#Name)` links to it. Both are
 plain Markdown, so any viewer shows a working link. The check fails if a link
-points at an entry that does not exist, so docs cannot drift silently. Each
+points at a statement that does not exist, so docs cannot drift silently. Each
 definition's generated page lists the docs that mention it.
 
 The package now has its full shape:

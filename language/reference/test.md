@@ -13,7 +13,7 @@ what a set of facts must derive and which constraints it must break; a
 
 ## Examples
 
-An example is a file of facts with one `Test` entry:
+An example is a file of facts with one `Test` statement:
 
 ```yaml
 # tests/examples/table-inherits-database-team.yaml
@@ -68,7 +68,7 @@ in place of variables:
 | a kind | `node`, `becomes` |
 | a field value | `node`, `field`, `set to` with `value:` |
 
-- **TS1.** An example file MUST hold exactly one `Test` entry, which MUST
+- **TS1.** An example file MUST hold exactly one `Test` statement, which MUST
   have `says` and `expect`.
 - **TS2.** The test passes only if every fact under `derived` holds, no fact
   under `notDerived` holds, the facts break exactly the constraints under

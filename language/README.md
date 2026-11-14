@@ -63,7 +63,7 @@ an error from the tool can name the rule it enforces.
 | Word | Meaning | Closest standard construct |
 |---|---|---|
 | **[package](reference/package.md)** | a versioned unit with one manifest and one owner, who owns everything in it; its name may start with a namespace, as in npm | an ontology with `owl:imports` |
-| **[entry](reference/files.md)** | one named item in a file, saying what it is with `is:` | — |
+| **[statement](reference/files.md)** | one named item in a file, saying what it is with `is:` | — |
 | **[kind](reference/kind.md)** | a kind of thing (database, table, application) | `owl:Class` |
 | **[field](reference/field.md)** | a value of the thing itself (a name, a format), described with JSON Schema | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
@@ -72,7 +72,7 @@ an error from the tool can name the rule it enforces.
 | **[constraint](reference/constraint.md)** | a pattern that rejects facts | a SHACL shape |
 | **[rule](reference/rule.md)** | a pattern that derives new links, kinds or field values | a SHACL rule |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; used in tests and examples | RDF triples |
-| **[derived fact](reference/fact.md#derived-facts)** | a fact a rule or a link's declaration adds | RDF triples in a separate graph |
+| **[derived fact](reference/fact.md#derived-facts)** | a fact a rule or a link's declaration adds; tests can expect one, but no file declares one | RDF triples |
 | **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects | a competency question |
 
 Fields and links stay apart: a field is a value of the thing, a link points

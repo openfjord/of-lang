@@ -46,7 +46,7 @@ Four principles shape how patterns are written:
 4. **The sentence is plain words.** `says` is what product reads, so it names
    no variables. Variables belong to the logic.
 
-## The keys of a statement
+## The keys of a constraint, rule or question
 
 | Key | Holds | In |
 |---|---|---|
@@ -59,7 +59,7 @@ Four principles shape how patterns are written:
 
 ## Match
 
-Each entry in `match` is one link that must exist between two things:
+Each item in `match` is one link that must exist between two things:
 
 ```yaml
 match:
@@ -155,9 +155,9 @@ the negative cases while keeping each condition readable on its own.
 
 ## Rules
 
-- **PT1.** A statement MUST have a `says` sentence (`asks` in a question),
+- **PT1.** A constraint, rule or question MUST have a `says` sentence (`asks` in a question),
   and the sentence MUST NOT contain a `$` word.
-- **PT2.** Every entry in `match` MUST have `link`, `from` and `to`, and MAY
+- **PT2.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
   have `repeated: true`. `link` MUST be a link, or an inverse name, that the
   file defines or imports.
 - **PT3.** `from` and `to` MUST each be written `{$variable: Kind}`, every
@@ -166,15 +166,15 @@ the negative cases while keeping each condition readable on its own.
 - **PT4.** The kind MUST be the kind the link joins at that end, or a kind
   that extends it.
 - **PT5.** Conditions, derivations and messages MUST write a variable bare
-  (`$table`), and every variable they use MUST appear in a `match` entry.
+  (`$table`), and every variable they use MUST appear in a `match` item.
 - **PT6.** A variable that appears only inside a nested block belongs to that
   block and MUST NOT be used outside it.
 - **PT7.** A condition MUST be one of the forms above. `is set` and `is not
   set` MUST name a field. `is a` MUST name a kind.
 - **PT8.** A comparison MUST compare values of the same type, and a literal
   MUST be a value the field allows.
-- **PT9.** `match` MAY be left out when every variable the statement uses
-  appears in a nested block; the statement then ranges over every thing of
+- **PT9.** `match` MAY be left out when every variable a constraint, rule or
+  question uses appears in a nested block; it then ranges over every thing of
   each such variable's kind.
 
 ## How they run
@@ -197,6 +197,6 @@ the negative cases while keeping each condition readable on its own.
 ## Explanations
 
 Every derived fact and every rejection can be explained. An explanation is
-the statement's match, filled in: the rule or constraint, what each variable
+the match, filled in: the rule or constraint, what each variable
 stood for, and each fact the match used. A fact that is itself derived
 unfolds into its own explanation, down to facts written in a file.

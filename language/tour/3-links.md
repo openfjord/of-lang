@@ -44,7 +44,7 @@ ownedByTeam:
 (`RetentionDays` is a second value type in `names.yaml`: an integer from 1 to
 3650.)
 
-The link is its own entry, next to the kind it comes out of:
+The link is its own statement, next to the kind it comes out of:
 
 - `from` and `to` are the kinds it joins. They are checks: linking a table
   with `ownedByTeam` is rejected.

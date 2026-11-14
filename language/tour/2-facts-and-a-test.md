@@ -36,7 +36,7 @@ team/commerce:
 says what it is, and the other keys are its fields. A fact must have every
 field its kind requires and nothing its kind does not list.
 
-The `Test` entry says what the facts must lead to. `rejected: []` means no
+The `Test` statement says what the facts must lead to. `rejected: []` means no
 rule may be broken. There is one `Test` per file.
 
 ## Run the tests
