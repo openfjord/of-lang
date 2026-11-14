@@ -9,10 +9,13 @@ title: Cheat sheet — The OpenFjord modeling language
 
 ## A package
 
+Every file in `defs/` and `tests/` ends in `.of.yaml`; the manifest is always
+`package.yaml`.
+
 ```
 my-package/
   package.yaml       # required: the manifest
-  defs/              # required: Kind, Link, ValueType, Constraint, Rule
+  defs/              # required: Kind, Link, ValueType, Constraint, Derivative
   docs/              # optional: Markdown that links to or embeds definitions
   tests/             # optional: Fact, Test, Question
 ```
@@ -38,13 +41,13 @@ openFor:
 
 ```yaml
 import:
-  - from: file:names.yaml                     # relative to this file
+  - from: file:names.of.yaml                     # relative to this file
     use: [Name]
   - from: pkg:@openfjord/org-model            # must be in dependsOn and exported there
     use: [Contract, { name: Team, as: OrgTeam }]
 
 SomeStatement:
-  is: Kind        # or Link, ValueType, Constraint, Rule — Fact, Test, Question in tests/
+  is: Kind        # or Link, ValueType, Constraint, Derivative — Fact, Test, Question in tests/
 ```
 
 Everything a file uses that it does not define is imported. Field names are not.
@@ -88,7 +91,10 @@ or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`
 `format` (`date` `date-time` `duration`) `minimum` `maximum` `items`
 `properties` `optional`. No `null`, `$ref`, `required`, `oneOf` and friends.
 
-## Patterns
+## Match and filter
+
+Derivatives, constraints and questions each define their own `match` and
+`filter`; today all three are written the same way.
 
 ```yaml
 match:                                   # links that must exist
@@ -100,8 +106,8 @@ match:                                   # links that must exist
     to:   {$next: Table}
     repeated: true                       # one or more steps
 filter:                                  # conditions; all must hold
-  - node: $job                           # bare variable outside match
-    does not equal: { same as: $other }
+  - node: $next                          # bare variable outside match
+    does not equal: { same as: $table }
   - node: $table
     field: visibility
     equals: { value: public }
@@ -121,7 +127,7 @@ filter:                                  # conditions; all must hold
 | `count: { match, filter }` + a comparison | the number of matches compares |
 | `any of: [conditions]` | one of them holds |
 
-## Constraints and rules
+## Constraints and derivatives
 
 ```yaml
 crossAppReadNeedsContract:
@@ -133,7 +139,7 @@ crossAppReadNeedsContract:
   message: "{$job} must not read {$table} without a contract."
 
 tableTeamFromDatabase:
-  is: Rule
+  is: Derivative
   says: A table belongs to the team that owns its database.
   match: [ ... ]
   derive:
@@ -145,7 +151,7 @@ tableTeamFromDatabase:
 ## Tests
 
 ```yaml
-# tests/examples/some-example.yaml — facts plus exactly one Test
+# tests/examples/some-example.of.yaml — facts plus exactly one Test
 db/sales:                                # a fact's id
   is: Fact
   kind: Database
@@ -160,11 +166,11 @@ someExample:
     notDerived: [ { node: db/sales/table/x, becomes: CriticalTable } ]
     rejected:   [crossAppReadNeedsContract]
 
-# tests/questions/some-question.yaml
+# tests/questions/some-question.of.yaml
 someQuestion:
   is: Question
   asks: Which applications depend on order intake?
-  given: file:../examples/some-example.yaml
+  given: file:../examples/some-example.of.yaml
   match: [ ... ]
   filter: [ ... ]
   expect:
@@ -173,6 +179,6 @@ someQuestion:
 
 ## How it runs
 
-Rules repeat until nothing new follows; `under` and `chains` add their facts
+Derivatives repeat until nothing new follows; `under` and `chains` add their facts
 too. Then constraints check everything. Whatever is not stated or derived
 is false. Every derived fact and every rejection comes with its explanation.

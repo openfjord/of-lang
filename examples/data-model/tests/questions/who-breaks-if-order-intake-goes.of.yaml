@@ -1,11 +1,11 @@
 import:
-  - from: file:../../defs/application.yaml
+  - from: file:../../defs/application.of.yaml
     use: [Application, dependsOnApp]
 
 whoBreaksIfOrderIntakeGoes:
   is: Question
   asks: Which applications depend on order intake?
-  given: file:../examples/two-apps-sharing-a-table.yaml
+  given: file:../examples/two-apps-sharing-a-table.of.yaml
   match:
     - link: dependsOnApp
       from: {$app: Application}

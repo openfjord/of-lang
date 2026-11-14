@@ -6,12 +6,18 @@ title: Files and statements — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-Everything in the language is written in YAML files. A file is a mapping:
-an optional `import` block, then statements, each keyed by its name.
+Everything in the language is written in YAML files whose names end in
+`.of.yaml`, such as `table.of.yaml`. The extension tells editors and tools
+which files are in the language. The one exception is a package's manifest,
+which is always `package.yaml`. A file is a
+mapping: an optional `import` block, then statements, each keyed by its name.
+
+- **FL15.** Every file in `defs/` and `tests/` MUST have a name ending in
+  `.of.yaml`. Any other file there is an error, never ignored.
 
 ```yaml
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name]
 
 Table:
@@ -39,7 +45,7 @@ Every statement says what it is with `is:`.
 | `Link` | `defs/` | [Links](link.md) |
 | `ValueType` | `defs/` | [Fields and value types](field.md#value-types) |
 | `Constraint` | `defs/` | [Constraints](constraint.md) |
-| `Rule` | `defs/` | [Rules](rule.md) |
+| `Derivative` | `defs/` | [Derivatives](derivative.md) |
 | `Fact` | `tests/` | [Facts](fact.md) |
 | `Test` | `tests/` | [Tests](test.md) |
 | `Question` | `tests/` | [Tests](test.md#questions) |
@@ -50,7 +56,7 @@ Every statement says what it is with `is:`.
   listed is rejected, so a misspelled key is an error, never ignored.
 - **FL3.** A YAML file MUST NOT repeat a key in the same mapping.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
-  `Constraint` or `Rule`. Statements in `tests/` MUST be `Fact`, `Test` or
+  `Constraint` or `Derivative`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
 - **FL5.** No statement MAY be named `import`.
 
@@ -60,13 +66,13 @@ Every statement says what it is with `is:`.
 |---|---|---|
 | kind, value type | UpperCamelCase | `Table`, `CriticalTable`, `RetentionDays` |
 | link, link inverse | lowerCamelCase, two words or more | `inDatabase`, `readsTable`, `hasJob` |
-| constraint, rule, test, question | lowerCamelCase | `crossAppReadNeedsContract` |
+| constraint, derivative, test, question | lowerCamelCase | `crossAppReadNeedsContract` |
 | fact | an id: any text, usually a path | `db/sales/table/order_lines` |
 
 - **FL6.** A definition's name MUST be unique within its package, and the
   inverse name a link declares counts as a name of that package.
 - **FL7.** Kind and value type names MUST be UpperCamelCase; constraint,
-  rule, test and question names MUST be lowerCamelCase. Link names are
+  derivative, test and question names MUST be lowerCamelCase. Link names are
   covered by [LK1](link.md#rules).
 - **FL8.** The name of a statement in a test file MUST NOT be the name of a
   definition in the package. Statements in a test file are local to that file.
@@ -78,9 +84,9 @@ block sits at the top of the file and lists where each name comes from:
 
 ```yaml
 import:
-  - from: file:table.yaml              # a file in this package, relative to this one
+  - from: file:table.of.yaml              # a file in this package, relative to this one
     use: [Table, inDatabase]
-  - from: file:../shared/team.yaml     # going up a folder
+  - from: file:../shared/team.of.yaml     # going up a folder
     use: [Team]
   - from: pkg:@openfjord/org-model     # another package
     use: [Contract, { name: Team, as: OrgTeam }]

@@ -9,7 +9,7 @@ title: Fields and value types — The OpenFjord modeling language
 A field is a value of the thing itself: a name, a format, a number of days.
 Each field is described with a subset of JSON Schema, with the meaning JSON
 Schema gives each keyword. Only field values use JSON Schema; kinds, links,
-constraints and rules are the language's own, because JSON Schema describes
+constraints and derivatives are the language's own, because JSON Schema describes
 one document and has no links between things.
 
 ```yaml
@@ -78,7 +78,7 @@ A value type names a schema once so fields can reuse it. It is a statement like
 any other, imported like any other:
 
 ```yaml
-# defs/names.yaml
+# defs/names.of.yaml
 
 Name:
   is: ValueType
@@ -96,10 +96,10 @@ RetentionDays:
 ```
 
 ```yaml
-# defs/table.yaml
+# defs/table.of.yaml
 
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name, RetentionDays]
 ```
 
@@ -119,4 +119,8 @@ import:
   `format`.
 - **VT4.** A value is checked against both the value type and the field's
   own keywords, and must satisfy both.
-- **VT5.** Conditions compare only values of the same type.
+- **VT5.** A value type is a type of its own, not only a narrowing: two
+  fields have the same type only if both name the same value type, or
+  neither names one and both have the same built-in type. `RetentionDays`
+  and a plain `integer` are different types. A field that narrows a value
+  type ([VT3](#value-types)) keeps it.

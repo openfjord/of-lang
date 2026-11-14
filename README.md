@@ -11,7 +11,7 @@ title: A modeling language for software people — Research
 > and the jobs that read and write tables. Written 2026-11-13.
 >
 > **[The language specification](language/README.md)** teaches and defines
-> the language: a tour, a reference and a cheat sheet. A command-line tool,
+> the language: a reference and a cheat sheet. A command-line tool,
 > [`of-lang`](cli/README.md), implements an earlier version of it, and
 > [examples/data-model/](examples/data-model/) is an example package.
 
@@ -42,7 +42,7 @@ standards are good at, inference above all, and drop what makes them hard?
 | 13 | **Mechanics, lint and business rules look alike.** An OWL "exactly one owner" merges two owners into one instead of rejecting. | One construct per kind of rule, each with its own owner and its own behavior on failure. |
 | 14 | **The type system and the knowledge are mixed** (the TBox, terminology, and the ABox, assertions). | Separate packages for types and for facts, reviewed differently. |
 | 15 | **Schema changes and data changes are the same language** — there is no DDL/DML (data definition / data manipulation language) split. | Facts can never define anything. How facts written at runtime are kept from changing the types is deferred, with runtime facts. |
-| 16 | **No separation of concerns,** and no tests. | Each concern a separate statement — kind, link, constraint, rule — placed next to what it is about; competency questions and example data as tests. |
+| 16 | **No separation of concerns,** and no tests. | Each concern a separate statement — kind, link, constraint, derivative — placed next to what it is about; competency questions and example data as tests. |
 | 17 | **Trust and freshness are not modeled.** Every fact looks equally sure and equally current. | Source, confirmation and expiry per fact; trust levels; views filtered by trust. |
 | 18 | **Inference must be visible.** Its value is the knowledge nobody wrote down, which only counts if people see it when they add something. | Every change reports what is newly derived and what is no longer derived, each derived fact with its explanation. |
 
@@ -63,17 +63,17 @@ standards are good at, inference above all, and drop what makes them hard?
   typed links.
 
 Both platforms chose closed-world checking and no inference. This draft keeps
-closed-world checking and adds inference by rules.
+closed-world checking and adds inference by derivatives.
 
 ## The draft
 
 - [The language specification](language/README.md): what the language is,
   its principles and vocabulary, with
-  - [a tour](language/tour/README.md) in seven steps,
   - [a reference](language/reference/README.md) with every rule, and
   - [a cheat sheet](language/cheatsheet.md).
-- [The `of-lang` tool](cli/README.md): commands, output, and the outputs
-  planned — the change report, product's pages and the RDF export.
+- [The `of-lang` tool](cli/README.md): commands, output, and what is
+  planned: the change report, product's pages, the RDF export and a
+  language server.
 - [The example package](examples/data-model/).
 
 ## What it leaves out, and why
@@ -96,7 +96,7 @@ closed-world checking and adds inference by rules.
   nothing can be checked or concluded.
 - **A platform-owned model, as in Palantir Foundry.** Typed and governed, but
   managed outside the codebase and without inference.
-- **An expression language for constraints and rules,** such as CEL (Common
+- **An expression language for constraints and derivatives,** such as CEL (Common
   Expression Language) or a string syntax of our own. Shorter, but a reader
   must parse operators and paths in their head, and dotted paths hide the
   things they pass through.
@@ -111,7 +111,7 @@ closed-world checking and adds inference by rules.
   logic is written against this language's own kinds and links instead.
 - **Fields on links, as in a property graph.** It lets a link say when it
   started or how much it carries. But derived and chained links would have
-  nothing to fill the fields with, and patterns would need a way to reach
+  nothing to fill the fields with, and matches would need a way to reach
   them. A link stays only its link, from and to; anything said about it
   becomes a thing in the middle, such as a `Read` between a job and a table.
 
@@ -129,21 +129,21 @@ reasons table wait on them:
 - **Trust and freshness** (reason 17): source, confirmation and expiry per
   fact, trust levels, and whether a single link carries its own source.
 - **Runtime writes and types** (reason 15): how facts written at runtime are
-  kept from changing kinds, links, constraints or rules.
+  kept from changing kinds, links, constraints or derivatives.
 
 ## Open questions
 
-1. **Can a technical package add rules about product kinds?** `Table` lives
-   in a product package. The platform team wants a rule such as "a table with
+1. **Can a technical package add derivatives about product kinds?** `Table` lives
+   in a product package. The platform team wants a derivative such as "a table with
    more than 1,000 columns is oversized". Everything in a package is owned by
-   its owner, so the rule cannot go in the product package without product
-   approving it. May the platform team put that rule in their own package,
-   through an extension point, or must every rule about `Table` go through
+   its owner, so the derivative cannot go in the product package without product
+   approving it. May the platform team put that derivative in their own package,
+   through an extension point, or must every derivative about `Table` go through
    product?
-2. **Optional links in a pattern.** Every link in a pattern must exist, or
-   there is no match. A rule that wants "every table, and its team if it has
-   one" loses the tables without a team. Should a link in a pattern be markable
-   as optional, or should authors work around it with two rules or `any of`?
+2. **Optional links in a match.** Every link in a match must exist, or
+   there is no match. A derivative that wants "every table, and its team if it has
+   one" loses the tables without a team. Should a link in a match be markable
+   as optional, or should authors work around it with two derivatives or `any of`?
 3. **Limits on chains.** `repeated: true` follows a link any number of steps:
    table to table to table. Sometimes only nearby things matter, such as
    "tables at most two steps upstream". Should chains take a limit

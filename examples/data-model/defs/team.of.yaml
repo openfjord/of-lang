@@ -1,5 +1,5 @@
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name]
 
 Team:

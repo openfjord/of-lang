@@ -1,9 +1,9 @@
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name]
-  - from: file:table.yaml
+  - from: file:table.of.yaml
     use: [Table]
-  - from: file:job.yaml
+  - from: file:job.of.yaml
     use: [Job, hasJob, jobOf, readsTable, writesTable]
 
 Application:
@@ -47,7 +47,7 @@ coversTable:
   definition: The table is one the contract keeps stable.
 
 appDependsOnWriter:
-  is: Rule
+  is: Derivative
   says: >
     An application depends on every other application whose jobs write a
     table that one of its own jobs reads.

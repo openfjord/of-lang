@@ -1,9 +1,9 @@
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name]
-  - from: file:table.yaml
+  - from: file:table.of.yaml
     use: [Table]
-  - from: file:application.yaml
+  - from: file:application.of.yaml
     use: [Application]
 
 Job:

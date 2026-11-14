@@ -1,15 +1,15 @@
 import:
-  - from: file:../../defs/team.yaml
+  - from: file:../../defs/team.of.yaml
     use: [Team]
-  - from: file:../../defs/database.yaml
+  - from: file:../../defs/database.of.yaml
     use: [Database, ownedByTeam]
-  - from: file:../../defs/table.yaml
+  - from: file:../../defs/table.of.yaml
     use: [Table, inDatabase]
-  - from: file:../../defs/job.yaml
+  - from: file:../../defs/job.of.yaml
     use: [Job, jobOf, readsTable, writesTable]
-  - from: file:../../defs/application.yaml
+  - from: file:../../defs/application.of.yaml
     use: [Application]
-  - from: file:../../defs/reading-across-applications.yaml
+  - from: file:../../defs/reading-across-applications.of.yaml
     use: [crossAppReadNeedsContract]
 
 crossAppReadWithoutContract:

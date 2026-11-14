@@ -7,7 +7,7 @@ title: Packages — The OpenFjord modeling language
 > Part of [the reference](README.md).
 
 A package is the unit that is versioned, owned, reviewed and depended on. It
-holds definitions — kinds, links, value types, constraints and rules — with
+holds definitions — kinds, links, value types, constraints and derivatives — with
 the docs that explain them and the tests that prove them.
 
 ## Layout
@@ -16,13 +16,13 @@ the docs that explain them and the tests that prove them.
 data-model/
   package.yaml                     # the manifest
   defs/                            # definitions
-    names.yaml                     # value types
-    team.yaml                      # Team
-    database.yaml                  # Database, and the links that come out of it
-    table.yaml                     # Table, its links, the rules about tables
-    job.yaml
-    application.yaml
-    reading-across-applications.yaml   # a constraint spanning several kinds
+    names.of.yaml                     # value types
+    team.of.yaml                      # Team
+    database.of.yaml                  # Database, and the links that come out of it
+    table.of.yaml                     # Table, its links, the derivatives about tables
+    job.of.yaml
+    application.of.yaml
+    reading-across-applications.of.yaml   # a constraint spanning several kinds
   docs/                            # Markdown that explains the definitions
     tables.md
   tests/                           # examples and questions
@@ -33,9 +33,10 @@ data-model/
 - **PK1.** A package's top level MUST hold `package.yaml` and `defs/`, MAY
   hold `docs/` and `tests/`, and MUST NOT hold anything else.
 - **PK2.** Inside `defs/`, `docs/` and `tests/`, the layout is the author's.
+  Files in `defs/` and `tests/` are named `*.of.yaml` ([FL15](files.md#files-and-statements)).
   A file in `defs/` MAY hold definitions of any sort in any mix.
 - **PK3.** Inside `defs/`, a definition SHOULD sit next to what it is about:
-  a link with the kind it comes out of, a constraint or rule with the kind it
+  a link with the kind it comes out of, a constraint or derivative with the kind it
   concerns, and one that concerns several kinds a level up, beside them all.
 
 ## The manifest
@@ -130,18 +131,18 @@ side:
 
 A table holds rows with one schema. Every table sits in exactly one database:
 
-![](../defs/table.yaml#Table)
+![](../defs/table.of.yaml#Table)
 
 Teams kept breaking each other by reading internal tables, so reading across
 applications needs a contract — see
-[crossAppReadNeedsContract](../defs/reading-across-applications.yaml#crossAppReadNeedsContract).
+[crossAppReadNeedsContract](../defs/reading-across-applications.of.yaml#crossAppReadNeedsContract).
 ````
 
 | Written | Means |
 |---|---|
-| `[text](path/file.yaml#Name)` | a link to the statement `Name` |
-| `![](path/file.yaml#Name)` | the statement `Name`, embedded where it stands |
-| `![](path/file.yaml)` | the whole file, embedded |
+| `[text](path/file.of.yaml#Name)` | a link to the statement `Name` |
+| `![](path/file.of.yaml#Name)` | the statement `Name`, embedded where it stands |
+| `![](path/file.of.yaml)` | the whole file, embedded |
 
 Both are standard Markdown, so a viewer that does not know the convention
 still shows a working link. The part after `#` is a statement's name, not a line

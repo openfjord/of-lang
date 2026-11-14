@@ -24,14 +24,13 @@ packages, tests and tooling.
 
 | If you want to | Read |
 |---|---|
-| learn the language from nothing | [the tour](tour/README.md), seven short steps that build one package |
 | look up exactly how something works | [the reference](reference/README.md), one page per part of the language |
 | see the whole language at a glance | [the cheat sheet](cheatsheet.md) |
 | run it | [the `of-lang` tool](../cli/README.md) |
 
 Every example uses one small made-up domain: teams own databases, databases
-hold tables, applications run jobs, and jobs read and write tables. The tour
-builds that domain step by step; the finished package is in
+hold tables, applications run jobs, and jobs read and write tables. The
+whole domain, as one package, is in
 [examples/data-model](../examples/data-model/).
 
 ## Conventions
@@ -48,7 +47,7 @@ an error from the tool can name the rule it enforces.
 
 1. **One model, two readings.** Developers write and read objects; product
    reads sentences and examples generated from the same files.
-2. **Check closed, infer by rules.** Constraints reject. Rules derive. Nothing
+2. **Check closed, infer by derivatives.** Constraints reject. Derivatives derive. Nothing
    does both, and no construct ever concludes a thing's kind from a link it
    has.
 3. **Engineered like code.** Packages, versions, namespaces, review, CI
@@ -68,11 +67,10 @@ an error from the tool can name the rule it enforces.
 | **[field](reference/field.md)** | a value of the thing itself (a name, a format), described with JSON Schema | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
 | **[link](reference/link.md)** | a named, directed relationship between two things | `owl:ObjectProperty` |
-| **[pattern](reference/pattern.md)** | the links between things, each with its kind, and the conditions a constraint, rule or question looks for | a SPARQL graph pattern |
-| **[constraint](reference/constraint.md)** | a pattern that rejects facts | a SHACL shape |
-| **[rule](reference/rule.md)** | a pattern that derives new links, kinds or field values | a SHACL rule |
+| **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it | a SHACL shape |
+| **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match | a SHACL rule |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; used in tests and examples | RDF triples |
-| **[derived fact](reference/fact.md#derived-facts)** | a fact a rule or a link's declaration adds; tests can expect one, but no file declares one | RDF triples |
+| **[derived fact](reference/fact.md#derived-facts)** | a fact a derivative or a link's declaration adds; tests can expect one, but no file declares one | RDF triples |
 | **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects | a competency question |
 
 Fields and links stay apart: a field is a value of the thing, a link points

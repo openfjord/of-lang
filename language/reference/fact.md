@@ -8,13 +8,13 @@ title: Facts — The OpenFjord modeling language
 
 A fact says what a thing is: its kind, its fields and its links. Facts
 written in files are stated, and appear only in a package's tests, where they
-are the data examples and questions run over. Facts that rules add are
+are the data examples and questions run over. Facts that derivatives add are
 [derived](#derived-facts). Facts written by running systems are set aside for now (see
 [the research](../../README.md#deferred-facts-at-runtime)).
 
 ```yaml
 import:
-  - from: file:../../defs/table.yaml
+  - from: file:../../defs/table.of.yaml
     use: [Table, inDatabase]
 
 db/sales/table/order_lines:
@@ -52,15 +52,15 @@ db/sales/table/order_lines:
 
 ## Derived facts
 
-A derived fact is added by a [rule](rule.md), or by a link's `under` or
+A derived fact is added by a [derivative](derivative.md), or by a link's `under` or
 `chains` ([what links imply](link.md#what-links-imply)). No file declares
-one, or it would not be derived: it exists only once the rules have run, and
+one, or it would not be derived: it exists only once the derivatives have run, and
 the tool shows it in its output
 ([how the tool shows derived facts](../../cli/README.md#derived-facts)).
 A test can expect one, or expect its absence, under `expect`
 ([tests](test.md#examples)). Constraints and questions see stated and derived
 facts alike.
 
-Each derived fact records why it holds: the rule or declaration that added
+Each derived fact records why it holds: the derivative or declaration that added
 it, what each variable stood for, and the facts it came from. That record is
 what an explanation shows.

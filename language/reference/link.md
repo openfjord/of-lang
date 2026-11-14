@@ -74,11 +74,11 @@ and a table.
 
 ## What links imply
 
-These are the only inferences the language makes without a rule. Each fact
+These are the only inferences the language makes without a derivative. Each fact
 they add is a [derived fact](fact.md#derived-facts) with its reason.
 
 | Declared | Adds |
 |---|---|
-| `inverse: hasTable` on `inDatabase` | nothing new: `hasTable` reads every `inDatabase` the other way, in patterns, facts and tests alike |
+| `inverse: hasTable` on `inDatabase` | nothing new: `hasTable` reads every `inDatabase` the other way, in derivatives, constraints, questions and facts alike |
 | `under: usesTable` on `readsTable` | a `usesTable` for every `readsTable` |
 | `chains: true` on `feedsTable` | `a feedsTable c` whenever `a feedsTable b` and `b feedsTable c` |

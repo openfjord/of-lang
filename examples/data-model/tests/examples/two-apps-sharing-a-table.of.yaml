@@ -1,13 +1,13 @@
 import:
-  - from: file:../../defs/team.yaml
+  - from: file:../../defs/team.of.yaml
     use: [Team]
-  - from: file:../../defs/database.yaml
+  - from: file:../../defs/database.of.yaml
     use: [Database, ownedByTeam]
-  - from: file:../../defs/table.yaml
+  - from: file:../../defs/table.of.yaml
     use: [Table, inDatabase, belongsToTeam, feedsTable]
-  - from: file:../../defs/job.yaml
+  - from: file:../../defs/job.of.yaml
     use: [Job, jobOf, readsTable, writesTable]
-  - from: file:../../defs/application.yaml
+  - from: file:../../defs/application.of.yaml
     use: [Application, Contract, consumesContract, coversTable, dependsOnApp]
 
 twoAppsSharingATable:

@@ -1,9 +1,9 @@
 import:
-  - from: file:job.yaml
+  - from: file:job.of.yaml
     use: [Job, jobOf, readsTable, writesTable]
-  - from: file:application.yaml
+  - from: file:application.of.yaml
     use: [Application, Contract, consumesContract, coversTable]
-  - from: file:table.yaml
+  - from: file:table.of.yaml
     use: [Table]
 
 crossAppReadNeedsContract:

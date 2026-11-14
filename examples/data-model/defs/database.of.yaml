@@ -1,7 +1,7 @@
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name, RetentionDays]
-  - from: file:team.yaml
+  - from: file:team.of.yaml
     use: [Team]
 
 Database:

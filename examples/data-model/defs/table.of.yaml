@@ -1,11 +1,11 @@
 import:
-  - from: file:names.yaml
+  - from: file:names.of.yaml
     use: [Name, RetentionDays]
-  - from: file:team.yaml
+  - from: file:team.of.yaml
     use: [Team]
-  - from: file:database.yaml
+  - from: file:database.of.yaml
     use: [Database, ownedByTeam]
-  - from: file:job.yaml
+  - from: file:job.of.yaml
     use: [Job, readsTable, writesTable]
 
 Table:
@@ -59,7 +59,7 @@ feedsTable:
   chains: true
 
 tableTeamFromDatabase:
-  is: Rule
+  is: Derivative
   says: A table belongs to the team that owns its database.
   match:
     - link: inDatabase
@@ -74,7 +74,7 @@ tableTeamFromDatabase:
       to:   $team
 
 tableFeedsTable:
-  is: Rule
+  is: Derivative
   says: A table feeds every table that a job reading it writes.
   match:
     - link: readsTable
@@ -89,7 +89,7 @@ tableFeedsTable:
       to:   $target
 
 criticalTable:
-  is: Rule
+  is: Derivative
   says: A table read by more than two jobs is critical.
   filter:
     - count:

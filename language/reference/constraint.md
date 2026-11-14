@@ -6,9 +6,9 @@ title: Constraints — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A constraint rejects facts. It is a [pattern](pattern.md) with what every
-match must satisfy, or, without `require`, a pattern whose every match is a
-violation.
+A constraint rejects facts. It finds things and the links between them,
+narrows what it found with conditions, and then either requires something of
+every match or, without `require`, treats every match as a violation.
 
 ## With `require`: what must hold
 
@@ -77,14 +77,109 @@ The two forms mean the same: "every match must satisfy this" is "nothing
 matches without satisfying this". Use `require` when the rule reads as what
 must hold, and leave it out when it reads as what must not happen.
 
+Four principles shape how constraints are written:
+
+1. **Readability comes before brevity.** Every part is spelled out in YAML
+   keys and words. There are no expression strings to parse.
+2. **No implicit variables.** Every thing a constraint talks about has a name
+   and a kind. Nothing is reached through a dotted path that skips over an
+   unnamed thing.
+3. **Variables start with `$`,** so a variable is never mistaken for a kind, a
+   link, a field or a value.
+4. **The sentence is plain words.** `says` is what product reads, so it names
+   no variables. Variables belong to the logic.
+
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Constraint` |
 | `says` | yes | the rule, in plain words |
-| `match` | see [PT9](pattern.md#rules) | the pattern |
+| `match` | yes, unless [CN11](#rules) allows leaving it out | the links to find |
 | `filter` | no | conditions that narrow the matches |
 | `require` | no | conditions every match must satisfy |
 | `message` | yes | what a violation says |
+
+## Match
+
+Each item in `match` is one link that must exist between two things:
+
+```yaml
+match:
+  - link: readsTable
+    from: {$job: Job}
+    to:   {$table: Table}
+```
+
+`from` and `to` each give a variable and the kind it must be. A variable is
+`$` followed by a lowercase letter, then letters and digits: `$job`,
+`$writerApp`.
+
+`match` finds every combination of things for which all its links hold. Each
+combination is one match: a row giving every variable one thing. Two matches
+that give the same things to the same variables are one. Two variables may
+stand for the same thing unless a condition says otherwise; one variable used
+twice, as in `noFeedbackLoop`, is the same thing both times.
+
+A link's inverse name reads it the other way: `link: writtenByJob, from:
+{$table: Table}, to: {$writer: Job}` matches exactly what `link: writesTable,
+from: {$writer: Job}, to: {$table: Table}` does.
+
+`repeated: true` matches the link one or more times in a row. The things in
+between are not named, so a longer chain between the same two things is
+still one match; explanations list the steps.
+
+A narrower kind narrows the matches: `{$table: CriticalTable}` on
+`readsTable` matches only jobs reading critical tables.
+
+## Filter and require
+
+`filter` and `require` both hold conditions and receive the matches one at a
+time. `filter` decides which matches the constraint is about; `require` says
+what each of those must satisfy. Every condition in a list must hold.
+
+A condition is about a thing itself (`node` alone) or one of its fields
+(`node` and `field`), followed by a comparison word and what to compare with:
+`value:` (a literal), `values:` (a list, for `is one of`) or `same as:` (a
+variable, or a variable and a field).
+
+```yaml
+require:
+  - node:  $table
+    field: retentionDays
+    is at most:
+      same as:
+        node:  $database
+        field: retentionDays
+  - node:  $table
+    field: visibility
+    is one of:
+      values: [public, internal]
+```
+
+| Word | Holds when |
+|---|---|
+| `equals`, `does not equal` | the two are equal, or not |
+| `is above`, `is below` | the first is greater, or smaller |
+| `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
+| `is one of` | the first equals one of `values` |
+| `is a` | the thing is of the kind named (`is a: CriticalTable`) |
+| `is set`, `is not set` | the field has a value, or has none |
+
+A thing compared without a field compares as its id. A field with no value
+fails every comparison except `is not set`.
+
+A condition cannot see links directly. It reaches them through a nested
+block, which has its own `match` and optional `filter` and runs once for each
+match of the constraint:
+
+| Word | Holds when |
+|---|---|
+| `at least one` | the nested block matches at least once |
+| `none` | the nested block never matches |
+| `count` | the number of its matches compares as the comparison word beside it says |
+| `any of` | at least one of the listed conditions holds |
+
+There is no general `not`: `does not equal`, `is not set` and `none` cover
+the negative cases while keeping each condition readable on its own.
 
 ## Messages
 
@@ -94,11 +189,43 @@ thing's id, `{$table: visibility}` a field's value.
 
 ## Rules
 
-- **CN1.** A constraint MUST have a `message`.
-- **CN2.** A message SHOULD be worded with "must" or "must not".
-- **CN3.** A message MUST quote only variables bound by the top-level
-  pattern, not variables that belong to a nested block.
-- **CN4.** A constraint MUST NOT have `derive`. Constraints add nothing.
-- **CN5.** Each match that fails a requirement is reported once, with its
+- **CN1.** A constraint MUST have a `says` sentence, and the sentence MUST
+  NOT contain a `$` word.
+- **CN2.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
+  have `repeated: true`. `link` MUST be a link, or an inverse name, that the
+  file defines or imports.
+- **CN3.** `from` and `to` MUST each be written `{$variable: Kind}`, every
+  time, in nested blocks too, and every mention of a variable MUST give the
+  same kind.
+- **CN4.** The kind MUST be the kind the link joins at that end, or a kind
+  that extends it.
+- **CN5.** Conditions and messages MUST write a variable bare (`$table`), and
+  every variable they use MUST appear in a `match` item.
+- **CN6.** A variable that appears only inside a nested block belongs to that
+  block and MUST NOT be used outside it, in the message included.
+- **CN7.** A condition MUST be one of the forms above. `is set` and `is not
+  set` MUST name a field. `is a` MUST name a kind.
+- **CN8.** A comparison MUST compare values of the same type: two fields
+  that name the same value type, or two fields that name none and have the
+  same built-in type. A literal MUST be a value the field allows.
+- **CN9.** A field named in a condition, beside `node` or inside `same as`,
+  or quoted in a message, MUST be a field of that variable's kind or of a
+  kind it extends.
+- **CN10.** A condition comparing two nodes without fields MUST compare
+  variables whose kinds are the same, or where one kind extends the other.
+- **CN11.** `match` MAY be left out when every variable the constraint uses
+  appears in a nested block; the constraint then ranges over every thing of
+  each such variable's kind.
+- **CN12.** A constraint MUST have a `message`, which SHOULD be worded with
+  "must" or "must not".
+- **CN13.** A constraint MUST NOT have `derive`. Constraints add nothing.
+
+## How constraints run
+
+Constraints run after every [derivative](derivative.md) has finished, over
+stated and derived facts alike, and add nothing. A link that is neither
+stated nor derived does not exist, and a field with no value has none.
+
+- **CN14.** Each match that fails a requirement is reported once, with its
   message and its explanation: which requirement failed and the facts the
   match used.

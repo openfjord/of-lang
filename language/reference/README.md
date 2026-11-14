@@ -18,8 +18,7 @@ takes, and the requirements the tool checks.
 | [Kinds](kind.md) | kinds, `extends`, link counts | KD |
 | [Fields and value types](field.md) | the JSON Schema subset, value types | FD, VT |
 | [Links](link.md) | links, `under`, `inverse`, `chains` | LK |
-| [Patterns](pattern.md) | what constraints, rules and questions share: `match`, `filter`, variables, conditions, how they run | PT |
-| [Constraints](constraint.md) | `require`, messages | CN |
-| [Rules](rule.md) | `derive` | RL |
+| [Constraints](constraint.md) | `match`, `filter`, `require`, messages, how they run | CN |
+| [Derivatives](derivative.md) | `match`, `filter`, `derive`, how they run, explanations | DV |
 | [Facts](fact.md) | facts in tests, derived facts | FC |
-| [Tests](test.md) | examples and questions | TS |
+| [Tests](test.md) | examples, and questions with their own `match` and `filter` | TS |
