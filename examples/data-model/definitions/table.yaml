@@ -60,7 +60,7 @@ feedsTable:
 
 tableTeamFromDatabase:
   is: Rule
-  says: A table $table belongs to the team $team that owns its database $database.
+  says: A table ($table) belongs to the team ($team) that owns its database ($database).
   links:
     - from: $table
       link: inDatabase
@@ -75,7 +75,7 @@ tableTeamFromDatabase:
 
 tableFeedsTable:
   is: Rule
-  says: A table $source feeds every table $target that a job $job reading it writes.
+  says: A table ($source) feeds every table ($target) that a job ($job) reading it writes.
   links:
     - from: $job
       link: readsTable
@@ -90,7 +90,7 @@ tableFeedsTable:
 
 criticalTable:
   is: Rule
-  says: A table $table read by more than two jobs $reader is critical.
+  says: A table ($table) read by more than two jobs ($reader) is critical.
   where:
     - count:
         links:

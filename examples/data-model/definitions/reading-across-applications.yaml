@@ -7,9 +7,10 @@ import:
 crossAppReadNeedsContract:
   is: Constraint
   says: >
-    A job $job of application $jobApp may read a table $table that job
-    $writer of another application $writerApp writes, only if $table is
-    public and $jobApp consumes a contract $contract that covers it.
+    A job ($job) of application ($jobApp) may read a table ($table) that job
+    ($writer) of another application ($writerApp) writes, only if the table
+    ($table) is public and the application ($jobApp) consumes a contract
+    ($contract) that covers it.
   links:
     - from: $job
       link: jobOf

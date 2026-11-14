@@ -49,8 +49,9 @@ coversTable:
 appDependsOnWriter:
   is: Rule
   says: >
-    An application $app depends on every other application $other whose job
-    $writer writes a table $table that a job $reader of $app reads.
+    An application ($app) depends on every other application ($other) whose job
+    ($writer) writes a table ($table) that a job ($reader) of the application
+    ($app) reads.
   links:
     - from: $app
       link: hasJob

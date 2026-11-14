@@ -472,9 +472,10 @@ Four principles shape how they are written:
 crossAppReadNeedsContract:
   is: Constraint
   says: >
-    A job $job of application $jobApp may read a table $table that job
-    $writer of another application $writerApp writes, only if $table is
-    public and $jobApp consumes a contract $contract that covers it.
+    A job ($job) of application ($jobApp) may read a table ($table) that job
+    ($writer) of another application ($writerApp) writes, only if the table
+    ($table) is public and the application ($jobApp) consumes a contract
+    ($contract) that covers it.
 
   links:
     - from: $job
@@ -518,9 +519,14 @@ public and at least one contract must link them.
 
 #### Variables
 
-- **Declared in `says`.** A word starting with `$` in the sentence declares a
-  variable. A variable used anywhere else must appear in `says`; a variable in
-  `says` that nothing uses is also an error.
+- **Declared in `says`, in parentheses.** A variable is written in the
+  sentence as `($job)`, every time it appears, so the sentence still reads as
+  plain words with the variable as an aside: "A job (`$job`) of application
+  (`$jobApp`)…". A `$` word without parentheses is an error. Every mention
+  follows a noun, later ones included: "only if the table (`$table`) is
+  public", never "only if (`$table`) is public". Nothing checks the noun.
+  A variable used anywhere else must appear in `says`; a variable in `says`
+  that nothing uses is also an error.
 - **Named** `$` then a lowercase letter, then letters and digits: `$job`,
   `$writerApp`.
 - **Each variable stands for one thing** in a match. Two variables may match
@@ -604,7 +610,7 @@ explanations.
 ```yaml
 tableTeamFromDatabase:
   is: Rule
-  says: A table $table belongs to the team $team that owns its database $database.
+  says: A table ($table) belongs to the team ($team) that owns its database ($database).
 
   links:
     - from: $table
@@ -622,8 +628,9 @@ tableTeamFromDatabase:
 appDependsOnWriter:
   is: Rule
   says: >
-    An application $app depends on every other application $other whose job
-    $writer writes a table $table that a job $reader of $app reads.
+    An application ($app) depends on every other application ($other) whose job
+    ($writer) writes a table ($table) that a job ($reader) of the application
+    ($app) reads.
 
   links:
     - from: $app
@@ -651,7 +658,7 @@ appDependsOnWriter:
 
 tableFeedsTable:
   is: Rule
-  says: A table $source feeds every table $target that a job $job reading it writes.
+  says: A table ($source) feeds every table ($target) that a job ($job) reading it writes.
 
   links:
     - from: $job
@@ -668,7 +675,7 @@ tableFeedsTable:
 
 criticalTable:
   is: Rule
-  says: A table $table read by more than ten jobs $reader is critical.
+  says: A table ($table) read by more than ten jobs ($reader) is critical.
 
   where:
     - count:
@@ -805,7 +812,7 @@ import:
 
 whoBreaksIfOrderIntakeGoes:
   is: Question
-  asks: Which applications $app depend on the application $target?
+  asks: Which applications ($app) depend on the application ($target)?
   given: file:../examples/two-apps-sharing-a-table.yaml
   links:
     - from: $app
@@ -865,11 +872,12 @@ and rule as its `says`, shown as written, variables included.
 > **Table** — A set of rows with one schema, stored in a database.
 > - Every table is in exactly one database.
 > - Every table has at least one column.
-> - A table $table belongs to the team $team that owns its database
->   $database. *(rule)*
-> - A job $job of application $jobApp may read a table $table that job
->   $writer of another application $writerApp writes, only if $table is
->   public and $jobApp consumes a contract $contract that covers it.
+> - A table ($table) belongs to the team ($team) that owns its database
+>   ($database). *(rule)*
+> - A job ($job) of application ($jobApp) may read a table ($table) that job
+>   ($writer) of another application ($writerApp) writes, only if the table
+>   ($table) is public and the application ($jobApp) consumes a contract
+>   ($contract) that covers it.
 >   *(constraint)*
 >
 > Example: the order_lines table in the sales database. Not a table: a
@@ -965,7 +973,7 @@ reasons table wait on them:
    "tables at most two steps upstream". Should chains take a limit
    (`at most: 2`), or stay unlimited?
 4. **Variables only for the sentence.** An author might write "…owned by team
-   $team…" in `says` because the sentence reads better, without using `$team`
+   ($team)…" in `says` because the sentence reads better, without using `$team`
    in the logic. The draft treats an unused variable as an error. Should it
    stay strict, or allow variables used only to make the sentence read well?
 5. **Dates and durations.** Conditions compare a value with another value.

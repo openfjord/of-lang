@@ -4,7 +4,7 @@ import:
 
 whoBreaksIfOrderIntakeGoes:
   is: Question
-  asks: Which applications $app depend on the application $target?
+  asks: Which applications ($app) depend on the application ($target)?
   given: file:../examples/two-apps-sharing-a-table.yaml
   links:
     - from: $app

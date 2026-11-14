@@ -27,7 +27,12 @@ func Statement(q model.QName, sort model.Sort, path string, m source.Map, scope 
 	source.Allow(m, append(allowed, extra...), ds)
 	st := model.Statement{Q: q, Sort: sort, Pos: m.Pos}
 	st.Says = strings.TrimSpace(requiredText(path, m, sentenceKey, q.Name, ds))
-	for _, v := range varPattern.FindAllString(st.Says, -1) {
+	for _, loc := range varPattern.FindAllStringIndex(st.Says, -1) {
+		v := st.Says[loc[0]:loc[1]]
+		if loc[0] == 0 || st.Says[loc[0]-1] != '(' || loc[1] == len(st.Says) || st.Says[loc[1]] != ')' {
+			*ds = append(*ds, diag.New(m.Pos, "%s: write %s as (%s) in the sentence", sentenceKey, v, v))
+			continue
+		}
 		if !slices.Contains(st.Vars, v) {
 			st.Vars = append(st.Vars, v)
 		}
