@@ -6,11 +6,12 @@ title: Fields and value types — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A field is a value of the thing itself: a name, a format, a number of days.
-Each field is described with a subset of JSON Schema, with the meaning JSON
-Schema gives each keyword. Only field values use JSON Schema; kinds, links,
-constraints and derivatives are the language's own, because JSON Schema describes
-one document and has no links between things.
+A field is a value of the thing itself, for example a name, a format or a
+number of days. A subset of JSON Schema describes each field, and each keyword
+has the meaning that JSON Schema gives it. Only field values use JSON Schema.
+Kinds, links, constraints and derivatives use the syntax of the language
+itself, because JSON Schema describes one document and has no links between
+things.
 
 ```yaml
 fields:
@@ -34,48 +35,49 @@ fields:
 
 | Keyword | For |
 |---|---|
-| `type`: `string`, `integer`, `number`, `boolean`, `array`, `object`, or a value type's name | the kind of value |
+| `type`: `string`, `integer`, `number`, `boolean`, `array`, `object`, or a value type's name | the type of the value |
 | `enum`, `const`, `default` | fixed values |
 | `pattern`, `minLength`, `maxLength`, `format` (`date`, `date-time`, `duration`) | text |
 | `minimum`, `maximum` | numbers |
 | `items` | the values of an `array` |
 | `properties` | the parts of an `object` |
-| `optional: true` | the field may be left out |
+| `optional: true` | a fact can omit the field |
 
-Five differences from JSON Schema, each to keep a decision made elsewhere in
-the language:
+There are five differences from JSON Schema. Each difference agrees with a
+decision in a different part of the language:
 
 | JSON Schema | Here | Why |
 |---|---|---|
-| `required: [ … ]` lists required parts | every field and every part of an `object` is required unless it says `optional: true` | required is the default everywhere |
-| `$ref` points at another schema | `type: Name` names an imported value type | names come from imports |
-| `null` is a type | there is none | a field with no value has none; no third state |
-| `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | not available | hard to read; conditional logic belongs in constraints |
-| `additionalProperties` decides whether unlisted parts are allowed | always false | anything not listed is rejected |
+| `required: [ … ]` lists required parts | every field and every part of an `object` is required, unless it has `optional: true` | required is the default in all places |
+| `$ref` refers to a different schema | `type: Name` names an imported value type | names come from imports |
+| `null` is a type | there is no null type | a field with no value has no value; there is no third state |
+| `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | not available | difficult to read; conditional logic goes in constraints |
+| `additionalProperties` controls if parts that are not listed are allowed | always false | the language rejects all items that are not listed |
 
-`number` is exact: `0.1 + 0.2` is `0.3`, and it is exported as
+`number` is exact, so `0.1 + 0.2` is `0.3`. It is exported as
 `xsd:decimal`, never as a floating-point type.
 
 ## Rules
 
 - **FD1.** A field MUST use only the keywords in the table above.
 - **FD2.** `required`, `$ref`, `null`, `oneOf`, `anyOf`, `allOf`, `not`,
-  `if`, `then`, `else` and `additionalProperties` MUST NOT appear; the error
-  says what to write instead.
-- **FD3.** A field is required unless it says `optional: true` or has a
-  `default`. A field SHOULD NOT have both: a default already makes it
-  optional.
+  `if`, `then`, `else` and `additionalProperties` MUST NOT appear. The error
+  tells what to write instead.
+- **FD3.** A field is required, unless it has `optional: true` or a
+  `default`. A field SHOULD NOT have both, because a default already makes
+  the field optional.
 - **FD4.** `pattern` MUST be a valid regular expression. `format` MUST be
   `date`, `date-time` or `duration` (ISO 8601).
-- **FD5.** Every value in `enum`, and the `default` and `const`, MUST be
-  allowed by the rest of the field's schema.
-- **FD6.** There is no null: a field with no value is left out, never set to
-  `null`.
+- **FD5.** The rest of the field's schema MUST allow each value in `enum`,
+  the `default` and the `const`.
+- **FD6.** There is no null. A field with no value is omitted, and never has
+  the value `null`.
 
 ## Value types
 
-A value type names a schema once so fields can reuse it. It is a statement like
-any other, imported like any other:
+A value type gives a name to a schema one time, so that many fields can use
+the schema again. A value type is a statement like all other statements, and
+is imported in the same way:
 
 ```yaml
 # defs/names.of.yaml
@@ -106,22 +108,25 @@ import:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `ValueType` |
-| `definition` | yes | one sentence saying what the value holds, shown on product's pages |
-| `tags` | no | the [tags](tag.md) it belongs to |
-| any keyword above except `optional` | — | the schema |
+| `definition` | yes | one sentence that tells what the value holds; product's pages show it |
+| `tags` | no | the [tags](tag.md) that the value type belongs to |
+| any keyword above, but not `optional` | — | the schema |
 
 - **VT1.** A value type MUST have a `definition`.
-- **VT2.** A value type MUST NOT take a built-in type's name (`string`,
-  `integer`, `number`, `boolean`, `array`, `object`). Built-in types need no
-  import.
-- **VT3.** A field that names a value type MAY narrow it but MUST NOT widen
-  it: `type: Name` with `maxLength: 30` is allowed; with `maxLength: 100` it
-  is an error. The same holds for `minLength`, `minimum`, `maximum` and
-  `format`.
-- **VT4.** A value is checked against both the value type and the field's
-  own keywords, and must satisfy both.
-- **VT5.** A value type is a type of its own, not only a narrowing: two
-  fields have the same type only if both name the same value type, or
-  neither names one and both have the same built-in type. `RetentionDays`
-  and a plain `integer` are different types. A field that narrows a value
-  type ([VT3](#value-types)) keeps it.
+- **VT2.** A value type MUST NOT use the name of a built-in type (`string`,
+  `integer`, `number`, `boolean`, `array`, `object`). Built-in types do not
+  need an import.
+- **VT3.** A field that names a value type MAY narrow it, but MUST NOT widen
+  it. For example, `type: Name` with `maxLength: 30` is allowed, but with
+  `maxLength: 100` it is an error. This rule also applies to `minLength`,
+  `minimum`, `maximum` and `format`.
+- **VT4.** The language checks a value against the value type and against
+  the field's own keywords. The value must satisfy both.
+- **VT5.** A value type is a type of its own, not only a narrower schema. Two
+  fields have the same type only if one of these conditions is true:
+  - Both fields name the same value type.
+  - Neither field names a value type, and both fields have the same built-in
+    type.
+
+  `RetentionDays` and a plain `integer` are different types. A field that
+  narrows a value type ([VT3](#value-types)) keeps that value type.

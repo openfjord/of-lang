@@ -7,10 +7,10 @@ title: Tags — The OpenFjord modeling language
 > Part of [the reference](README.md).
 
 A tag marks definitions that belong together for one purpose, so that only
-those are exported to RDF (Resource Description Framework). A lineage tool
-needs tables, jobs and the links between them; a catalog needs tables and
-databases. Each purpose gets a tag, and each definition lists the tags it
-belongs to.
+those definitions are exported to RDF (Resource Description Framework). For
+example, a lineage tool needs tables, jobs and the links between them. A
+catalog needs tables and databases. Each purpose has a tag, and each
+definition lists the tags that it belongs to.
 
 ```yaml
 # defs/tags.of.yaml
@@ -34,43 +34,49 @@ Table:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Tag` |
-| `definition` | yes | one sentence saying what the tagged definitions are for |
+| `definition` | yes | one sentence that tells the purpose of the tagged definitions |
 
-A tag is declared and imported like any other name, so a misspelled tag is
-an error rather than a new subset. A package may [export](package.md#exports)
-its tags for other packages to use on their own definitions.
+A tag is declared and imported like all other names. Thus, a misspelled tag
+is an error, not a new subset. A package may [export](package.md#exports) its
+tags, so that other packages can use them on their own definitions.
 
 ## Tagging a definition
 
-Kinds, links and value types take an optional `tags` key: a list of tags.
-Nothing else carries tags. Constraints, derivatives and single fields are
-always exported with the package as a whole, never in a subset.
+Kinds, links and value types can have an optional `tags` key, which is a list
+of tags. Nothing else has tags. Constraints, derivatives and single fields are
+always exported with the full package, never in a subset.
 
-Tags only choose what is exported. They change nothing about checking,
+Tags only select what is exported. They have no effect on checks,
 derivatives, constraints or tests.
 
-Tags are not passed on: a kind that extends a tagged kind is not tagged
-unless it lists the tag itself, and neither is a link `under` a tagged link.
+Tags do not pass from one definition to a different definition. A kind that
+extends a tagged kind does not have the tag, unless it lists the tag itself.
+The same applies to a link `under` a tagged link.
 
 A package tags only its own definitions. `tags` is a key on the definition
-itself, so there is no way to tag another package's definitions.
+itself, so a package cannot tag the definitions of a different package.
 
 ## Exporting a subset
 
-Exporting with tags exports every definition of the package that carries at
-least one of them. Exporting without tags exports the whole package.
+An export with tags includes each definition of the package that has one or
+more of these tags. An export without tags includes the full package.
 
-A definition in the subset may refer to one that is not: a link whose
-`from` or `to` kind is untagged, a kind that extends an untagged kind, a
-field whose value type is untagged, a link `under` an untagged link, a count
-for a link that is not exported. Each such reference is left out of the
-export, and a link whose `from` or `to` kind is not exported is left out
-whole. The export lists everything it left out.
+A definition in the subset can refer to a definition that is not in the
+subset. Examples of these references are:
+
+- a link whose `from` or `to` kind is untagged
+- a kind that extends an untagged kind
+- a field whose value type is untagged
+- a link `under` an untagged link
+- a count for a link that is not exported.
+
+Each such reference is not exported. A link whose `from` or `to` kind is not
+exported is not exported at all. The export lists each item that it removes.
 
 ## Rules
 
 - **TG1.** A tag MUST have a `definition`.
 - **TG2.** A tag's name MUST be lowerCamelCase.
-- **TG3.** `tags` MAY appear only on a kind, a link or a value type, and
-  every tag it lists MUST be a tag the file defines or imports.
+- **TG3.** `tags` MAY appear only on a kind, a link or a value type. Each tag
+  in the list MUST be a tag that the file defines or imports.
 - **TG4.** A definition MUST NOT list the same tag twice.

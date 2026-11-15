@@ -13,8 +13,9 @@ import:
 twoAppsSharingATable:
   is: Test
   says: >
-    Revenue reporting reads the orders table that order intake writes, under a
-    contract, so it depends on order intake and breaks no constraint.
+    The revenue report application reads the orders table that order intake
+    writes. A contract covers the table, so the revenue report application
+    depends on order intake and breaks no constraint.
   expect:
     derived:
       - link: dependsOnApp

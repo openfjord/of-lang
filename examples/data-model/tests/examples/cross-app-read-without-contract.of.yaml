@@ -15,8 +15,8 @@ import:
 crossAppReadWithoutContract:
   is: Test
   says: >
-    Revenue reporting reads an internal table of order intake with no
-    contract, so the read is rejected.
+    The revenue report application reads an internal table of order intake
+    without a contract. The constraint rejects the read.
   expect:
     rejected: [crossAppReadNeedsContract]
 

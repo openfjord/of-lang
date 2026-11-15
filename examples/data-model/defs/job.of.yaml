@@ -8,7 +8,7 @@ import:
 
 Job:
   is: Kind
-  definition: A unit of work an application runs, reading and writing tables.
+  definition: A unit of work that an application runs. A job reads and writes tables.
   fields:
     name:
       type: Name

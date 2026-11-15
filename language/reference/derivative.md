@@ -7,8 +7,8 @@ title: Derivatives — The OpenFjord modeling language
 > Part of [the reference](README.md).
 
 A derivative adds facts that follow from other facts. It finds things and the
-links between them, narrows what it found with conditions, and for every
-match adds a link, a kind or a field value.
+links between them, and it uses conditions to narrow the matches. For each
+match, it adds a link, a kind or a field value.
 
 ```yaml
 tableTeamFromDatabase:
@@ -27,28 +27,28 @@ tableTeamFromDatabase:
       to:   $team
 ```
 
-Read it as: for every table `$table` in a database `$database` that a team
-`$team` owns, add "`$table` belongs to `$team`".
+Read it as follows: for each table `$table` in a database `$database` that a
+team `$team` owns, add "`$table` belongs to `$team`".
 
-Four principles shape how derivatives are written:
+Four principles apply to derivatives:
 
-1. **Readability comes before brevity.** Every part is spelled out in YAML
-   keys and words. There are no expression strings to parse.
-2. **No implicit variables.** Every thing a derivative talks about has a name
-   and a kind. Nothing is reached through a dotted path that skips over an
-   unnamed thing.
-3. **Variables start with `$`,** so a variable is never mistaken for a kind, a
-   link, a field or a value.
-4. **The sentence is plain words.** `says` is what product reads, so it names
-   no variables. Variables belong to the logic.
+1. **Readability comes before brevity.** YAML keys and words state each part
+   in full. There are no expression strings to parse.
+2. **No implicit variables.** Each thing that a derivative refers to has a
+   name and a kind. A derivative does not reach a thing through a dotted path
+   that skips an unnamed thing.
+3. **Variables start with `$`,** so a reader cannot confuse a variable with a
+   kind, a link, a field or a value.
+4. **The sentence is plain words.** Product reads `says`, so `says` names no
+   variables. Variables are part of the logic.
 
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Derivative` |
 | `says` | yes | what the derivative concludes, in plain words |
-| `match` | yes, unless [DV11](#rules) allows leaving it out | the links to find |
+| `match` | yes, unless [DV11](#rules) makes it optional | the links to find |
 | `filter` | no | conditions that narrow the matches |
-| `derive` | yes | what to add for every match |
+| `derive` | yes | what to add for each match |
 
 ## Match
 
@@ -61,22 +61,22 @@ match:
     to:   {$table: Table}
 ```
 
-`from` and `to` each give a variable and the kind it must be. A variable is
-`$` followed by a lowercase letter, then letters and digits: `$job`,
-`$writerApp`.
+`from` and `to` each give a variable and the kind that the variable must
+have. A variable is `$`, then a lowercase letter, then letters and digits:
+`$job`, `$writerApp`.
 
-`match` finds every combination of things for which all its links hold. Each
-combination is one match: a row giving every variable one thing. Two matches
-that give the same things to the same variables are one. Two variables may
-stand for the same thing unless a condition says otherwise.
+`match` finds each combination of things for which all its links hold. Each
+combination is one match: a row that gives one thing to each variable. Two
+matches that give the same things to the same variables are one match. Two
+variables can represent the same thing, unless a condition prevents it.
 
-A link's inverse name reads it the other way: `link: writtenByJob, from:
-{$table: Table}, to: {$writer: Job}` matches exactly what `link: writesTable,
-from: {$writer: Job}, to: {$table: Table}` does.
+The inverse name of a link reads the link in the opposite direction: `link: writtenByJob, from:
+{$table: Table}, to: {$writer: Job}` matches exactly the same things as `link: writesTable,
+from: {$writer: Job}, to: {$table: Table}`.
 
-`repeated: true` matches the link one or more times in a row. The things in
-between are not named, so a longer chain between the same two things is
-still one match; explanations list the steps.
+`repeated: true` matches the link one or more times in a sequence. The things
+between the two ends have no names. Thus a longer chain between the same two
+things is still one match. Explanations list the steps.
 
 ```yaml
 - link: feedsTable
@@ -85,16 +85,20 @@ still one match; explanations list the steps.
   repeated: true
 ```
 
-A narrower kind narrows the matches: `{$table: CriticalTable}` on
-`readsTable` matches only jobs reading critical tables.
+A narrower kind limits the matches. For example, `{$table: CriticalTable}`
+on `readsTable` matches only jobs that read critical tables.
 
 ## Filter
 
-`filter` receives the matches one at a time and keeps those for which every
-condition holds. A condition is about a thing itself (`node` alone) or one of
-its fields (`node` and `field`), followed by a comparison word and what to
-compare with: `value:` (a literal), `values:` (a list, for `is one of`) or
-`same as:` (a variable, or a variable and a field).
+`filter` receives the matches one at a time. It keeps the matches for which
+each condition holds.
+
+A condition applies to a thing (`node` alone) or to one of its fields (`node`
+and `field`). Then it gives a comparison word and what to compare with:
+
+- `value:` (a literal)
+- `values:` (a list, for `is one of`)
+- `same as:` (a variable, or a variable and a field).
 
 ```yaml
 filter:
@@ -115,29 +119,29 @@ filter:
 
 | Word | Holds when |
 |---|---|
-| `equals`, `does not equal` | the two are equal, or not |
+| `equals`, `does not equal` | the two are equal, or are not equal |
 | `is above`, `is below` | the first is greater, or smaller |
 | `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
 | `is one of` | the first equals one of `values` |
-| `is a` | the thing is of the kind named (`is a: CriticalTable`) |
-| `is set`, `is not set` | the field has a value, or has none |
+| `is a` | the thing has the named kind (`is a: CriticalTable`) |
+| `is set`, `is not set` | the field has a value, or has no value |
 
-A thing compared without a field compares as its id. A field with no value
-fails every comparison except `is not set`.
+When a condition compares a thing without a field, it compares the id of the
+thing. A field with no value fails all comparisons except `is not set`.
 
-A condition cannot see links directly. It reaches them through a nested
-block, which has its own `match` and optional `filter` and runs once for each
-match of the derivative:
+A condition cannot see links directly. It reaches links through a nested
+block. A nested block has its own `match` and an optional `filter`. It runs
+one time for each match of the derivative:
 
 | Word | Holds when |
 |---|---|
-| `at least one` | the nested block matches at least once |
-| `none` | the nested block never matches |
-| `count` | the number of its matches compares as the comparison word beside it says |
-| `any of` | at least one of the listed conditions holds |
+| `at least one` | the nested block has one or more matches |
+| `none` | the nested block has no matches |
+| `count` | the number of its matches satisfies the comparison word next to it |
+| `any of` | one or more of the listed conditions hold |
 
-There is no general `not`: `does not equal`, `is not set` and `none` cover
-the negative cases while keeping each condition readable on its own.
+There is no general `not`. `does not equal`, `is not set` and `none` cover the
+negative cases, and each condition stays easy to read alone.
 
 ## Derive
 
@@ -193,12 +197,13 @@ criticalTable:
       becomes: CriticalTable
 ```
 
-`criticalTable` has no `match` of its own: its one variable outside the
-nested block, `$table`, ranges over every table ([DV11](#rules)).
+`criticalTable` has no `match` of its own. Its only variable outside the
+nested block is `$table`, and `$table` represents each table in turn
+([DV11](#rules)).
 
-When a link chains, a derivative adds only the direct step: `tableFeedsTable`
-adds "a feeds b" for each job that reads a and writes b, and `chains: true`
-on `feedsTable` adds the longer chains.
+When a link chains, a derivative adds only the direct step. For example,
+`tableFeedsTable` adds "a feeds b" for each job that reads a and writes b.
+`chains: true` on `feedsTable` adds the longer chains.
 
 ```yaml
 tableFeedsTable:
@@ -224,59 +229,65 @@ tableFeedsTable:
 - **DV2.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
   have `repeated: true`. `link` MUST be a link, or an inverse name, that the
   file defines or imports.
-- **DV3.** `from` and `to` MUST each be written `{$variable: Kind}`, every
-  time, in nested blocks too, and every mention of a variable MUST give the
-  same kind.
-- **DV4.** The kind MUST be the kind the link joins at that end, or a kind
-  that extends it.
-- **DV5.** Conditions and `derive` MUST write a variable bare (`$table`), and
-  every variable they use MUST appear in a `match` item.
-- **DV6.** A variable that appears only inside a nested block belongs to that
-  block and MUST NOT be used outside it.
+- **DV3.** Each `from` and each `to` MUST use the form `{$variable: Kind}`,
+  every time and also in nested blocks. Every mention of a variable MUST give
+  the same kind.
+- **DV4.** The kind MUST be the kind that the link joins at that end, or a
+  kind that extends it.
+- **DV5.** Conditions and `derive` MUST write a variable without its kind
+  (`$table`), and every variable that they use MUST appear in a `match` item.
+- **DV6.** A variable that appears only in a nested block belongs to that
+  block. The derivative MUST NOT use it outside that block.
 - **DV7.** A condition MUST be one of the forms above. `is set` and `is not
   set` MUST name a field. `is a` MUST name a kind.
 - **DV8.** A comparison MUST compare values of the same type: two fields
-  that name the same value type, or two fields that name none and have the
-  same built-in type. A literal MUST be a value the field allows.
-- **DV9.** A field named in a condition, beside `node` or inside `same as`,
-  MUST be a field of that node's kind or of a kind it extends.
-- **DV10.** A condition comparing two nodes without fields MUST compare
-  variables whose kinds are the same, or where one kind extends the other.
-- **DV11.** `match` MAY be left out when every variable the derivative uses
-  appears in a nested block; the derivative then ranges over every thing of
-  each such variable's kind.
+  that name the same value type, or two fields that name no value type and
+  have the same built-in type. A literal MUST be a value that the field
+  allows.
+- **DV9.** A field that a condition names, next to `node` or in `same as`,
+  MUST be a field of that node's kind, or of a kind that it extends.
+- **DV10.** When a condition compares two nodes without fields, the two
+  variables MUST have the same kind, or kinds where one extends the other.
+- **DV11.** A derivative MAY have no `match` when each variable that it uses
+  appears in a nested block. Then each such variable represents, in turn,
+  every thing of its kind.
 - **DV12.** A derivative MUST have `derive`, with at least one item.
 - **DV13.** A derived link MUST join variables whose kinds the link allows
   ([LK3](link.md#rules)). A derived kind MUST be a kind. A derived field MUST
-  be a field of the thing's kind, and its value MUST be one the field allows.
-- **DV14.** A derivative MUST NOT create things: every variable in `derive`
-  MUST be one the derivative binds outside any nested block.
-- **DV15.** A field MUST end up with one value. Two derivatives that could
-  give the same field different values are rejected before anything runs. If
-  one derivative's matches still give a thing's field two values, running
-  stops with an error that shows both explanations.
+  be a field of the kind of the thing, and its value MUST be a value that the
+  field allows.
+- **DV14.** A derivative MUST NOT create things. Each variable in `derive`
+  MUST be a variable that the derivative binds outside all nested blocks.
+- **DV15.** A field MUST have one value at the end. Before anything runs, the
+  tool rejects two derivatives that can give different values to the same
+  field. The matches of one derivative can still give two values to a field
+  of a thing. Then the run stops with an error that shows the two
+  explanations.
 - **DV16.** A derivative MUST NOT have `unless` or `message`. Derivatives
   reject nothing.
 
 ## How derivatives run
 
-1. **Derivatives run over the stated facts,** each adding what it derives for
-   every match, then again over the result, until a pass adds nothing. They
-   never create things, merge things or remove facts, so this always ends.
+1. **Derivatives run over the stated facts,** and each derivative adds what
+   it derives for each match. Then they run again over the result, until a
+   pass adds nothing. They never create things, merge things or remove facts,
+   so this process always ends.
 2. **`none`, `count` and `is not set` over derived facts wait.** A derivative
-   that uses them over something another derivative adds runs only after that
-   one has finished.
-3. **Closed world.** A link that is neither stated nor derived does not
-   exist, and a field with no value has none.
+   can use them on facts that a different derivative adds. Then it runs only
+   after that other derivative finishes.
+3. **Closed world.** A link that is not stated and not derived does not
+   exist. A field with no value is not set, not unknown.
 
 - **DV17.** Derivatives MUST NOT depend on each other in a circle through
-  `none`, `count` or `is not set`. Such derivatives could never settle, and
-  are rejected. (In Datalog terms, they must be stratified.)
+  `none`, `count` or `is not set`. Such derivatives can never become stable,
+  so the tool rejects them. (In Datalog terms, they must be stratified.)
 
-[Constraints](constraint.md) run after every derivative has finished.
+[Constraints](constraint.md) run after all derivatives finish.
 
 ## Explanations
 
-Every derived fact can be explained: the derivative that added it, what each
-variable stood for, and each fact the match used. A fact that is itself
-derived unfolds into its own explanation, down to facts written in a file.
+Each derived fact has an explanation. The explanation gives the derivative
+that added the fact, the thing that each variable represented, and each fact
+that the match used. A fact that is also derived has its own explanation, and
+the explanation includes it. This continues down to the facts that a file
+states.

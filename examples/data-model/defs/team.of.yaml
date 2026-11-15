@@ -4,7 +4,7 @@ import:
 
 Team:
   is: Kind
-  definition: A group of people who answer for databases and applications.
+  definition: A group of people who are responsible for databases and applications.
   fields:
     name:
       type: Name

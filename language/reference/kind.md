@@ -6,9 +6,10 @@ title: Kinds — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A kind is a kind of thing: a database, a table, an application. It reads like
-an object — what it is, examples of it, its fields, and the links it carries
-with how many of each.
+A kind is a category of things, for example a database, a table or an
+application. A kind tells what the thing is and gives examples of it. It also
+lists the fields of the thing, and the links that the thing has, with a count
+for each link.
 
 ```yaml
 Table:
@@ -42,36 +43,38 @@ CriticalTable:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Kind` |
-| `definition` | yes | one sentence saying what the kind is |
-| `extends` | no | the kind this one is a narrower sort of |
-| `examples` | no | a list of things that are of this kind, in words |
-| `notExamples` | no | a list of things that could be mistaken for it but are not |
-| `fields` | no | the kind's [fields](field.md), by name |
-| `links` | no | the links a thing of this kind carries, each with a count |
-| `tags` | no | the [tags](tag.md) it belongs to |
+| `definition` | yes | one sentence that tells what the kind is |
+| `extends` | no | the broader kind; this kind is a narrower sort of it |
+| `examples` | no | a list of things of this kind, in words |
+| `notExamples` | no | a list of things that look like things of this kind, but are not |
+| `fields` | no | the [fields](field.md) of the kind, by name |
+| `links` | no | the links that a thing of this kind has, each with a count |
+| `tags` | no | the [tags](tag.md) that the kind belongs to |
 
 ## Rules
 
 - **KD1.** A kind MUST have a `definition`.
-- **KD2.** `extends` MUST name a kind, and a kind MUST NOT extend itself,
-  directly or through others.
-- **KD3.** A kind that extends another has all of its fields and link counts,
-  and MAY add its own. A thing of the narrower kind is also a thing of the
-  broader one.
-- **KD4.** Each key under `links` MUST be a link, or a link's inverse name,
-  that starts at this kind or a kind it extends. For an inverse name, the
-  link must end there.
+- **KD2.** `extends` MUST name a kind. A kind MUST NOT extend itself,
+  directly or through other kinds.
+- **KD3.** A kind that extends a different kind has all the fields and link
+  counts of that kind. It MAY add its own fields and link counts. A thing of
+  the narrower kind is also a thing of the broader kind.
+- **KD4.** Each key under `links` MUST be a link, or the inverse name of a
+  link, that starts at this kind or at a kind that this kind extends. For an
+  inverse name, the link must end at that kind.
 - **KD5.** Each count MUST be one of `exactly N`, `at least N`, `at most N`
   or `any number`, where N is a whole number.
-- **KD6.** No field MAY be named `kind`: facts use that key to name their
-  kind.
+- **KD6.** No field MAY have the name `kind`, because facts use that key to
+  name their kind.
 
 ## What counts mean
 
-A count is a check, never an inference. A database that names two owning
-teams is rejected; it is never read as "the two teams are the same". A link a
-kind does not list under `links` cannot be stated on a fact of that kind.
+A count is a check. It is never an inference. A database that names two
+owning teams is an error. The language never infers that "the two teams are
+the same". A fact cannot state a link that its kind does not list under
+`links`.
 
-Every field is required unless it says `optional: true` or has a `default`
-([FD3](field.md#rules)). Together, these mean a fact must have everything its
-kind asks for, and nothing else ([FC3](fact.md#rules)).
+Every field is required, unless it has `optional: true` or a `default`
+([FD3](field.md#rules)). These two rules together mean that a fact must have
+all the items that its kind asks for, and nothing more
+([FC3](fact.md#rules)).

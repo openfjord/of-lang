@@ -12,7 +12,7 @@ import:
 
 tableReadByThreeJobs:
   is: Test
-  says: A table read by three jobs is critical; one read by a single job is not.
+  says: A table that three jobs read is critical. A table that only one job reads is not critical.
   expect:
     derived:
       - node:    db/sales/table/customers

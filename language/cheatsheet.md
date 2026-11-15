@@ -4,13 +4,13 @@ title: Cheat sheet — The OpenFjord modeling language
 
 # Cheat sheet
 
-> Part of [the OpenFjord modeling language](README.md). The whole syntax on
-> one page; [the reference](reference/README.md) has the exact rules.
+> Part of [the OpenFjord modeling language](README.md). All of the syntax is
+> on one page. [The reference](reference/README.md) gives the exact rules.
 
 ## A package
 
-Every file in `defs/` and `tests/` ends in `.of.yaml`; the manifest is always
-`package.yaml`.
+The name of every file in `defs/` and `tests/` ends in `.of.yaml`. The
+manifest is always `package.yaml`.
 
 ```
 my-package/
@@ -51,7 +51,11 @@ SomeStatement:
   is: Kind        # or Link, ValueType, Tag, Constraint, Derivative — Fact, Test, Question in tests/
 ```
 
-Everything a file uses that it does not define is imported. Field names are not.
+A file imports each name that it uses but does not define. A file does not
+import field names.
+
+All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
+`message`, docs) follows ASD-STE100 Simplified Technical English.
 
 ## Definitions
 
@@ -92,19 +96,22 @@ lineage:                                 # lowerCamelCase
   definition: What a lineage tool needs to trace data from table to table.
 ```
 
-Tags only choose what an RDF export holds; they are not passed on through
-`extends` or `under`. A reference to an untagged definition is left out of
-the export, and so is a link whose `from` or `to` kind is untagged.
+Tags only select what an RDF export holds. Tags do not pass through
+`extends` or `under`. The export does not include a reference to an untagged
+definition. It also does not include a link whose `from` or `to` kind is
+untagged.
 
 Field keywords: `type` (`string` `integer` `number` `boolean` `array` `object`
 or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`
 `format` (`date` `date-time` `duration`) `minimum` `maximum` `items`
-`properties` `optional`. No `null`, `$ref`, `required`, `oneOf` and friends.
+`properties` `optional`. The language does not have `null`, `$ref`,
+`required`, `oneOf` or similar keywords.
 
 ## Match and filter
 
 Derivatives, constraints and questions each define their own `match` and
-`filter`; today all three are written the same way.
+`filter`. All three use the same syntax, but each can change apart from the
+others.
 
 ```yaml
 match:                                   # links that must exist
@@ -128,13 +135,13 @@ filter:                                  # conditions; all must hold
 | `equals` `does not equal` `is above` `is below` `is at least` `is at most` | `value:` or `same as:` |
 | `is one of` | `values: [...]` |
 | `is a` | a kind |
-| `is set` `is not set` | (a field, nothing more) |
+| `is set` `is not set` | (only a field) |
 
 | Nested | Holds when |
 |---|---|
 | `at least one: { match, filter }` | it matches at least once |
 | `none: { match, filter }` | it never matches |
-| `count: { match, filter }` + a comparison | the number of matches compares |
+| `count: { match, filter }` + a comparison | the number of matches satisfies the comparison |
 | `any of: [conditions]` | one of them holds |
 
 ## Constraints and derivatives
@@ -189,6 +196,7 @@ someQuestion:
 
 ## How it runs
 
-Derivatives repeat until nothing new follows; `under` and `chains` add their facts
-too. Then constraints check everything. Whatever is not stated or derived
-is false. Every derived fact and every rejection comes with its explanation.
+The derivatives run repeatedly until no new fact follows. `under` and `chains`
+also add their facts. Then the constraints check everything. Anything that is
+not stated or derived is false. Every derived fact and every rejection has
+its explanation.

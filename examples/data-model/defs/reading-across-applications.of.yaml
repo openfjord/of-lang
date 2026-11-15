@@ -9,9 +9,9 @@ import:
 crossAppReadNeedsContract:
   is: Constraint
   says: >
-    A job of one application may read a table that a job of another
-    application writes, only if the table is public and the reading
-    application consumes a contract that covers the table.
+    A job can read a table that a job of a different application writes
+    only if two conditions are true. The table is public, and the
+    application of the first job consumes a contract that covers the table.
   match:
     - link: jobOf
       from: {$job: Job}

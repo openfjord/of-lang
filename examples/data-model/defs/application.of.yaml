@@ -18,7 +18,7 @@ Application:
 
 Contract:
   is: Kind
-  definition: An application's promise to keep some of its tables stable for others to read.
+  definition: A promise from an application to keep some of its tables stable, so that other applications can read them.
   fields:
     name:
       type: Name
@@ -30,21 +30,21 @@ dependsOnApp:
   from: Application
   to: Application
   reads: "{from} depends on {to}"
-  definition: The first application breaks if the second one changes the tables it writes.
+  definition: The first application fails if the second application changes the tables that it writes.
 
 consumesContract:
   is: Link
   from: Application
   to: Contract
   reads: "{from} consumes {to}"
-  definition: The application relies on the contract's tables.
+  definition: The application needs the tables that the contract covers.
 
 coversTable:
   is: Link
   from: Contract
   to: Table
   reads: "{from} covers {to}"
-  definition: The table is one the contract keeps stable.
+  definition: The contract keeps this table stable.
 
 appDependsOnWriter:
   is: Derivative

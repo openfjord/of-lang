@@ -6,9 +6,10 @@ title: Packages — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A package is the unit that is versioned, owned, reviewed and depended on. It
-holds definitions — kinds, links, value types, constraints and derivatives — with
-the docs that explain them and the tests that prove them.
+A package is the unit that people version, own, review and depend on. It
+holds definitions: kinds, links, value types, constraints and derivatives. It
+also holds the docs that explain these definitions and the tests that prove
+them.
 
 ## Layout
 
@@ -30,14 +31,18 @@ data-model/
     questions/
 ```
 
-- **PK1.** A package's top level MUST hold `package.yaml` and `defs/`, MAY
+- **PK1.** The top level of a package MUST hold `package.yaml` and `defs/`, MAY
   hold `docs/` and `tests/`, and MUST NOT hold anything else.
-- **PK2.** Inside `defs/`, `docs/` and `tests/`, the layout is the author's.
-  Files in `defs/` and `tests/` are named `*.of.yaml` ([FL15](files.md#files-and-statements)).
-  A file in `defs/` MAY hold definitions of any sort in any mix.
-- **PK3.** Inside `defs/`, a definition SHOULD sit next to what it is about:
-  a link with the kind it comes out of, a constraint or derivative with the kind it
-  concerns, and one that concerns several kinds a level up, beside them all.
+- **PK2.** In `defs/`, `docs/` and `tests/`, the author chooses the layout.
+  Files in `defs/` and `tests/` have names that match `*.of.yaml`
+  ([FL15](files.md#files-and-statements)). A file in `defs/` MAY hold
+  definitions of any sort, in any combination.
+- **PK3.** In `defs/`, a definition SHOULD be next to the item that it is
+  about:
+  - a link with the kind where the link starts
+  - a constraint or derivative with the kind that it concerns
+  - a constraint or derivative that concerns several kinds one level higher,
+    next to all of those kinds.
 
 ## The manifest
 
@@ -60,38 +65,38 @@ openFor:                          # extension points: what other packages may ad
 
 | Key | Required | Value |
 |---|---|---|
-| `package` | yes | the package's full name |
+| `package` | yes | the full name of the package |
 | `version` | yes | a semantic version, `MAJOR.MINOR.PATCH` |
 | `owner` | yes | who must approve any change to the package |
-| `rdfNamespace` | yes | the prefix used to build IRIs in the exported RDF |
+| `rdfNamespace` | yes | the prefix that the tool uses to build IRIs in the exported RDF |
 | `dependsOn` | no | a mapping from package names to version ranges |
-| `exports` | no | the `kinds`, `links`, `valueTypes` and `tags` other packages may import |
+| `exports` | no | the `kinds`, `links`, `valueTypes` and `tags` that other packages can import |
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
 
 - **PK4.** `package.yaml` MUST have `package`, `version`, `owner` and
-  `rdfNamespace`, and MUST NOT have any other key than those in the table.
+  `rdfNamespace`, and MUST NOT have a key that is not in the table.
 - **PK5.** `version` MUST be `MAJOR.MINOR.PATCH`, three whole numbers.
 
 ## Names and namespaces
 
-A package name may start with a namespace, as in npm: `@openfjord/data-model`
+A package name can start with a namespace, as in npm: `@openfjord/data-model`
 is the package `data-model` in the namespace `@openfjord`.
 
 - **PK6.** A package name MUST be lowercase letters, digits and hyphens,
-  starting with a letter, optionally preceded by a namespace: `@`, then the
-  same characters, then `/`.
-- **PK7.** `dependsOn` and `pkg:` imports MUST use the full name, namespace
-  included.
+  with a letter first. An optional namespace can come before the name: `@`,
+  then the same characters, then `/`.
+- **PK7.** `dependsOn` and `pkg:` imports MUST use the full name, with the
+  namespace.
 
 ## Owners
 
-A package has one owner, and everything inside it — definitions, docs and
-tests — is owned by that owner, who must approve any change to it (reasons 7
-and 8 in [the research](../../README.md)). Which packages hold which terms is
-the users' choice.
+A package has one owner. That owner owns everything in the package:
+definitions, docs and tests. The owner must approve each change to the package
+(reasons 7 and 8 in [the research](../../README.md)). The users choose which
+packages hold which terms.
 
-- **PK8.** Nothing inside a package has an owner of its own. Terms with
-  different owners therefore MUST live in different packages.
+- **PK8.** No item in a package has its own owner. Thus, terms with different
+  owners MUST be in different packages.
 
 ## Dependencies
 
@@ -100,33 +105,37 @@ A version range is one of:
 | Range | Means |
 |---|---|
 | `1.2.3` | exactly 1.2.3 |
-| `^1.2`, `^1.2.3` | at least that version, below the next major (below the next minor while the major is 0) |
-| `~1.2`, `~1.2.3` | at least that version, below the next minor |
+| `^1.2`, `^1.2.3` | at least that version, below the next major version (below the next minor version when the major version is 0) |
+| `~1.2`, `~1.2.3` | at least that version, below the next minor version |
 
-- **PK9.** Every package in `dependsOn` MUST be found, and its version MUST
-  fall in the range.
+- **PK9.** The tool MUST find every package in `dependsOn`, and the version
+  of each package MUST be in the range.
 - **PK10.** Packages MUST NOT depend on each other in a circle.
 
 ## Exports
 
-A package's definitions are internal unless it exports them.
+The definitions of a package are internal if the package does not export
+them.
 
-- **PK11.** Every name in `exports` MUST be a definition of the package, of
-  the sort it is listed under. A link's inverse name MUST NOT be listed; it is
-  exported with its link.
+- **PK11.** Every name in `exports` MUST be a definition of the package, and
+  of the sort that its list shows. The inverse name of a link MUST NOT be in
+  `exports`. The package exports it with its link.
 - **PK12.** A package MUST state things only about its own definitions,
-  except through the extension points its dependencies open in `openFor`.
+  except through the extension points that its dependencies open in
+  `openFor`.
 - **PK13.** Every name in `openFor` MUST be a definition of the package:
-  `extend` names a kind, `under` names a link.
-- **PK14.** A new version MUST match what changed: removing or renaming a
-  definition, or tightening a constraint, needs a new major version; adding a
-  definition or loosening a constraint does not.
+  `extend` identifies a kind, and `under` identifies a link.
+- **PK14.** A new version MUST match the change:
+  - A change that removes or renames a definition, or makes a constraint
+    stricter, needs a new major version.
+  - A change that adds a definition or makes a constraint less strict does not
+    need a new major version.
 
 ## Docs
 
-Why, how and context live in Markdown files in `docs/` (reason 5). A doc
-links to a definition or embeds it, so prose and definitions read side by
-side:
+Markdown files in `docs/` give the reasons, the methods and the context
+(reason 5). A doc has a Markdown link to a definition or embeds it. Thus, a
+reader sees the text and the definitions together:
 
 ````markdown
 # Tables
@@ -142,15 +151,16 @@ applications needs a contract — see
 
 | Written | Means |
 |---|---|
-| `[text](path/file.of.yaml#Name)` | a link to the statement `Name` |
-| `![](path/file.of.yaml#Name)` | the statement `Name`, embedded where it stands |
-| `![](path/file.of.yaml)` | the whole file, embedded |
+| `[text](path/file.of.yaml#Name)` | a Markdown link to the statement `Name` |
+| `![](path/file.of.yaml#Name)` | the statement `Name`, embedded at that position |
+| `![](path/file.of.yaml)` | the full file, embedded |
 
-Both are standard Markdown, so a viewer that does not know the convention
-still shows a working link. The part after `#` is a statement's name, not a line
-number, so an embed follows its definition wherever it moves in the file.
-Each definition's generated page lists the docs that link to it or embed it.
+Both forms are standard Markdown. Thus, a viewer that does not know this
+convention still shows a Markdown link that works. The part after `#` is the
+name of a statement, not a line number. Thus, an embed always shows its
+definition, also when the definition moves in the file. The generated page of
+each definition lists the docs that have a Markdown link to it or embed it.
 
 - **DC1.** Paths MUST be relative to the doc.
-- **DC2.** A link or embed MUST point at a file that exists, and the part
-  after `#`, when present, MUST be the name of a statement in that file.
+- **DC2.** A Markdown link or an embed MUST point to a file that exists. If
+  there is a part after `#`, it MUST be the name of a statement in that file.

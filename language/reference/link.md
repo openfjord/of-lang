@@ -6,9 +6,9 @@ title: Links — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A link is a named, directed relationship from one kind of thing to another.
-It is declared once, as its own statement, usually in the same file as the kind
-it comes out of; that kind says how many of it each thing carries
+A link is a named relationship from a kind to a kind, in one direction. A link
+is declared one time, as its own statement. Usually, it is in the same file as
+the kind where it starts. That kind tells how many of the link each thing has
 ([KD4](kind.md#rules)).
 
 ```yaml
@@ -43,43 +43,43 @@ feedsTable:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Link` |
-| `from` | yes | the kind the link starts at |
-| `to` | yes | the kind the link ends at |
-| `reads` | yes | the sentence product sees, with `{from}` and `{to}` |
-| `definition` | yes | one sentence saying what the link means |
-| `under` | no | a broader link this one is a narrower sort of |
-| `inverse` | no | a name for reading the link the other way |
+| `from` | yes | the kind where the link starts |
+| `to` | yes | the kind where the link ends |
+| `reads` | yes | the sentence that product sees, with `{from}` and `{to}` |
+| `definition` | yes | one sentence that tells what the link means |
+| `under` | no | the broader link; this link is a narrower sort of it |
+| `inverse` | no | a name for the link in the opposite direction |
 | `chains` | no | `true` when a chain of the link implies the link |
-| `tags` | no | the [tags](tag.md) it belongs to |
+| `tags` | no | the [tags](tag.md) that the link belongs to |
 
-A link carries nothing but its two ends: it has no fields. Anything to say
-about a link becomes a thing in the middle, such as a `Read` between a job
-and a table.
+A link has only its two ends. It has no fields. Any data about a link becomes
+a thing in the middle, for example a `Read` between a job and a table.
 
 ## Rules
 
-- **LK1.** A link's name, and its inverse name, MUST be lowerCamelCase with
-  two words or more, saying what it links and how: `readsTable`, never
-  `reads` (reason 2 in [the research](../../README.md)).
-- **LK2.** A link MUST have a `definition` and a `reads` sentence, and
-  `reads` MUST contain both `{from}` and `{to}` (reason 7).
-- **LK3.** `from` and `to` MUST name kinds. They are checks: a fact linking a
-  team with `readsTable` is rejected. No link ever makes something into a
-  kind.
-- **LK4.** `under` MUST name a declared link, not an inverse name. The
-  narrower link's `from` MUST be the broader link's `from` or extend it, and
-  the same for `to`. A link MUST NOT sit under itself, directly or through
-  others.
-- **LK5.** A link with `chains: true` MUST join a kind to the same kind, or
+- **LK1.** A link's name, and its inverse name, MUST be lowerCamelCase, with
+  two or more words that tell what the link connects and how: `readsTable`,
+  never `reads` (reason 2 in [the research](../../README.md)).
+- **LK2.** A link MUST have a `definition` and a `reads` sentence. `reads`
+  MUST contain both `{from}` and `{to}` (reason 7).
+- **LK3.** `from` and `to` MUST name kinds. They are checks: the language
+  rejects a fact that links a team with `readsTable`. A link never gives a
+  thing a kind.
+- **LK4.** `under` MUST name a declared link, not an inverse name. The `from`
+  of the narrower link MUST be the `from` of the broader link, or a kind that
+  extends it. The same rule applies to `to`. A link MUST NOT be under itself,
+  directly or through other links.
+- **LK5.** A link with `chains: true` MUST connect a kind to the same kind, or
   to a kind that extends it.
 
 ## What links imply
 
-These are the only inferences the language makes without a derivative. Each fact
-they add is a [derived fact](fact.md#derived-facts) with its reason.
+These are the only inferences that the language makes without a derivative.
+Each fact that they add is a [derived fact](fact.md#derived-facts), and
+records its reason.
 
 | Declared | Adds |
 |---|---|
-| `inverse: hasTable` on `inDatabase` | nothing new: `hasTable` reads every `inDatabase` the other way, in derivatives, constraints, questions and facts alike |
+| `inverse: hasTable` on `inDatabase` | nothing new: `hasTable` is every `inDatabase` in the opposite direction, in all derivatives, constraints, questions and facts |
 | `under: usesTable` on `readsTable` | a `usesTable` for every `readsTable` |
-| `chains: true` on `feedsTable` | `a feedsTable c` whenever `a feedsTable b` and `b feedsTable c` |
+| `chains: true` on `feedsTable` | `a feedsTable c` each time that `a feedsTable b` and `b feedsTable c` |
