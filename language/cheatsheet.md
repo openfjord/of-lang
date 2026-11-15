@@ -15,7 +15,7 @@ Every file in `defs/` and `tests/` ends in `.of.yaml`; the manifest is always
 ```
 my-package/
   package.yaml       # required: the manifest
-  defs/              # required: Kind, Link, ValueType, Constraint, Derivative
+  defs/              # required: Kind, Link, ValueType, Tag, Constraint, Derivative
   docs/              # optional: Markdown that links to or embeds definitions
   tests/             # optional: Fact, Test, Question
 ```
@@ -32,6 +32,7 @@ exports:
   kinds: [Table]
   links: [inDatabase]
   valueTypes: [Name]
+  tags: [lineage]
 openFor:
   - extend: Table
   - under: readsTable
@@ -47,7 +48,7 @@ import:
     use: [Contract, { name: Team, as: OrgTeam }]
 
 SomeStatement:
-  is: Kind        # or Link, ValueType, Constraint, Derivative — Fact, Test, Question in tests/
+  is: Kind        # or Link, ValueType, Tag, Constraint, Derivative — Fact, Test, Question in tests/
 ```
 
 Everything a file uses that it does not define is imported. Field names are not.
@@ -59,6 +60,7 @@ Table:                                   # UpperCamelCase
   is: Kind
   definition: A set of rows with one schema, stored in a database.   # required
   extends: Dataset                       # optional
+  tags: [lineage]                        # optional; kinds, links and value types only
   examples:    [the order_lines table]
   notExamples: [a view computed on read]
   fields:
@@ -84,7 +86,15 @@ Name:
   definition: A lowercase identifier.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
+
+lineage:                                 # lowerCamelCase
+  is: Tag
+  definition: What a lineage tool needs to trace data from table to table.
 ```
+
+Tags only choose what an RDF export holds; they are not passed on through
+`extends` or `under`. A tagged link whose `from` or `to` kind is untagged is
+left out of the export.
 
 Field keywords: `type` (`string` `integer` `number` `boolean` `array` `object`
 or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`

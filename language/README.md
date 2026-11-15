@@ -67,6 +67,7 @@ an error from the tool can name the rule it enforces.
 | **[field](reference/field.md)** | a value of the thing itself (a name, a format), described with JSON Schema | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
 | **[link](reference/link.md)** | a named, directed relationship between two things | `owl:ObjectProperty` |
+| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry, so only those are exported to RDF | — |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it | a SHACL shape |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match | a SHACL rule |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; used in tests and examples | RDF triples |

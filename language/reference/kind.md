@@ -48,6 +48,7 @@ CriticalTable:
 | `notExamples` | no | a list of things that could be mistaken for it but are not |
 | `fields` | no | the kind's [fields](field.md), by name |
 | `links` | no | the links a thing of this kind carries, each with a count |
+| `tags` | no | the [tags](tag.md) it belongs to |
 
 ## Rules
 

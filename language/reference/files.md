@@ -46,6 +46,7 @@ Every statement says what it is with `is:`.
 | `ValueType` | `defs/` | [Fields and value types](field.md#value-types) |
 | `Constraint` | `defs/` | [Constraints](constraint.md) |
 | `Derivative` | `defs/` | [Derivatives](derivative.md) |
+| `Tag` | `defs/` | [Tags](tag.md) |
 | `Fact` | `tests/` | [Facts](fact.md) |
 | `Test` | `tests/` | [Tests](test.md) |
 | `Question` | `tests/` | [Tests](test.md#questions) |
@@ -56,7 +57,7 @@ Every statement says what it is with `is:`.
   listed is rejected, so a misspelled key is an error, never ignored.
 - **FL3.** A YAML file MUST NOT repeat a key in the same mapping.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
-  `Constraint` or `Derivative`. Statements in `tests/` MUST be `Fact`, `Test` or
+  `Constraint`, `Derivative` or `Tag`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
 - **FL5.** No statement MAY be named `import`.
 
@@ -66,13 +67,13 @@ Every statement says what it is with `is:`.
 |---|---|---|
 | kind, value type | UpperCamelCase | `Table`, `CriticalTable`, `RetentionDays` |
 | link, link inverse | lowerCamelCase, two words or more | `inDatabase`, `readsTable`, `hasJob` |
-| constraint, derivative, test, question | lowerCamelCase | `crossAppReadNeedsContract` |
+| constraint, derivative, tag, test, question | lowerCamelCase | `crossAppReadNeedsContract`, `lineage` |
 | fact | an id: any text, usually a path | `db/sales/table/order_lines` |
 
 - **FL6.** A definition's name MUST be unique within its package, and the
   inverse name a link declares counts as a name of that package.
 - **FL7.** Kind and value type names MUST be UpperCamelCase; constraint,
-  derivative, test and question names MUST be lowerCamelCase. Link names are
+  derivative, tag, test and question names MUST be lowerCamelCase. Link names are
   covered by [LK1](link.md#rules).
 - **FL8.** The name of a statement in a test file MUST NOT be the name of a
   definition in the package. Statements in a test file are local to that file.

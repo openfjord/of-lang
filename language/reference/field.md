@@ -107,6 +107,7 @@ import:
 |---|---|---|
 | `is` | yes | `ValueType` |
 | `definition` | yes | one sentence saying what the value holds, shown on product's pages |
+| `tags` | no | the [tags](tag.md) it belongs to |
 | any keyword above except `optional` | — | the schema |
 
 - **VT1.** A value type MUST have a `definition`.

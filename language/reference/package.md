@@ -52,6 +52,7 @@ exports:                          # what other packages may use; the rest is int
   kinds: [Database, Table, Application, Job]
   links: [inDatabase, readsTable, writesTable, jobOf]
   valueTypes: [Name]
+  tags: [lineage]
 openFor:                          # extension points: what other packages may add to
   - extend: Table                 #   another package may declare a kind of table
   - under: readsTable             #   another package may declare a narrower link under readsTable
@@ -64,7 +65,7 @@ openFor:                          # extension points: what other packages may ad
 | `owner` | yes | who must approve any change to the package |
 | `rdfNamespace` | yes | the prefix used to build IRIs in the exported RDF |
 | `dependsOn` | no | a mapping from package names to version ranges |
-| `exports` | no | the `kinds`, `links` and `valueTypes` other packages may import |
+| `exports` | no | the `kinds`, `links`, `valueTypes` and `tags` other packages may import |
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
 
 - **PK4.** `package.yaml` MUST have `package`, `version`, `owner` and

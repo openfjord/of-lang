@@ -152,3 +152,10 @@ reasons table wait on them:
    They cannot say "a job that has not run for 30 days", because that needs
    "now minus 30 days". Should conditions gain date arithmetic, and if so, in
    what YAML form?
+5. **Other references out of a tagged subset.** A tagged link whose end kind
+   is untagged is left out of the export. Other references can leave a
+   subset too: a tagged kind that extends an untagged kind, a field whose
+   value type is untagged, a link `under` an untagged link, and a kind's
+   count for a link that was left out. Should each be left out the same way,
+   be an error, or be exported in a simpler form (the field with its
+   built-in type, the kind without its `extends`)?

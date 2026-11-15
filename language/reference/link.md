@@ -50,6 +50,7 @@ feedsTable:
 | `under` | no | a broader link this one is a narrower sort of |
 | `inverse` | no | a name for reading the link the other way |
 | `chains` | no | `true` when a chain of the link implies the link |
+| `tags` | no | the [tags](tag.md) it belongs to |
 
 A link carries nothing but its two ends: it has no fields. Anything to say
 about a link becomes a thing in the middle, such as a `Read` between a job
