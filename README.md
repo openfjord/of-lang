@@ -133,26 +133,19 @@ reasons table wait on them:
 
 ## Open questions
 
-1. **Can a technical package add derivatives about product kinds?** `Table` lives
-   in a product package. The platform team wants a derivative such as "a table with
-   more than 1,000 columns is oversized". Everything in a package is owned by
-   its owner, so the derivative cannot go in the product package without product
-   approving it. May the platform team put that derivative in their own package,
-   through an extension point, or must every derivative about `Table` go through
-   product?
-2. **Optional links in a match.** Every link in a match must exist, or
+1. **Optional links in a match.** Every link in a match must exist, or
    there is no match. A derivative that wants "every table, and its team if it has
    one" loses the tables without a team. Should a link in a match be markable
    as optional, or should authors work around it with two derivatives or `any of`?
-3. **Limits on chains.** `repeated: true` follows a link any number of steps:
+2. **Limits on chains.** `repeated: true` follows a link any number of steps:
    table to table to table. Sometimes only nearby things matter, such as
    "tables at most two steps upstream". Should chains take a limit
    (`at most: 2`), or stay unlimited?
-4. **Dates and durations.** Conditions compare a value with another value.
+3. **Dates and durations.** Conditions compare a value with another value.
    They cannot say "a job that has not run for 30 days", because that needs
    "now minus 30 days". Should conditions gain date arithmetic, and if so, in
    what YAML form?
-5. **References out of a tagged subset.** A tagged definition that refers
+4. **References out of a tagged subset.** A tagged definition that refers
    to an untagged one, such as a tagged kind extending an untagged kind, has
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out

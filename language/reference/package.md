@@ -86,11 +86,12 @@ is the package `data-model` in the namespace `@openfjord`.
 ## Owners
 
 A package has one owner, and everything inside it — definitions, docs and
-tests — is owned by that owner, who must approve any change to it, product or
-not (reasons 7 and 8 in [the research](../../README.md)).
+tests — is owned by that owner, who must approve any change to it (reasons 7
+and 8 in [the research](../../README.md)). Which packages hold which terms is
+the users' choice.
 
-- **PK8.** Nothing inside a package has an owner of its own. A product term
-  and a technical term therefore MUST live in different packages.
+- **PK8.** Nothing inside a package has an owner of its own. Terms with
+  different owners therefore MUST live in different packages.
 
 ## Dependencies
 
