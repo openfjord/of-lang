@@ -312,12 +312,13 @@ Each IRI (Internationalized Resource Identifier) is built from the package's
 
 `--tags` exports only the definitions carrying at least one of the named
 [tags](../language/reference/tag.md); without it, the whole package is
-exported. A tagged link whose `from` or `to` kind is not exported is left
-out, and the export lists it:
+exported. A reference to a definition that is not exported is left out,
+and the export lists each one:
 
 ```
 $ of-lang export --tags lineage,catalog examples/data-model
 left out: link belongsToTeam (Table to Team): Team is not exported
+left out: Table extends Dataset: Dataset is not exported
 ```
 
 ## Planned: a language server

@@ -60,8 +60,12 @@ itself, so there is no way to tag another package's definitions.
 Exporting with tags exports every definition of the package that carries at
 least one of them. Exporting without tags exports the whole package.
 
-A link in the subset whose `from` or `to` kind is not in it is left out of
-the export, and the export lists every link it left out.
+A definition in the subset may refer to one that is not: a link whose
+`from` or `to` kind is untagged, a kind that extends an untagged kind, a
+field whose value type is untagged, a link `under` an untagged link, a count
+for a link that is not exported. Each such reference is left out of the
+export, and a link whose `from` or `to` kind is not exported is left out
+whole. The export lists everything it left out.
 
 ## Rules
 

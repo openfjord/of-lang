@@ -93,8 +93,8 @@ lineage:                                 # lowerCamelCase
 ```
 
 Tags only choose what an RDF export holds; they are not passed on through
-`extends` or `under`. A tagged link whose `from` or `to` kind is untagged is
-left out of the export.
+`extends` or `under`. A reference to an untagged definition is left out of
+the export, and so is a link whose `from` or `to` kind is untagged.
 
 Field keywords: `type` (`string` `integer` `number` `boolean` `array` `object`
 or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`
