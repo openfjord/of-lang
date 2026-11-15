@@ -29,7 +29,7 @@ crossAppReadNeedsContract:
     - node: $writerApp
       does not equal:
         same as: $jobApp
-  require:
+  unless:
     - node:  $table
       field: visibility
       equals:

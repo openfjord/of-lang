@@ -145,7 +145,7 @@ crossAppReadNeedsContract:
   says: A job may read another application's table only under a contract.   # no $ words
   match: [ ... ]
   filter: [ ... ]
-  require: [ ... ]                       # optional; without it every match is a violation
+  unless: [ ... ]                        # optional; a match is a violation unless these hold
   message: "{$job} must not read {$table} without a contract."
 
 tableTeamFromDatabase:

@@ -19,7 +19,7 @@ takes, and the requirements the tool checks.
 | [Fields and value types](field.md) | the JSON Schema subset, value types | FD, VT |
 | [Links](link.md) | links, `under`, `inverse`, `chains` | LK |
 | [Tags](tag.md) | tags, and exporting a subset to RDF | TG |
-| [Constraints](constraint.md) | `match`, `filter`, `require`, messages, how they run | CN |
+| [Constraints](constraint.md) | `match`, `filter`, `unless`, messages, how they run | CN |
 | [Derivatives](derivative.md) | `match`, `filter`, `derive`, how they run, explanations | DV |
 | [Facts](fact.md) | facts in tests, derived facts | FC |
 | [Tests](test.md) | examples, and questions with their own `match` and `filter` | TS |

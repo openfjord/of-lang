@@ -7,10 +7,10 @@ title: Constraints — The OpenFjord modeling language
 > Part of [the reference](README.md).
 
 A constraint rejects facts. It finds things and the links between them,
-narrows what it found with conditions, and then either requires something of
-every match or, without `require`, treats every match as a violation.
+narrows what it found with conditions, and reports every match as a
+violation, unless the match satisfies the conditions under `unless`.
 
-## With `require`: what must hold
+## With `unless`
 
 ```yaml
 crossAppReadNeedsContract:
@@ -36,7 +36,7 @@ crossAppReadNeedsContract:
     - node: $writerApp
       does not equal:
         same as: $jobApp
-  require:
+  unless:
     - node:  $table
       field: visibility
       equals:
@@ -52,12 +52,11 @@ crossAppReadNeedsContract:
   message: "{$job} must not read {$table} from {$writerApp} without a contract."
 ```
 
-Read it as: for every job reading a table that a job of another application
-writes, the table must be public and a contract the reading application
-consumes must cover it. A match that fails either requirement is a
-violation.
+Read it as: a job reading a table that a job of another application writes
+is a violation, unless the table is public and a contract the reading
+application consumes covers it.
 
-## Without `require`: what must not happen
+## Without `unless`
 
 ```yaml
 noFeedbackLoop:
@@ -72,10 +71,6 @@ noFeedbackLoop:
 
 Every match is a violation. Because `feedsTable` chains, this also catches a
 table that feeds itself through others.
-
-The two forms mean the same: "every match must satisfy this" is "nothing
-matches without satisfying this". Use `require` when the rule reads as what
-must hold, and leave it out when it reads as what must not happen.
 
 Four principles shape how constraints are written:
 
@@ -95,7 +90,7 @@ Four principles shape how constraints are written:
 | `says` | yes | the rule, in plain words |
 | `match` | yes, unless [CN11](#rules) allows leaving it out | the links to find |
 | `filter` | no | conditions that narrow the matches |
-| `require` | no | conditions every match must satisfy |
+| `unless` | no | conditions that excuse a match |
 | `message` | yes | what a violation says |
 
 ## Match
@@ -130,11 +125,12 @@ still one match; explanations list the steps.
 A narrower kind narrows the matches: `{$table: CriticalTable}` on
 `readsTable` matches only jobs reading critical tables.
 
-## Filter and require
+## Filter and unless
 
-`filter` and `require` both hold conditions and receive the matches one at a
-time. `filter` decides which matches the constraint is about; `require` says
-what each of those must satisfy. Every condition in a list must hold.
+`filter` and `unless` both hold conditions and receive the matches one at a
+time. `filter` decides which matches the constraint is about; `unless` says
+what excuses one of them. Every condition in a list must hold: a match is
+excused only when all of `unless` holds.
 
 A condition is about a thing itself (`node` alone) or one of its fields
 (`node` and `field`), followed by a comparison word and what to compare with:
@@ -142,7 +138,7 @@ A condition is about a thing itself (`node` alone) or one of its fields
 variable, or a variable and a field).
 
 ```yaml
-require:
+unless:
   - node:  $table
     field: retentionDays
     is at most:
@@ -226,6 +222,6 @@ Constraints run after every [derivative](derivative.md) has finished, over
 stated and derived facts alike, and add nothing. A link that is neither
 stated nor derived does not exist, and a field with no value has none.
 
-- **CN14.** Each match that fails a requirement is reported once, with its
-  message and its explanation: which requirement failed and the facts the
-  match used.
+- **CN14.** Each violating match is reported once, with its message and its
+  explanation: which conditions under `unless` failed, if any, and the facts
+  the match used.

@@ -11,7 +11,7 @@ compares two sets of facts, and runs a package's tests.
 > **It lags the draft.** The tool implements an earlier version of the
 > language: `links` and `where` instead of `match` and `filter`, variables
 > named in `says`, kinds given only on a variable's first mention, `Rule`
-> instead of `Derivative`, `definitions/` instead of `defs/`, and `.yaml`
+> instead of `Derivative`, `require` instead of `unless`, `definitions/` instead of `defs/`, and `.yaml`
 > instead of `.of.yaml`. It does not run the
 > [example package](../examples/data-model/) as it stands. It will be brought
 > up to date once the draft settles.

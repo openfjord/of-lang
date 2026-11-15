@@ -255,7 +255,7 @@ tableFeedsTable:
   give the same field different values are rejected before anything runs. If
   one derivative's matches still give a thing's field two values, running
   stops with an error that shows both explanations.
-- **DV16.** A derivative MUST NOT have `require` or `message`. Derivatives
+- **DV16.** A derivative MUST NOT have `unless` or `message`. Derivatives
   reject nothing.
 
 ## How derivatives run
