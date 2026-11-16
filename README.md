@@ -261,6 +261,5 @@ This is an early list, not a decision. The tool may need to:
   dependencies, with an optional list of tags that selects a subset.
 - **Support editors through the LSP** (Language Server Protocol): errors,
   completion and links to definitions while a person writes.
-- **Give a user interface** to look at the packages and change them. The
-  interface always works on the files of a package, in whichever form those
-  files are. The rest of its design is not yet discussed.
+- **Give a user interface** that edits packages. The interface always
+  changes the files of a package, in whichever form those files are. The rest of its design is not yet discussed.

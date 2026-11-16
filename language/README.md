@@ -80,8 +80,8 @@ Thus, an error from the tool can identify the rule that it enforces.
    JSON, can hold the same statements. Packages, the `defs/` and `tests/`
    folders, files and imports are the same in every form. Only the syntax
    inside a file changes. The tool reads each form into the same model. A
-   user interface is not a form. It shows and changes the statements in the
-   files of a package, in whichever form those files are.
+   user interface is not a form. It edits packages: it changes the files of a
+   package, in whichever form those files are.
 
 ## Vocabulary
 
