@@ -15,8 +15,7 @@ takes, and the requirements that the tool checks.
 |---|---|---|
 | [Files and statements](files.md) | files, statements, `is:`, names, imports, ids | FL |
 | [Packages](package.md) | the manifest, owners, namespaces, the fixed layout, exports, docs | PK, DC |
-| [Kinds](kind.md) | kinds, `extends`, link counts | KD |
-| [Fields and value types](field.md) | the JSON Schema subset, value types | FD, VT |
+| [Kinds, fields and value types](kind.md) | kinds, `extends`, link counts, fields as a JSON Schema subset, value types | KD, FD, VT |
 | [Links](link.md) | links, `under`, `inverse`, `chains` | LK |
 | [Tags](tag.md) | tags, and the export of a subset to RDF | TG |
 | [Constraints](constraint.md) | `match`, `filter`, `unless`, messages, how they run | CN |

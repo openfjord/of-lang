@@ -87,8 +87,8 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm |
 | **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is |
 | **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish) |
-| **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it |
-| **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value |
+| **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
+| **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
 | **[link](reference/link.md)** | a named, directed relationship between two things |
 | **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |

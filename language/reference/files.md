@@ -55,7 +55,7 @@ includes keys that a later version of the language adds.
 |---|---|---|
 | `Kind` | `defs/` | [Kinds](kind.md) |
 | `Link` | `defs/` | [Links](link.md) |
-| `ValueType` | `defs/` | [Fields and value types](field.md#value-types) |
+| `ValueType` | `defs/` | [Value types](kind.md#value-types) |
 | `Constraint` | `defs/` | [Constraints](constraint.md) |
 | `Derivative` | `defs/` | [Derivatives](derivative.md) |
 | `Tag` | `defs/` | [Tags](tag.md) |
