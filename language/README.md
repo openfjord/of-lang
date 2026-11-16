@@ -97,7 +97,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it | a SHACL shape |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match | a SHACL rule |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts | RDF triples |
-| **[derived fact](reference/fact.md#derived-facts)** | a fact that a derivative or a link declaration adds; tests can expect one, but no file declares one | RDF triples |
+| **[derived fact](reference/fact.md#derived-facts)** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one | RDF triples |
 | **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects | a competency question |
 | **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most | — |
 
