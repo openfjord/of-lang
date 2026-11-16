@@ -117,7 +117,7 @@ allergens:                               # lowerCamelCase
   definition: What an allergen app needs to tell guests which dishes contain which allergens.
 ```
 
-Tags only select what an RDF export holds. Tags do not pass through
+By default, the RDF export holds everything. An optional list of tags limits it. Tags do not pass through
 `extends` or `under`. The export does not include a reference to an untagged
 definition. It also does not include a link whose `from` or `to` kind is
 untagged.

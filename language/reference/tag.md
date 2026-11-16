@@ -6,8 +6,10 @@ title: Tags — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A tag marks definitions that belong together for one purpose, so that only
-those definitions are exported to RDF (Resource Description Framework). For
+A tag marks definitions that belong together for one purpose. By default,
+the export to RDF (Resource Description Framework) includes the full package.
+An optional list of tags limits the export to the definitions with those
+tags. For
 example, an allergen app needs recipes, ingredients, allergens and the links
 between them. The menu app needs dishes and their prices. Each purpose has a
 tag, and each definition lists the tags that it belongs to.
@@ -62,8 +64,9 @@ itself, so a package cannot tag the definitions of a different package.
 
 ## Exporting a subset
 
-An export with tags includes each definition of the package that has one or
-more of these tags. An export without tags includes the full package.
+By default, an export includes the full package. An optional list of tags
+limits the export: then it includes each definition of the package that has
+one or more of these tags.
 
 A definition in the subset can refer to a definition that is not in the
 subset. Examples of these references are:

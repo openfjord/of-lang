@@ -93,7 +93,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
 | **[link](reference/link.md)** | a named, directed relationship between two things | `owl:ObjectProperty` |
-| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; only the items that carry it are exported to RDF | — |
+| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them | — |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it | a SHACL shape |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match | a SHACL rule |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts | RDF triples |
