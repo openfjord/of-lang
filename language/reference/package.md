@@ -122,7 +122,8 @@ them.
   except through the extension points that its dependencies open in
   `openFor`.
 - **PK13.** Every name in `openFor` MUST be a definition of the package:
-  `extend` identifies a kind, and `under` identifies a link.
+  `extend` identifies a kind, and `under` identifies a link. `extend` MUST
+  NOT identify a kind with `oneOf` ([KD9](kind.md#unions)).
 - **PK14.** A new version MUST match the change:
   - A change that removes or renames a definition, or makes a constraint
     stricter, needs a new major version.

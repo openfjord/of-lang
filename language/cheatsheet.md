@@ -82,6 +82,11 @@ Dish:
     price:  { type: Price }
     status: { enum: [active, retired], default: active }
 
+Food:
+  is: Kind
+  definition: Something that a recipe uses to make its food.
+  oneOf: [Recipe, Ingredient]            # a union: each food is exactly one; closed; no fields or links
+
 usesRecipe:                              # lowerCamelCase, two words or more
   is: Link
   from: Recipe

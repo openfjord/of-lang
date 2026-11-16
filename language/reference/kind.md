@@ -57,6 +57,7 @@ Dish:
 | `is` | yes | `Kind` |
 | `definition` | yes | one sentence that tells what the kind is |
 | `extends` | no | the broader kind; this kind is a narrower sort of it |
+| `oneOf` | no | the kinds that together make up this kind, with no overlap ([unions](#unions)) |
 | `examples` | no | a list of things of this kind, in words |
 | `notExamples` | no | a list of things that look like things of this kind, but are not |
 | `fields` | no | the [fields](#fields) of the kind, by name |
@@ -90,6 +91,50 @@ Every field is required, unless it has `optional: true` or a `default`
 ([FD3](#field-rules)). These two rules together mean that a fact must have
 all the items that its kind asks for, and nothing more
 ([FC3](fact.md#rules)).
+
+## Unions
+
+Sometimes a kind is exactly one of a fixed list of kinds, and nothing else.
+For example, the food that a recipe uses is a recipe or an ingredient. Each
+food is one of the two, and never both. `oneOf` states this:
+
+```yaml
+Food:
+  is: Kind
+  definition: Something that a recipe uses to make its food.
+  oneOf: [Recipe, Ingredient]
+
+usesFood:
+  is: Link
+  from: Recipe
+  to: Food
+  reads: "{from} uses {to}"
+  definition: The recipe needs the food.
+```
+
+`Recipe` and `Ingredient` do not extend `Food`, and they do not get anything
+from it. `Food` gives a name to the two kinds together. Thus, a link, a
+match or a condition can use `Food` where a recipe or an ingredient can
+occur.
+
+Each thing of a listed kind is also a thing of the union kind. Thus, where
+a rule accepts a kind that extends a different kind, the rule also accepts a
+listed kind in place of the union kind. For example, `usesFood` can link a
+recipe to an ingredient.
+
+A union is closed. Only the statement itself lists its kinds. No other kind,
+and no other package, can add a kind to it.
+
+- **KD7.** `oneOf` MUST list two or more kinds. No listed kind MAY extend a
+  different listed kind, directly or through other kinds.
+- **KD8.** A kind with `oneOf` MUST NOT have `fields` or `links`. Its
+  listed kinds keep their own fields and links.
+- **KD9.** No kind MAY extend a kind with `oneOf`.
+- **KD10.** A fact MUST NOT name a kind with `oneOf` as its `kind`. It names
+  one of the listed kinds.
+- **KD11.** After the derivatives run, each thing of a union kind MUST be a
+  thing of exactly one listed kind. The tool rejects a thing that a
+  derivative makes a thing of two listed kinds.
 
 ## Fields
 
