@@ -239,6 +239,9 @@ A condition can also contain a nested block with its own `match` and
 `filter`. The words for this are `at least one`, `none`, or `count` with a
 comparison word. `any of` holds when one of its listed conditions holds.
 
+A condition can also name a `part` of an `object` field, as in
+[constraints](constraint.md#filter-and-unless).
+
 - **TS4.** A question MUST have an `asks` sentence, and the sentence MUST NOT
   contain a `$` word.
 - **TS5.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
@@ -263,3 +266,7 @@ comparison word. `any of` holds when one of its listed conditions holds.
 - **TS10.** The question passes only if, for each listed variable, the
   distinct things that it represents in all matches are exactly the listed
   ids.
+- **TS11.** `part` MAY appear only next to `field`. Each name in `part`
+  MUST be a part that the schema of the field defines. For a `oneOf`, one
+  or more of the choices MUST define it. The comparison uses the type of
+  that part.

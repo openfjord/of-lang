@@ -125,8 +125,9 @@ untagged.
 Field keywords: `type` (`string` `integer` `number` `boolean` `array` `object`
 or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`
 `format` (`date` `date-time` `duration`) `minimum` `maximum` `items`
-`properties` `optional`. The language does not have `null`, `$ref`,
-`required`, `oneOf` or similar keywords.
+`properties` `optional` `oneOf` (variants: exactly one choice matches; object
+choices carry a `const` part such as `variant`). The language does not have
+`null`, `$ref`, `required`, `anyOf`, `allOf`, `not` or `if`.
 
 ## Match and filter
 
@@ -157,6 +158,9 @@ filter:                                  # conditions; all must hold
 | `is one of` | `values: [...]` |
 | `is a` | a kind |
 | `is set` `is not set` | (only a field) |
+
+A condition on an object field can add `part: variant`, or `part: [a, b]`
+for a part in a part.
 
 | Nested | Holds when |
 |---|---|

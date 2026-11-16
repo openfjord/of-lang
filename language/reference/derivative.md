@@ -130,6 +130,14 @@ filter:
 When a condition compares a thing without a field, it compares the id of the
 thing. A field with no value fails all comparisons except `is not set`.
 
+A condition on an `object` field can name one of its parts with `part`,
+for example `field: serving, part: variant`. For a part in a part, `part`
+is a list: `part: [plating, garnish]`. When the value has no such part, the
+condition holds only for `is not set`.
+
+A comparison holds only when the value has the shape of the other side. For
+example, `is above: { value: 20 }` does not hold for a price of `market`.
+
 A condition cannot see links directly. It reaches links through a nested
 block. A nested block has its own `match` and an optional `filter`. It runs
 one time for each match of the derivative:
@@ -266,6 +274,10 @@ allergenFromRecipe:
   explanations.
 - **DV16.** A derivative MUST NOT have `unless` or `message`. Derivatives
   reject nothing.
+- **DV18.** `part` MAY appear only next to `field`. Each name in `part`
+  MUST be a part that the schema of the field defines. For a `oneOf`, one
+  or more of the choices MUST define it. The comparison uses the type of
+  that part.
 
 ## How derivatives run
 

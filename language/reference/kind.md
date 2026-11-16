@@ -128,6 +128,7 @@ fields:
 | `minimum`, `maximum` | numbers |
 | `items` | the values of an `array` |
 | `properties` | the parts of an `object` |
+| `oneOf` | [variants](#variants): the value matches exactly one of the listed schemas |
 | `optional: true` | a fact can omit the field |
 
 There are five differences from JSON Schema. Each difference agrees with a
@@ -138,16 +139,46 @@ decision in a different part of the language:
 | `required: [ … ]` lists required parts | every field and every part of an `object` is required, unless it has `optional: true` | required is the default in all places |
 | `$ref` refers to a different schema | `type: Name` names an imported value type | names come from imports |
 | `null` is a type | there is no null type | a field with no value has no value; there is no third state |
-| `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | not available | difficult to read; conditional logic goes in constraints |
+| `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | only `oneOf` | `oneOf` gives variants; value types give reuse; conditional logic goes in constraints |
 | `additionalProperties` controls if parts that are not listed are allowed | always false | the language rejects all items that are not listed |
 
 `number` is exact, so `0.1 + 0.2` is `0.3`. It is exported as
 `xsd:decimal`, never as a floating-point type.
 
+### Variants
+
+Some values have one of a small number of shapes. For example, the price of
+a dish is an amount, or "market price", which the waiter tells the guest. A
+serving is a weight in grams, or a number of pieces. `oneOf` lists the
+shapes. Each value matches exactly one of them.
+
+```yaml
+fields:
+  price:
+    oneOf:
+      - type: Price
+      - const: market
+  serving:
+    oneOf:
+      - type: object
+        properties:
+          variant: { const: portion }
+          grams:   { type: integer, minimum: 1 }
+      - type: object
+        properties:
+          variant: { const: pieces }
+          count:   { type: integer, minimum: 1 }
+```
+
+Each `object` shape has a part with a fixed value, here `variant`. Thus a
+reader, a constraint and a derivative can see which shape a value has.
+Constraints and derivatives read a part with the
+[`part` key](constraint.md#filter-and-unless).
+
 ### Field rules
 
 - **FD1.** A field MUST use only the keywords in the table above.
-- **FD2.** `required`, `$ref`, `null`, `oneOf`, `anyOf`, `allOf`, `not`,
+- **FD2.** `required`, `$ref`, `null`, `anyOf`, `allOf`, `not`,
   `if`, `then`, `else` and `additionalProperties` MUST NOT appear. The error
   tells what to write instead.
 - **FD3.** A field is required, unless it has `optional: true` or a
@@ -159,11 +190,17 @@ decision in a different part of the language:
   the `default` and the `const`.
 - **FD6.** There is no null. A field with no value is omitted, and never has
   the value `null`.
+- **FD7.** Each choice in `oneOf` MUST be a schema that uses the keywords
+  above, but not `optional` or `default`. A value MUST match exactly one
+  choice.
+- **FD8.** When the choices of a `oneOf` are objects, each choice SHOULD have
+  a part with the same name and a different `const` value.
 
 ## Value types
 
 A value type gives a name to a schema one time, so that many fields can use
-the schema again. A value type is a statement like all other statements, and
+the schema again. A value type can hold a `oneOf`. Then all the fields that
+name it share the same variants. A value type is a statement like all other statements, and
 is imported in the same way:
 
 ```yaml
@@ -220,6 +257,8 @@ import:
   - Both fields name the same value type.
   - Neither field names a value type, and both fields have the same built-in
     type.
+- **VT6.** A field that names a value type with `oneOf` MUST NOT add
+  keywords to it, other than `optional` and `default`.
 
   `Minutes` and a plain `integer` are different types. A field that
   narrows a value type ([VT3](#value-types)) keeps that value type.
