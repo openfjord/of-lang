@@ -10,16 +10,17 @@ title: The OpenFjord modeling language
 > [Why](../README.md#why) in the research.
 
 The language describes the parts of a software product. The description is
-in YAML files, which are in git next to the code. The files describe:
+a set of statements. By default, the statements are in YAML files, which are
+in git next to the code. The statements describe:
 
 - the kinds of things in the product
 - how these things link to each other
 - what follows from those links
 - what is not allowed.
 
-Developers read and write the files. Product reads the sentences and pages
-that a tool generates from the same files. The tool checks the files, derives
-what follows, and rejects what breaks a rule.
+Developers read and write the statements. Product reads the sentences and
+pages that a tool generates from the same statements. The tool checks the
+statements, derives what follows, and rejects what breaks a rule.
 
 The language keeps the strengths of the semantic-web standards (RDF, OWL,
 SHACL): exact meaning and, most of all, inference. It removes the parts that
@@ -73,13 +74,18 @@ Thus, an error from the tool can identify the rule that it enforces.
 6. **All text is Simplified Technical English.** This specification and all
    free-form text in a package follow ASD-STE100 Simplified Technical
    English (STE). See [FL16](reference/files.md#free-form-text).
+7. **YAML is the default form, not the language.** The language is the
+   statements, their keys and their values. YAML is the default way to write
+   them, and this specification shows them in YAML. A different form, such as
+   JSON or a user interface, can hold the same statements. The tool reads
+   each form into the same model.
 
 ## Vocabulary
 
 | Word | Meaning | Closest standard construct |
 |---|---|---|
 | **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm | an ontology with `owl:imports` |
-| **[statement](reference/files.md)** | one named item in a file; its `is:` key tells what it is | — |
+| **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is | — |
 | **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish) | `owl:Class` |
 | **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |

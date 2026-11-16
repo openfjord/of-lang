@@ -246,6 +246,12 @@ reasons table wait on them:
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
+5. **What belongs to the YAML form only.** YAML is the default form, not the
+   language. Some rules still refer to files: the `.of.yaml` extension, the
+   `defs/` and `tests/` folders, and "a file imports each name that it uses".
+   Which of these are part of the language, and which are only part of the
+   YAML form? What does an import mean when the statements come from a user
+   interface?
 
 ## Explored, not decided: what the tool must do
 

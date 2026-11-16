@@ -58,7 +58,7 @@ also finds a recipe that uses itself through other recipes.
 
 Four principles apply to constraints:
 
-1. **Readability comes before brevity.** YAML keys and words state each part
+1. **Readability comes before brevity.** Keys and words state each part
    in full. There are no expression strings to parse.
 2. **No implicit variables.** Each thing that a constraint refers to has a
    name and a kind. A constraint does not reach a thing through a dotted path

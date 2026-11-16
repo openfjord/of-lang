@@ -6,7 +6,9 @@ title: Files and statements — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-All of the language is in YAML files with names that end in `.of.yaml`,
+This page describes the YAML form of the language, which is the default
+form ([principle 7](../README.md#principles)). In this form, the statements
+are in YAML files with names that end in `.of.yaml`,
 such as `recipe.of.yaml`. The extension tells editors and tools which files are
 in the language. The only exception is the manifest of a package. Its name is
 always `package.yaml`. A file is a mapping: an optional `import` block, and
