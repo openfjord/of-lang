@@ -385,3 +385,9 @@ needs them to.
 2. Diagnostics from the checker, go to definition, hover on names.
 3. Completion of names, adding imports, rename.
 4. Inlay hints for derived facts, and running tests from the editor.
+
+## Planned: a user interface
+
+`of-lang ui` will start a local server that serves a web app. The web app
+edits packages. Each change goes to the files of the package, in whichever
+form those files are. The rest of the design is not yet discussed.
