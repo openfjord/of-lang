@@ -126,7 +126,8 @@ A union is closed. Only the statement itself lists its kinds. No other kind,
 and no other package, can add a kind to it.
 
 - **KD7.** `oneOf` MUST list two or more kinds. No listed kind MAY extend a
-  different listed kind, directly or through other kinds.
+  different listed kind, directly or through other kinds, because then each
+  thing of the narrower kind is two listed kinds at once.
 - **KD8.** A kind with `oneOf` MUST NOT have `fields` or `links`. Its
   listed kinds keep their own fields and links.
 - **KD9.** No kind MAY extend a kind with `oneOf`.
