@@ -193,10 +193,12 @@ allergenFromIngredient:
 dish/margherita:                         # a fact's id
   is: Fact
   kind: Dish
-  name: margherita
-  price: 12
-  madeAtStation: station/pizza
-  usesRecipe: [recipe/tomato_sauce, recipe/pesto]   # a link: an id, or a list of ids
+  fields:
+    name: margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]   # a link: an id, or a list of ids
 
 someExample:
   is: Test

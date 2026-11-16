@@ -20,45 +20,57 @@ tomatoSauceInThreeDishes:
 station/pizza:
   is: Fact
   kind: Station
-  name: pizza
+  fields:
+    name: pizza
 
 station/sauce:
   is: Fact
   kind: Station
-  name: sauce
+  fields:
+    name: sauce
 
 recipe/tomato_sauce:
   is: Fact
   kind: Recipe
-  name: tomato_sauce
-  madeAtStation: station/sauce
+  fields:
+    name: tomato_sauce
+  links:
+    madeAtStation: station/sauce
 
 recipe/pesto:
   is: Fact
   kind: Recipe
-  name: pesto
-  madeAtStation: station/sauce
+  fields:
+    name: pesto
+  links:
+    madeAtStation: station/sauce
 
 dish/margherita:
   is: Fact
   kind: Dish
-  name: margherita
-  price: 12
-  madeAtStation: station/pizza
-  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+  fields:
+    name: margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
 
 dish/marinara:
   is: Fact
   kind: Dish
-  name: marinara
-  price: 10
-  madeAtStation: station/pizza
-  usesRecipe: recipe/tomato_sauce
+  fields:
+    name: marinara
+    price: 10
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/tomato_sauce
 
 dish/lasagne:
   is: Fact
   kind: Dish
-  name: lasagne
-  price: 14
-  madeAtStation: station/pizza
-  usesRecipe: recipe/tomato_sauce
+  fields:
+    name: lasagne
+    price: 14
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/tomato_sauce

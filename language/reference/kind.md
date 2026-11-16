@@ -76,8 +76,6 @@ Dish:
   inverse name, the link must end at that kind.
 - **KD5.** Each count MUST be one of `exactly N`, `at least N`, `at most N`
   or `any number`, where N is a whole number.
-- **KD6.** No field MAY have the name `kind`, because facts use that key to
-  name their kind.
 
 ## What counts mean
 

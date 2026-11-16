@@ -58,6 +58,11 @@ Recipe:                      # the change updates this statement
       hasAllergen: any number
 ```
 
+`pending` and `was` are annotations: keys that the language adds to any
+statement, next to the keys of the statement itself. They never clash with
+the names of fields or links, because those names are always one level lower
+([statements](files.md#statements)).
+
 | Key | Required | Value |
 |---|---|---|
 | `pending` | no | `added`, `removed` or `updated` |

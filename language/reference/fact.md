@@ -20,10 +20,12 @@ import:
 dish/margherita:
   is: Fact
   kind: Dish
-  name: margherita
-  price: 12
-  madeAtStation: station/pizza
-  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+  fields:
+    name: margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
 ```
 
 The fact omits `status`, so the dish takes the default, `active`. The kind
@@ -34,15 +36,15 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 | the fact's id | — | the name of the statement: any text, usually a path such as `dish/margherita` |
 | `is` | yes | `Fact` |
 | `kind` | yes | the kind of the thing |
-| the name of a field | as the kind tells | the value of the field |
-| the name of a link | as the counts of the kind tell | one id, or a list of ids |
+| `fields` | as the kind tells | the value of each field, by the name of the field |
+| `links` | as the counts of the kind tell | for each link, one id or a list of ids |
 
 ## Rules
 
 - **FC1.** A fact MUST name its `kind`, and the kind MUST be imported.
-- **FC2.** Each other key MUST be a field of the kind (inherited fields
-  included) or a link that the file imports. Fields do not need an import,
-  but links do.
+- **FC2.** Each key under `fields` MUST be a field of the kind (inherited
+  fields included). Each key under `links` MUST be a link that the file
+  imports. Fields do not need an import, but links do.
 - **FC3.** The facts about a thing, stated and derived together, MUST have:
   - every field that its kind requires,
   - every link that the counts of its kind require,
@@ -52,7 +54,7 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 - **FC4.** Each field value MUST be a value that its field allows.
 - **FC5.** The value of a link MUST be the id of a fact in the same file, or a
   list of such ids. Each of these facts MUST be of the kind where the link
-  ends. A fact MAY use an inverse name: `makesRecipe: recipe/pesto` on a
+  ends. A fact MAY use an inverse name under `links`: `makesRecipe: recipe/pesto` on a
   station states the same fact as `madeAtStation: station/sauce` on the
   recipe.
 - **FC6.** Facts define nothing: a fact never declares a kind, a link or a

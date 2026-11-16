@@ -42,68 +42,85 @@ allergenThroughASauce:
 station/pizza:
   is: Fact
   kind: Station
-  name: pizza
+  fields:
+    name: pizza
 
 station/sauce:
   is: Fact
   kind: Station
-  name: sauce
+  fields:
+    name: sauce
 
 allergen/nuts:
   is: Fact
   kind: Allergen
-  name: nuts
+  fields:
+    name: nuts
 
 allergen/milk:
   is: Fact
   kind: Allergen
-  name: milk
+  fields:
+    name: milk
 
 ingredient/pine_nuts:
   is: Fact
   kind: Ingredient
-  name: pine_nuts
-  containsAllergen: allergen/nuts
+  fields:
+    name: pine_nuts
+  links:
+    containsAllergen: allergen/nuts
 
 ingredient/parmesan:
   is: Fact
   kind: Ingredient
-  name: parmesan
-  containsAllergen: allergen/milk
+  fields:
+    name: parmesan
+  links:
+    containsAllergen: allergen/milk
 
 ingredient/tomatoes:
   is: Fact
   kind: Ingredient
-  name: tomatoes
+  fields:
+    name: tomatoes
 
 recipe/pesto:
   is: Fact
   kind: Recipe
-  name: pesto
-  madeAtStation: station/sauce
-  usesIngredient: ingredient/pine_nuts
+  fields:
+    name: pesto
+  links:
+    madeAtStation: station/sauce
+    usesIngredient: ingredient/pine_nuts
 
 recipe/tomato_sauce:
   is: Fact
   kind: Recipe
-  name: tomato_sauce
-  madeAtStation: station/sauce
-  usesIngredient: ingredient/tomatoes
+  fields:
+    name: tomato_sauce
+  links:
+    madeAtStation: station/sauce
+    usesIngredient: ingredient/tomatoes
 
 dish/margherita:
   is: Fact
   kind: Dish
-  name: margherita
-  price: 12
-  madeAtStation: station/pizza
-  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
-  usesGarnish: ingredient/parmesan
-  listsAllergen: [allergen/nuts, allergen/milk]
+  fields:
+    name: margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+    usesGarnish: ingredient/parmesan
+    listsAllergen: [allergen/nuts, allergen/milk]
 
 dish/marinara:
   is: Fact
   kind: Dish
-  name: marinara
-  price: 10
-  madeAtStation: station/pizza
-  usesRecipe: recipe/tomato_sauce
+  fields:
+    name: marinara
+    price: 10
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/tomato_sauce

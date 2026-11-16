@@ -216,7 +216,8 @@ recipe/pesto:
   is: Fact
   kind: Recipe                     # the stated kind; no derivative changed it
   derived: true
-  hasAllergen: [allergen/nuts]     # from allergenFromIngredient
+  links:
+    hasAllergen: [allergen/nuts]   # from allergenFromIngredient
 ```
 
 The tool does not write facts in this form yet.
