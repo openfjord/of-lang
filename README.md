@@ -237,16 +237,12 @@ reasons table wait on them:
    recipe to recipe to recipe. Sometimes only nearby things matter, such as
    "recipes at most two steps away". Should chains take a limit
    (`at most: 2`), or stay unlimited?
-3. **Dates and durations.** Conditions compare a value with another value.
-   They cannot say "an ingredient that the kitchen bought more than 3 days
-   ago", because that needs "now minus 3 days". Should conditions gain date arithmetic, and if so, in
-   what YAML form?
-4. **References out of a tagged subset.** A tagged definition that refers
+3. **References out of a tagged subset.** A tagged definition that refers
    to an untagged one, such as a tagged kind extending an untagged kind, has
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
-5. **Tags and the knowledge in a subset.** An export must hold the same
+4. **Tags and the knowledge in a subset.** An export must hold the same
    knowledge as its package and answer the same questions. A tagged export
    must hold only the tagged knowledge: it must not answer a question that
    needs knowledge without the tag. Two parts are open. How do constraints
