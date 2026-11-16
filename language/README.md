@@ -22,15 +22,6 @@ Developers read and write the statements. Product reads the sentences and
 pages that a tool generates from the same statements. The tool checks the
 statements, derives what follows, and rejects what breaks a rule.
 
-The language keeps the strengths of the semantic-web standards (RDF, OWL,
-SHACL): exact meaning and, most of all, inference. It removes the parts that
-make these standards difficult for software people:
-
-- the notation
-- the jargon
-- the open world
-- the absence of packages, tests and tools.
-
 ## How to read this
 
 | If you want to | Read |
@@ -69,8 +60,10 @@ Thus, an error from the tool can identify the rule that it enforces.
    tests.
 4. **Every change shows what it means.** A change shows what was stated, what
    follows, what no longer follows, what is rejected, and why.
-5. **The standards are the export, not the source.** The tool generates RDF,
-   OWL and SHACL for exchange and for existing tools. Nobody writes them.
+5. **RDF is an export, not the source.** The tool generates RDF (Resource
+   Description Framework), OWL (Web Ontology Language) and SHACL (Shapes
+   Constraint Language) for exchange and for existing tools. Nobody writes
+   them.
 6. **All text is Simplified Technical English.** This specification and all
    free-form text in a package follow ASD-STE100 Simplified Technical
    English (STE). See [FL16](reference/files.md#free-form-text).
@@ -85,21 +78,21 @@ Thus, an error from the tool can identify the rule that it enforces.
 
 ## Vocabulary
 
-| Word | Meaning | Closest standard construct |
-|---|---|---|
-| **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm | an ontology with `owl:imports` |
-| **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is | — |
-| **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish) | `owl:Class` |
-| **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it | an attribute (`owl:DatatypeProperty`) |
-| **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
-| **[link](reference/link.md)** | a named, directed relationship between two things | `owl:ObjectProperty` |
-| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them | — |
-| **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it | a SHACL shape |
-| **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match | a SHACL rule |
-| **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts | RDF triples |
-| **[derived fact](reference/fact.md#derived-facts)** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one | RDF triples |
-| **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects | a competency question |
-| **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most | — |
+| Word | Meaning |
+|---|---|
+| **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm |
+| **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is |
+| **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish) |
+| **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it |
+| **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value |
+| **[link](reference/link.md)** | a named, directed relationship between two things |
+| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
+| **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |
+| **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
+| **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |
+| **[derived fact](reference/fact.md#derived-facts)** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one |
+| **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects |
+| **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most |
 
 Fields and links are different: a field is a value of the thing, and a link
 points to another thing.

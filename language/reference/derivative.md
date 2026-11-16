@@ -281,7 +281,7 @@ allergenFromRecipe:
 
 - **DV17.** Derivatives MUST NOT depend on each other in a circle through
   `none`, `count` or `is not set`. Such derivatives can never become stable,
-  so the tool rejects them. (In Datalog terms, they must be stratified.)
+  so the tool rejects them.
 
 [Constraints](constraint.md) run after all derivatives finish.
 
