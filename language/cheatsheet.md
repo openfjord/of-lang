@@ -72,8 +72,6 @@ Recipe:                                  # UpperCamelCase
   fields:
     name:        { type: Name }                       # required by default
     prepMinutes: { type: Minutes, optional: true }
-                                         # no links here: a link names its own from and to;
-                                         # a constraint with count limits how many
 
 Dish:
   is: Kind

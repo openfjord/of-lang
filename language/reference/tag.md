@@ -21,8 +21,7 @@ Recipe:
   tags: [allergens]
 ```
 
-A tag is not a statement, and nothing imports it. The manifest of the
-package lists its tags, each with a name and a description
+The manifest of the package lists its tags, each with a name and a description
 ([the manifest](package.md#the-manifest)):
 
 ```yaml

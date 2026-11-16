@@ -66,14 +66,14 @@ Dish:
 
   For example, `Dish` extends `Recipe`. A dish has the fields and links of a
   recipe, and also a price. Each dish is also a recipe.
+
 ## Links of a thing
 
-A kind does not list its links. Each [link](link.md) names the kind where it
-starts and the kind where it ends. A thing can have each link that starts at
-its kind, at a kind that its kind extends, or at a union that lists its kind.
+Each [link](link.md) names the kind where it starts and the kind where it
+ends. A thing can have each link that starts at its kind, at a kind that its
+kind extends, or at a union that lists its kind.
 
-A kind does not set how many links a thing has. A
-[constraint](constraint.md) does that, with `count`:
+A [constraint](constraint.md) with `count` sets how many links a thing has:
 
 ```yaml
 recipeAtOneStation:
