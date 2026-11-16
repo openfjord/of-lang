@@ -52,9 +52,9 @@ Thus, an error from the tool can identify the rule that it enforces.
 1. **One model, two readings.** Developers write and read objects. Product
    reads the sentences and examples that the tool generates from the same
    files.
-2. **Check closed, infer by derivatives.** Constraints reject. Derivatives
-   derive. No construct does both. No construct concludes the kind of a thing
-   from a link that the thing has.
+2. **Constraints reject, derivatives derive.** No construct does both. Only
+   a derivative can give a thing a narrower kind. A link never changes the
+   kind of a thing.
 3. **Engineered like code.** The language uses the practices of code:
    packages, versions, namespaces, review, CI (continuous integration) and
    tests.
@@ -75,6 +75,10 @@ Thus, an error from the tool can identify the rule that it enforces.
    inside a file changes. The tool reads each form into the same model. A
    user interface is not a form. It edits packages: it changes the files of a
    package, in whichever form those files are.
+8. **No prior knowledge.** A reader needs no knowledge of RDF or of
+   ontologies to understand the language. This specification explains each
+   idea in its own words, and does not compare the language with other
+   standards.
 
 ## Vocabulary
 

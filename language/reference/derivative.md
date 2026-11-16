@@ -276,8 +276,8 @@ allergenFromRecipe:
 2. **`none`, `count` and `is not set` over derived facts wait.** A derivative
    can use them on facts that a different derivative adds. Then it runs only
    after that other derivative finishes.
-3. **Closed world.** A link that is not stated and not derived does not
-   exist. A field with no value is not set, not unknown.
+3. **What is not stated is false.** A link that is not stated and not
+   derived does not exist. A field with no value is not set, not unknown.
 
 - **DV17.** Derivatives MUST NOT depend on each other in a circle through
   `none`, `count` or `is not set`. Such derivatives can never become stable,

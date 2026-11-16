@@ -164,7 +164,5 @@ for each word, active voice and simple verb tenses.
 
 Files use plain names, for example `Recipe` for a kind and
 `dish/margherita` for a fact. Imports show the source of each name.
-An id is a name, not a web address (reason 10 in
-[the research](../../README.md)). The tool builds the full IRI
-(Internationalized Resource Identifier) from the `rdfNamespace` of the
-package. The full IRI is only in the exported RDF.
+An id is a name, not a web address. In the RDF export only, the tool puts
+the `rdfNamespace` of the package in front of each name.

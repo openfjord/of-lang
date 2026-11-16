@@ -79,9 +79,7 @@ Dish:
 
 ## What counts mean
 
-A count is a check. It is never an inference. A recipe that names two
-stations is an error. The language never infers that "the two stations are
-the same". A fact cannot state a link that its kind does not list under
+A count is a check. A recipe that names two stations is an error. A fact cannot state a link that its kind does not list under
 `links`.
 
 Every field is required, unless it has `optional: true` or a `default`

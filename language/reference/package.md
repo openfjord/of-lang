@@ -66,7 +66,7 @@ openFor:                          # extension points: what other packages may ad
 | `package` | yes | the full name of the package |
 | `version` | yes | a semantic version, `MAJOR.MINOR.PATCH` |
 | `owner` | yes | who must approve any change to the package |
-| `rdfNamespace` | yes | the prefix that the tool uses to build IRIs in the exported RDF |
+| `rdfNamespace` | yes | the prefix that the tool puts in front of each name in the exported RDF |
 | `dependsOn` | no | a mapping from package names to version ranges |
 | `exports` | no | the `kinds`, `links`, `valueTypes` and `tags` that other packages can import |
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
