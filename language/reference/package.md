@@ -58,6 +58,11 @@ exports:                          # what other packages may use; the rest is int
 openFor:                          # extension points: what other packages may add to
   - extend: Recipe                #   another package may declare a kind of recipe
   - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
+tags:                             # the labels that statements of this package can carry
+  - name: allergens
+    description: What an allergen app needs to tell guests which dishes contain which allergens.
+  - name: menu
+    description: What the menu app needs to show the dishes and their prices.
 ```
 
 | Key | Required | Value |
@@ -69,10 +74,13 @@ openFor:                          # extension points: what other packages may ad
 | `dependsOn` | no | a mapping from package names to version ranges |
 | `exports` | no | the `kinds`, `links` and `valueTypes` that other packages can import |
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
+| `tags` | no | a list of [tags](tag.md), each with a `name` and a `description` |
 
 - **PK4.** `package.yaml` MUST have `package`, `version`, `owner` and
   `rdfNamespace`, and MUST NOT have a key that is not in the table.
 - **PK5.** `version` MUST be `MAJOR.MINOR.PATCH`, three whole numbers.
+- **PK15.** Each item in `tags` MUST have a `name` and a `description`, and
+  no other key. No two items MAY have the same `name`.
 
 ## Names and namespaces
 

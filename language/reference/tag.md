@@ -21,9 +21,20 @@ Recipe:
   tags: [allergens]
 ```
 
-A tag is not a statement. Nothing declares it, and nothing imports it. A tag
-exists because one or more definitions carry it. Thus, two packages that
-use the same tag mean the same label, and no package owns it.
+A tag is not a statement, and nothing imports it. The manifest of the
+package lists its tags, each with a name and a description
+([the manifest](package.md#the-manifest)):
+
+```yaml
+# package.yaml
+tags:
+  - name: allergens
+    description: What an allergen app needs to tell guests which dishes contain which allergens.
+```
+
+Thus, a misspelled tag is an error, not a new subset. Each package has its
+own tags. An export with a list of tags selects, in each package of the
+export, the definitions that carry a tag with one of those names.
 
 ## Tagging a definition
 
@@ -61,5 +72,7 @@ exported is not exported at all. The export lists each item that it removes.
 ## Rules
 
 - **TG2.** A tag MUST be lowerCamelCase.
-- **TG3.** `tags` MAY appear only on a kind, a link or a value type.
+- **TG3.** `tags` MAY appear only on a kind, a link or a value type. Each
+  tag in the list MUST be the `name` of a tag in the `tags` of the package
+  manifest.
 - **TG4.** A definition MUST NOT list the same tag twice.
