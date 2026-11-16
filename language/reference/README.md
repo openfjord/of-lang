@@ -23,3 +23,4 @@ takes, and the requirements that the tool checks.
 | [Derivatives](derivative.md) | `match`, `filter`, `derive`, how they run, explanations | DV |
 | [Facts](fact.md) | facts in tests, derived facts | FC |
 | [Tests](test.md) | examples, and questions with their own `match` and `filter` | TS |
+| [Pending changes](pending.md) | `pending` and `was`: a change that nobody has accepted yet | PD |

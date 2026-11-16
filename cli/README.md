@@ -228,8 +228,9 @@ it produces.
 
 ### The change report
 
-Every change to a package returns one report, for the facts in its tests and
-examples, before it lands. It joins `diff` and `explain`: what was stated,
+The [pending change](../language/reference/pending.md) of a package returns
+one report, for the facts in its tests and examples. The report compares the
+package without the change and with the change, so git is not necessary. It joins `diff` and `explain`: what was stated,
 what newly follows and why, what no longer follows, and what is rejected.
 
 ```

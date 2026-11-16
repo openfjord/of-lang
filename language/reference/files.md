@@ -59,7 +59,8 @@ The `is:` key of every statement tells what the statement is.
 
 - **FL1.** Every top-level key other than `import` MUST be a statement: a
   mapping with an `is:` key that has a value from the table above.
-- **FL2.** A statement MUST NOT have a key that its page does not list. The
+- **FL2.** A statement MUST NOT have a key that its page does not list,
+  other than `pending` and `was` ([pending changes](pending.md)). The
   tool rejects all keys that are not listed, so a misspelled key is an error.
   The tool does not ignore it.
 - **FL3.** A file MUST NOT repeat a key in the same mapping.

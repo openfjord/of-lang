@@ -217,6 +217,26 @@ whichDishesContainNuts:
     $dish: [dish/margherita]
 ```
 
+## Pending changes
+
+```yaml
+Garnish:
+  is: Kind
+  pending: added                         # or removed, or updated
+  definition: An ingredient that the cook puts on the food at the end.
+
+Recipe:
+  is: Kind
+  pending: updated
+  definition: The steps that make one dish or one part of a dish.   # the new version
+  was:                                   # the whole old version, without is
+    definition: The steps that make one food from ingredients and other recipes.
+```
+
+A package has one pending change or none. Accept applies all marks in one
+step, and reject undoes them. Other packages see the package without the
+change.
+
 ## How it runs
 
 The derivatives run repeatedly until no new fact follows. `under` and `chains`

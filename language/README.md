@@ -99,6 +99,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts | RDF triples |
 | **[derived fact](reference/fact.md#derived-facts)** | a fact that a derivative or a link declaration adds; tests can expect one, but no file declares one | RDF triples |
 | **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects | a competency question |
+| **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most | — |
 
 Fields and links are different: a field is a value of the thing, and a link
 points to another thing.
