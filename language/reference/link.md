@@ -61,7 +61,9 @@ that it uses.
   never `uses` (reason 2 in [the research](../../README.md)).
 - **LK2.** A link MUST have a `definition` and a `reads` sentence. `reads`
   MUST contain both `{from}` and `{to}` (reason 7).
-- **LK3.** `from` and `to` MUST name kinds. They are checks: the language
+- **LK3.** `from` and `to` MUST each name a kind that the file defines or
+  imports. A name that is not a kind, or that names nothing, is an error.
+  `from` and `to` are checks: the language
   rejects a fact that links a station with `usesRecipe`. A link never gives a
   thing a kind.
 - **LK4.** `under` MUST name a declared link, not an inverse name. The `from`
