@@ -15,13 +15,95 @@ title: A modeling language for software people — Research
 > [`of-lang`](cli/README.md), implements an earlier version of it, and
 > [examples/data-model/](examples/data-model/) is an example package.
 
+## Why
+
+### The problem
+
+A software product is made of many things. In the example in this folder,
+those things are teams, databases, tables, applications and jobs. There are
+also many rules about these things:
+
+- A table belongs to the team that owns its database.
+- An application must not read an internal table of a different
+  application.
+- A table that many jobs read needs extra care when it changes.
+
+Usually, nobody writes these things and rules down in one place. They are in
+the heads of people, in wiki pages, in code comments and in the code itself.
+This causes problems:
+
+- **The same word has different meanings.** One team says "table" for a
+  stored table, and a different team also uses it for a view. Nobody sees the
+  difference until something breaks.
+- **Nothing checks a rule that is only text.** A rule in a wiki page does not
+  stop a change that breaks it. People find the problem later, in production.
+- **Nobody sees the effect of a change.** A team deletes a table. Which jobs
+  read it? Which applications fail? To get the answer, somebody must search
+  through many systems by hand.
+- **The people who own the meaning cannot read where it is written.** Product
+  decides what a "critical table" is. But the decision ends up in code, which
+  product does not read.
+- **Each tool keeps its own copy.** A data catalog, a lineage tool and a
+  permissions system each describe the same tables in their own way. The
+  copies do not agree.
+
+### What a model gives
+
+A model writes these things down one time, in files next to the code. It
+contains four types of information:
+
+| Information | Example |
+|---|---|
+| the kinds of things, and their fields | a table has a name and a visibility |
+| the links between things | a job reads a table; a table is in a database |
+| what follows from other facts | if a job of application A reads a table that a job of application B writes, then A depends on B |
+| what is not allowed | a job must not read a table of a different application, unless the table is public and a contract covers it |
+
+Then a tool can do things that text in a wiki cannot do:
+
+- **Check.** The tool compares data with the rules, and rejects data that
+  breaks a rule. It tells which rule and why.
+- **Derive.** The tool finds facts that nobody wrote. Nobody wrote "the
+  revenue report depends on order intake". The tool finds it from the jobs and
+  the tables, and shows the steps.
+- **Answer questions.** "Which applications fail if order intake stops?" The
+  tool answers from the model, not from a search by hand.
+- **Show the effect of a change.** Before a change is merged, the tool shows
+  the new facts that follow, the facts that no longer follow, and the rules
+  that the change breaks.
+- **Give product a page to read.** The tool makes a page for each term, in
+  sentences and examples. Product reviews the page, not the YAML.
+- **Give other tools one source.** The tool exports the model in standard
+  formats. A catalog or a lineage tool reads the export, so there is one
+  source, not many copies.
+
+A database schema or a JSON Schema does not do this. A database schema tells
+how one system stores its data. A JSON Schema checks one document. Neither
+describes things across many systems, the links between those things, or
+what follows from the links.
+
+### Why a new language
+
+A model of this type has a name: an **ontology**. Standards for ontologies
+already exist. The W3C (World Wide Web Consortium) published them, and many
+tools read them:
+
+- **RDF** (Resource Description Framework) stores each fact as three parts:
+  a thing, a link and a different thing. "job_42 reads orders" is one fact.
+- **RDFS** (RDF Schema) and **OWL** (Web Ontology Language) describe the
+  kinds of things and the links, and what follows from them.
+- **SHACL** (Shapes Constraint Language) describes what is not allowed.
+
+These standards can describe a product exactly. But few product people or
+developers read or write them. [The next section](#why-ontologies-are-hard-for-software-people)
+gives eighteen reasons. This draft is a language that software people can
+read and write. It keeps what the standards do well, and its tool,
+[`of-lang`](cli/README.md), makes the standard formats from it.
+
 ## The question
 
-The W3C semantic-web standards — RDF (Resource Description Framework), RDFS
-(RDF Schema), OWL (Web Ontology Language) and SHACL (Shapes Constraint
-Language) — can describe a software product's domain exactly. Few product or
-development people will read or write them. Can a language keep what the
-standards are good at, inference above all, and drop what makes them hard?
+Can a language keep what the W3C standards are good at, inference above all,
+and remove what makes them hard for software people?
 
 ## Why ontologies are hard for software people
 

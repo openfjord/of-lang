@@ -6,7 +6,8 @@ title: The OpenFjord modeling language
 
 > **Status: a draft, explored, not decided.** This is the specification of
 > the language that [the research](../README.md) describes. Nothing here is
-> mandatory yet.
+> mandatory yet. For why the language is necessary, read
+> [Why](../README.md#why) in the research.
 
 The language describes the parts of a software product. The description is
 in YAML files, which are in git next to the code. The files describe:
