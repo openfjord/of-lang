@@ -1,0 +1,109 @@
+import:
+  - from: file:../../defs/station.of.yaml
+    use: [Station, dependsOnStation]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [hasAllergen, listsAllergen]
+
+allergenThroughASauce:
+  is: Test
+  says: >
+    The margherita uses the pesto, which contains nuts. Parmesan, which
+    contains milk, is on the margherita as a garnish. Thus, the margherita
+    contains nuts and milk. The menu gives a warning about the two allergens,
+    so the dish breaks no constraint. The pizza station depends on the sauce
+    station.
+  expect:
+    derived:
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/nuts
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/milk
+      - link: usesIngredient
+        from: dish/margherita
+        to:   ingredient/parmesan
+      - link: dependsOnStation
+        from: station/pizza
+        to:   station/sauce
+    notDerived:
+      - link: hasAllergen
+        from: dish/marinara
+        to:   allergen/nuts
+      - link: dependsOnStation
+        from: station/sauce
+        to:   station/pizza
+    rejected: []
+
+station/pizza:
+  is: Fact
+  kind: Station
+  name: pizza
+
+station/sauce:
+  is: Fact
+  kind: Station
+  name: sauce
+
+allergen/nuts:
+  is: Fact
+  kind: Allergen
+  name: nuts
+
+allergen/milk:
+  is: Fact
+  kind: Allergen
+  name: milk
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  name: pine_nuts
+  containsAllergen: allergen/nuts
+
+ingredient/parmesan:
+  is: Fact
+  kind: Ingredient
+  name: parmesan
+  containsAllergen: allergen/milk
+
+ingredient/tomatoes:
+  is: Fact
+  kind: Ingredient
+  name: tomatoes
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  name: pesto
+  madeAtStation: station/sauce
+  usesIngredient: ingredient/pine_nuts
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  name: tomato_sauce
+  madeAtStation: station/sauce
+  usesIngredient: ingredient/tomatoes
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  name: margherita
+  price: 12
+  madeAtStation: station/pizza
+  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+  usesGarnish: ingredient/parmesan
+  listsAllergen: [allergen/nuts, allergen/milk]
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  name: marinara
+  price: 10
+  madeAtStation: station/pizza
+  usesRecipe: recipe/tomato_sauce

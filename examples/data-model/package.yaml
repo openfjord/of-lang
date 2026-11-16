@@ -1,8 +1,0 @@
-package: "@openfjord/data-model"
-version: 0.1.0
-owner: product
-rdfNamespace: data
-exports:
-  kinds: [Team, Database, Table, CriticalTable, Application, Contract, Job]
-  links: [ownedByTeam, inDatabase, belongsToTeam, feedsTable, jobOf, readsTable, writesTable, usesTable, dependsOnApp, consumesContract, coversTable]
-  valueTypes: [Name, RetentionDays]

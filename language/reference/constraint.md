@@ -14,65 +14,47 @@ violation.
 ## With `unless`
 
 ```yaml
-crossAppReadNeedsContract:
+dishListsItsAllergens:
   is: Constraint
   says: >
-    A job of one application may read a table that a job of another
-    application writes, only if the table is public and the reading
-    application consumes a contract that covers the table.
+    The menu must give a warning about each allergen in an active dish.
   match:
-    - link: jobOf
-      from: {$job: Job}
-      to:   {$jobApp: Application}
-    - link: readsTable
-      from: {$job: Job}
-      to:   {$table: Table}
-    - link: writesTable
-      from: {$writer: Job}
-      to:   {$table: Table}
-    - link: jobOf
-      from: {$writer: Job}
-      to:   {$writerApp: Application}
+    - link: hasAllergen
+      from: {$dish: Dish}
+      to:   {$allergen: Allergen}
   filter:
-    - node: $writerApp
-      does not equal:
-        same as: $jobApp
-  unless:
-    - node:  $table
-      field: visibility
+    - node:  $dish
+      field: status
       equals:
-        value: public
+        value: active
+  unless:
     - at least one:
         match:
-          - link: consumesContract
-            from: {$jobApp: Application}
-            to:   {$contract: Contract}
-          - link: coversTable
-            from: {$contract: Contract}
-            to:   {$table: Table}
-  message: "{$job} must not read {$table} from {$writerApp} without a contract."
+          - link: listsAllergen
+            from: {$dish: Dish}
+            to:   {$allergen: Allergen}
+  message: "The menu must warn that {$dish} contains {$allergen}."
 ```
 
-Read it as follows. A job reads a table that a job of a different
-application writes. This is a violation, unless two things are true: the
-table is public, and the application of the first job consumes a contract
-that covers the table.
+Read it as follows. A dish contains an allergen. When the dish is active, this
+is a violation, unless the menu gives a warning about the allergen next to
+the dish.
 
 ## Without `unless`
 
 ```yaml
-noFeedbackLoop:
+noRecipeLoop:
   is: Constraint
-  says: A table must not feed itself, directly or through other tables.
+  says: A recipe must not use itself, directly or through other recipes.
   match:
-    - link: feedsTable
-      from: {$table: Table}
-      to:   {$table: Table}
-  message: "{$table} must not feed itself."
+    - link: usesRecipe
+      from: {$recipe: Recipe}
+      to:   {$recipe: Recipe}
+  message: "{$recipe} must not use itself."
 ```
 
-Each match is a violation. The link `feedsTable` chains, so this constraint
-also finds a table that feeds itself through other tables.
+Each match is a violation. The link `usesRecipe` chains, so this constraint
+also finds a recipe that uses itself through other recipes.
 
 Four principles apply to constraints:
 
@@ -101,32 +83,32 @@ Each item in `match` is one link that must exist between two things:
 
 ```yaml
 match:
-  - link: readsTable
-    from: {$job: Job}
-    to:   {$table: Table}
+  - link: usesIngredient
+    from: {$recipe: Recipe}
+    to:   {$ingredient: Ingredient}
 ```
 
 `from` and `to` each give a variable and the kind that the variable must
 have. A variable is `$`, then a lowercase letter, then letters and digits:
-`$job`, `$writerApp`.
+`$recipe`, `$part`.
 
 `match` finds each combination of things for which all its links hold. Each
 combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. Two
 variables can represent the same thing, unless a condition prevents it. One
-variable that occurs two times, as in `noFeedbackLoop`, is the same thing at
+variable that occurs two times, as in `noRecipeLoop`, is the same thing at
 each occurrence.
 
-The inverse name of a link reads the link in the opposite direction: `link: writtenByJob, from:
-{$table: Table}, to: {$writer: Job}` matches exactly the same things as `link: writesTable,
-from: {$writer: Job}, to: {$table: Table}`.
+The inverse name of a link reads the link in the opposite direction: `link: makesRecipe, from:
+{$station: Station}, to: {$recipe: Recipe}` matches exactly the same things as `link: madeAtStation,
+from: {$recipe: Recipe}, to: {$station: Station}`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
-A narrower kind limits the matches. For example, `{$table: CriticalTable}`
-on `readsTable` matches only jobs that read critical tables.
+A narrower kind limits the matches. For example, `{$part: BaseRecipe}`
+on `usesRecipe` matches only recipes that use base recipes.
 
 ## Filter and unless
 
@@ -144,16 +126,19 @@ and `field`). Then it gives a comparison word and what to compare with:
 
 ```yaml
 unless:
-  - node:  $table
-    field: retentionDays
-    is at most:
+  - node: $other
+    does not equal:
+      same as: $station
+  - node:  $dish
+    field: prepMinutes
+    is at least:
       same as:
-        node:  $database
-        field: retentionDays
-  - node:  $table
-    field: visibility
+        node:  $part
+        field: prepMinutes
+  - node:  $dish
+    field: status
     is one of:
-      values: [public, internal]
+      values: [active, retired]
 ```
 
 | Word | Holds when |
@@ -162,7 +147,7 @@ unless:
 | `is above`, `is below` | the first is greater, or smaller |
 | `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
 | `is one of` | the first equals one of `values` |
-| `is a` | the thing has the named kind (`is a: CriticalTable`) |
+| `is a` | the thing has the named kind (`is a: BaseRecipe`) |
 | `is set`, `is not set` | the field has a value, or has no value |
 
 When a condition compares a thing without a field, it compares the id of the
@@ -186,8 +171,8 @@ negative cases, and each condition stays easy to read alone.
 
 A message states the rule that the match breaks. It uses the words "must" or
 "must not". It quotes variables in braces, and the match gives their values.
-`{$job}` gives the id of the thing. `{$table: visibility}` gives the value of
-a field.
+`{$dish}` gives the id of the thing. `{$dish: status}` gives the value of a
+field.
 
 ## Rules
 
@@ -202,7 +187,7 @@ a field.
 - **CN4.** The kind MUST be the kind that the link joins at that end, or a
   kind that extends it.
 - **CN5.** Conditions and messages MUST write a variable without its kind
-  (`$table`), and every variable that they use MUST appear in a `match` item.
+  (`$recipe`), and every variable that they use MUST appear in a `match` item.
 - **CN6.** A variable that appears only in a nested block belongs to that
   block. The constraint MUST NOT use it outside that block, and this includes
   the message.

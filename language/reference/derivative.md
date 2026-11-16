@@ -11,24 +11,25 @@ links between them, and it uses conditions to narrow the matches. For each
 match, it adds a link, a kind or a field value.
 
 ```yaml
-tableTeamFromDatabase:
+allergenFromIngredient:
   is: Derivative
-  says: A table belongs to the team that owns its database.
+  says: A recipe contains each allergen that one of its ingredients contains.
   match:
-    - link: inDatabase
-      from: {$table: Table}
-      to:   {$database: Database}
-    - link: ownedByTeam
-      from: {$database: Database}
-      to:   {$team: Team}
+    - link: usesIngredient
+      from: {$recipe: Recipe}
+      to:   {$ingredient: Ingredient}
+    - link: containsAllergen
+      from: {$ingredient: Ingredient}
+      to:   {$allergen: Allergen}
   derive:
-    - link: belongsToTeam
-      from: $table
-      to:   $team
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
 ```
 
-Read it as follows: for each table `$table` in a database `$database` that a
-team `$team` owns, add "`$table` belongs to `$team`".
+Read it as follows: for each recipe `$recipe` that uses an ingredient
+`$ingredient` that contains an allergen `$allergen`, add "`$recipe` contains
+`$allergen`".
 
 Four principles apply to derivatives:
 
@@ -56,37 +57,37 @@ Each item in `match` is one link that must exist between two things:
 
 ```yaml
 match:
-  - link: readsTable
-    from: {$job: Job}
-    to:   {$table: Table}
+  - link: usesIngredient
+    from: {$recipe: Recipe}
+    to:   {$ingredient: Ingredient}
 ```
 
 `from` and `to` each give a variable and the kind that the variable must
 have. A variable is `$`, then a lowercase letter, then letters and digits:
-`$job`, `$writerApp`.
+`$recipe`, `$part`.
 
 `match` finds each combination of things for which all its links hold. Each
 combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. Two
 variables can represent the same thing, unless a condition prevents it.
 
-The inverse name of a link reads the link in the opposite direction: `link: writtenByJob, from:
-{$table: Table}, to: {$writer: Job}` matches exactly the same things as `link: writesTable,
-from: {$writer: Job}, to: {$table: Table}`.
+The inverse name of a link reads the link in the opposite direction: `link: makesRecipe, from:
+{$station: Station}, to: {$recipe: Recipe}` matches exactly the same things as `link: madeAtStation,
+from: {$recipe: Recipe}, to: {$station: Station}`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
 ```yaml
-- link: feedsTable
-  from: {$source: Table}
-  to:   {$target: Table}
+- link: usesRecipe
+  from: {$recipe: Recipe}
+  to:   {$part: Recipe}
   repeated: true
 ```
 
-A narrower kind limits the matches. For example, `{$table: CriticalTable}`
-on `readsTable` matches only jobs that read critical tables.
+A narrower kind limits the matches. For example, `{$part: BaseRecipe}`
+on `usesRecipe` matches only recipes that use base recipes.
 
 ## Filter
 
@@ -102,19 +103,19 @@ and `field`). Then it gives a comparison word and what to compare with:
 
 ```yaml
 filter:
-  - node: $writerApp
+  - node: $other
     does not equal:
-      same as: $jobApp
-  - node:  $table
-    field: retentionDays
-    is at most:
+      same as: $station
+  - node:  $dish
+    field: prepMinutes
+    is at least:
       same as:
-        node:  $database
-        field: retentionDays
-  - node:  $table
-    field: visibility
+        node:  $part
+        field: prepMinutes
+  - node:  $dish
+    field: status
     is one of:
-      values: [public, internal]
+      values: [active, retired]
 ```
 
 | Word | Holds when |
@@ -123,7 +124,7 @@ filter:
 | `is above`, `is below` | the first is greater, or smaller |
 | `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
 | `is one of` | the first equals one of `values` |
-| `is a` | the thing has the named kind (`is a: CriticalTable`) |
+| `is a` | the thing has the named kind (`is a: BaseRecipe`) |
 | `is set`, `is not set` | the field has a value, or has no value |
 
 When a condition compares a thing without a field, it compares the id of the
@@ -147,79 +148,79 @@ negative cases, and each condition stays easy to read alone.
 
 | Adds | Written | Example |
 |---|---|---|
-| a link | `link`, `from`, `to` | `link: dependsOnApp, from: $app, to: $other` |
-| a kind | `node`, `becomes` | `node: $table, becomes: CriticalTable` |
-| a field value | `node`, `field`, `set to` with `value:` or `same as:` | `node: $table, field: visibility, set to: { value: internal }` |
+| a link | `link`, `from`, `to` | `link: dependsOnStation, from: $station, to: $other` |
+| a kind | `node`, `becomes` | `node: $recipe, becomes: BaseRecipe` |
+| a field value | `node`, `field`, `set to` with `value:` or `same as:` | `node: $dish, field: status, set to: { value: retired }` |
 
 ```yaml
-appDependsOnWriter:
+stationDependsOnStation:
   is: Derivative
   says: >
-    An application depends on every other application whose jobs write a
-    table that one of its own jobs reads.
+    A station depends on each different station that makes a recipe that one
+    of its own recipes uses.
   match:
-    - link: hasJob
-      from: {$app: Application}
-      to:   {$reader: Job}
-    - link: readsTable
-      from: {$reader: Job}
-      to:   {$table: Table}
-    - link: writesTable
-      from: {$writer: Job}
-      to:   {$table: Table}
-    - link: jobOf
-      from: {$writer: Job}
-      to:   {$other: Application}
+    - link: makesRecipe
+      from: {$station: Station}
+      to:   {$recipe: Recipe}
+    - link: usesRecipe
+      from: {$recipe: Recipe}
+      to:   {$part: Recipe}
+    - link: madeAtStation
+      from: {$part: Recipe}
+      to:   {$other: Station}
   filter:
     - node: $other
       does not equal:
-        same as: $app
+        same as: $station
   derive:
-    - link: dependsOnApp
-      from: $app
+    - link: dependsOnStation
+      from: $station
       to:   $other
 ```
 
 ```yaml
-criticalTable:
+baseRecipe:
   is: Derivative
-  says: A table read by more than two jobs is critical.
+  says: >
+    A recipe that more than two other recipes use, directly or through other
+    recipes, is a base recipe.
   filter:
     - count:
         match:
-          - link: readsTable
-            from: {$reader: Job}
-            to:   {$table: Table}
+          - link: usesRecipe
+            from: {$user: Recipe}
+            to:   {$recipe: Recipe}
       is above:
         value: 2
   derive:
-    - node: $table
-      becomes: CriticalTable
+    - node: $recipe
+      becomes: BaseRecipe
 ```
 
-`criticalTable` has no `match` of its own. Its only variable outside the
-nested block is `$table`, and `$table` represents each table in turn
+`baseRecipe` has no `match` of its own. Its only variable outside the nested
+block is `$recipe`, and `$recipe` represents each recipe in turn
 ([DV11](#rules)).
 
-When a link chains, a derivative adds only the direct step. For example,
-`tableFeedsTable` adds "a feeds b" for each job that reads a and writes b.
-`chains: true` on `feedsTable` adds the longer chains.
+A derivative can match a link that a derivative adds. For example,
+`allergenFromRecipe` matches `hasAllergen`, and `allergenFromIngredient` adds
+`hasAllergen`. When a derived link chains, a derivative adds only the direct
+step. `chains: true` on the link adds the longer chains.
 
 ```yaml
-tableFeedsTable:
+allergenFromRecipe:
   is: Derivative
-  says: A table feeds every table that a job reading it writes.
+  says: A recipe contains each allergen that one of its recipes contains.
   match:
-    - link: readsTable
-      from: {$job: Job}
-      to:   {$source: Table}
-    - link: writesTable
-      from: {$job: Job}
-      to:   {$target: Table}
+    - link: usesRecipe
+      from: {$recipe: Recipe}
+      to:   {$part: Recipe}
+    - link: hasAllergen
+      from: {$part: Recipe}
+      to:   {$allergen: Allergen}
   derive:
-    - link: feedsTable
-      from: $source
-      to:   $target
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
 ```
 
 ## Rules
@@ -235,7 +236,7 @@ tableFeedsTable:
 - **DV4.** The kind MUST be the kind that the link joins at that end, or a
   kind that extends it.
 - **DV5.** Conditions and `derive` MUST write a variable without its kind
-  (`$table`), and every variable that they use MUST appear in a `match` item.
+  (`$recipe`), and every variable that they use MUST appear in a `match` item.
 - **DV6.** A variable that appears only in a nested block belongs to that
   block. The derivative MUST NOT use it outside that block.
 - **DV7.** A condition MUST be one of the forms above. `is set` and `is not

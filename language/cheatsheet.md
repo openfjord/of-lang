@@ -22,20 +22,20 @@ my-package/
 
 ```yaml
 # package.yaml
-package: "@openfjord/data-model"   # required; quoted because of the leading @
-version: 0.3.0                     # required
-owner: product                     # required; owns everything in the package
-rdfNamespace: data                 # required; used only in exported RDF
+package: "@bistro/kitchen"         # required; quoted because of the leading @
+version: 0.1.0                     # required
+owner: kitchen                     # required; owns everything in the package
+rdfNamespace: kitchen              # required; used only in exported RDF
 dependsOn:
-  "@openfjord/org-model": ^1.2
+  "@bistro/suppliers": ^1.2
 exports:
-  kinds: [Table]
-  links: [inDatabase]
+  kinds: [Recipe]
+  links: [madeAtStation]
   valueTypes: [Name]
-  tags: [lineage]
+  tags: [allergens]
 openFor:
-  - extend: Table
-  - under: readsTable
+  - extend: Recipe
+  - under: usesIngredient
 ```
 
 ## A file
@@ -44,8 +44,8 @@ openFor:
 import:
   - from: file:names.of.yaml                     # relative to this file
     use: [Name]
-  - from: pkg:@openfjord/org-model            # must be in dependsOn and exported there
-    use: [Contract, { name: Team, as: OrgTeam }]
+  - from: pkg:@bistro/suppliers                  # must be in dependsOn and exported there
+    use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
 
 SomeStatement:
   is: Kind        # or Link, ValueType, Tag, Constraint, Derivative — Fact, Test, Question in tests/
@@ -60,40 +60,60 @@ All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 ## Definitions
 
 ```yaml
-Table:                                   # UpperCamelCase
+Recipe:                                  # UpperCamelCase
   is: Kind
-  definition: A set of rows with one schema, stored in a database.   # required
-  extends: Dataset                       # optional
-  tags: [lineage]                        # optional; kinds, links and value types only
-  examples:    [the order_lines table]
-  notExamples: [a view computed on read]
+  definition: The steps that make one food from ingredients and other recipes.   # required
+  tags: [allergens]                      # optional; kinds, links and value types only
+  examples:    [the tomato sauce]
+  notExamples: [a new dish that a cook tries one time and does not keep]
   fields:
-    name:          { type: Name }                          # required by default
-    visibility:    { enum: [public, internal], default: internal }
-    retentionDays: { type: integer, minimum: 1, optional: true }
+    name:        { type: Name }                       # required by default
+    prepMinutes: { type: Minutes, optional: true }
   links:
-    inDatabase:    exactly 1             # exactly N | at least N | at most N | any number
-    feedsTable:    any number
+    madeAtStation: exactly 1             # exactly N | at least N | at most N | any number
+    usesRecipe:    any number
 
-inDatabase:                              # lowerCamelCase, two words or more
+Dish:
+  is: Kind
+  extends: Recipe                        # optional
+  definition: A recipe that the restaurant sells to guests.
+  fields:
+    price:  { type: Price }
+    status: { enum: [active, retired], default: active }
+
+usesRecipe:                              # lowerCamelCase, two words or more
   is: Link
-  from: Table
-  to: Database
-  reads: "{from} is in {to}"             # required, with both {from} and {to}
-  definition: The database that stores the table.
-  inverse: hasTable                      # optional: the name read the other way
-  under: locatedIn                       # optional: every inDatabase is a locatedIn
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"              # required, with both {from} and {to}
+  definition: The first recipe needs the second recipe, directly or through other recipes.
   chains: true                           # optional: a→b and b→c means a→c
+  inverse: usedByRecipe                  # optional: the name read the other way
+
+usesGarnish:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} is garnished with {to}"
+  definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
+  under: usesIngredient                  # optional: every usesGarnish is a usesIngredient
 
 Name:
   is: ValueType
-  definition: A lowercase identifier.
+  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
 
-lineage:                                 # lowerCamelCase
+Minutes:
+  is: ValueType
+  definition: A number of minutes of work.
+  type: integer                          # a type and its keywords
+  minimum: 1
+  maximum: 1440
+
+allergens:                               # lowerCamelCase
   is: Tag
-  definition: What a lineage tool needs to trace data from table to table.
+  definition: What an allergen app needs to tell guests which dishes contain which allergens.
 ```
 
 Tags only select what an RDF export holds. Tags do not pass through
@@ -115,19 +135,19 @@ others.
 
 ```yaml
 match:                                   # links that must exist
-  - link: readsTable                     # a link or an inverse name
-    from: {$job: Job}                    # every mention gives the variable's kind
-    to:   {$table: Table}
-  - link: feedsTable
-    from: {$table: Table}
-    to:   {$next: Table}
+  - link: makesRecipe                    # a link or an inverse name
+    from: {$station: Station}            # every mention gives the variable's kind
+    to:   {$dish: Dish}
+  - link: usesRecipe
+    from: {$dish: Dish}
+    to:   {$part: Recipe}
     repeated: true                       # one or more steps
 filter:                                  # conditions; all must hold
-  - node: $next                          # bare variable outside match
-    does not equal: { same as: $table }
-  - node: $table
-    field: visibility
-    equals: { value: public }
+  - node: $part                          # bare variable outside match
+    does not equal: { same as: $dish }
+  - node: $dish
+    field: status
+    equals: { value: active }
 ```
 
 | Comparison | Takes |
@@ -147,51 +167,53 @@ filter:                                  # conditions; all must hold
 ## Constraints and derivatives
 
 ```yaml
-crossAppReadNeedsContract:
+dishListsItsAllergens:
   is: Constraint
-  says: A job may read another application's table only under a contract.   # no $ words
+  says: The menu must give a warning about each allergen in an active dish.   # no $ words
   match: [ ... ]
   filter: [ ... ]
   unless: [ ... ]                        # optional; a match is a violation unless these hold
-  message: "{$job} must not read {$table} without a contract."
+  message: "The menu must warn that {$dish} contains {$allergen}."
 
-tableTeamFromDatabase:
+allergenFromIngredient:
   is: Derivative
-  says: A table belongs to the team that owns its database.
+  says: A recipe contains each allergen that one of its ingredients contains.
   match: [ ... ]
   derive:
-    - { link: belongsToTeam, from: $table, to: $team }             # a link
-    - { node: $table, becomes: CriticalTable }                     # a kind
-    - { node: $table, field: visibility, set to: { value: internal } }   # a field value
+    - { link: hasAllergen, from: $recipe, to: $allergen }          # a link
+    - { node: $recipe, becomes: BaseRecipe }                       # a kind
+    - { node: $recipe, field: prepMinutes, set to: { value: 30 } } # a field value
 ```
 
 ## Tests
 
 ```yaml
 # tests/examples/some-example.of.yaml — facts plus exactly one Test
-db/sales:                                # a fact's id
+dish/margherita:                         # a fact's id
   is: Fact
-  kind: Database
-  name: sales
-  ownedByTeam: team/commerce             # a link: an id, or a list of ids
+  kind: Dish
+  name: margherita
+  price: 12
+  madeAtStation: station/pizza
+  usesRecipe: [recipe/tomato_sauce, recipe/pesto]   # a link: an id, or a list of ids
 
 someExample:
   is: Test
   says: What this example shows.
   expect:
-    derived:    [ { link: belongsToTeam, from: db/sales/table/x, to: team/commerce } ]
-    notDerived: [ { node: db/sales/table/x, becomes: CriticalTable } ]
-    rejected:   [crossAppReadNeedsContract]
+    derived:    [ { link: hasAllergen, from: dish/margherita, to: allergen/nuts } ]
+    notDerived: [ { node: recipe/pesto, becomes: BaseRecipe } ]
+    rejected:   [dishListsItsAllergens]
 
-# tests/questions/some-question.of.yaml
-someQuestion:
+# tests/questions/which-dishes-contain-nuts.of.yaml
+whichDishesContainNuts:
   is: Question
-  asks: Which applications depend on order intake?
-  given: file:../examples/some-example.of.yaml
+  asks: Which dishes contain nuts?
+  given: file:../examples/allergen-through-a-sauce.of.yaml
   match: [ ... ]
   filter: [ ... ]
   expect:
-    $app: [app/revenue_report]
+    $dish: [dish/margherita]
 ```
 
 ## How it runs

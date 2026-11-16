@@ -6,8 +6,8 @@ title: Fields and value types — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A field is a value of the thing itself, for example a name, a format or a
-number of days. A subset of JSON Schema describes each field, and each keyword
+A field is a value of the thing itself, for example a name, a price or a
+number of minutes. A subset of JSON Schema describes each field, and each keyword
 has the meaning that JSON Schema gives it. Only field values use JSON Schema.
 Kinds, links, constraints and derivatives use the syntax of the language
 itself, because JSON Schema describes one document and has no links between
@@ -17,18 +17,18 @@ things.
 fields:
   name:
     type: Name                 # a value type, imported
-  visibility:
-    enum: [public, internal]
-    default: internal
-  retentionDays:
+  status:
+    enum: [active, retired]
+    default: active
+  servings:
     type: integer
     minimum: 1
     optional: true
-  address:
+  plating:
     type: object
     properties:
-      street: { type: string, optional: true }
-      city:   { type: string }
+      garnish: { type: string, optional: true }
+      plate:   { type: string }
 ```
 
 ## Keywords
@@ -84,25 +84,31 @@ is imported in the same way:
 
 Name:
   is: ValueType
-  definition: A lowercase identifier used for databases, tables and jobs.
+  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
   maxLength: 63
 
-RetentionDays:
+Minutes:
   is: ValueType
-  definition: How long rows are kept, in days.
+  definition: A number of minutes of work.
   type: integer
   minimum: 1
-  maximum: 3650
+  maximum: 1440
+
+Price:
+  is: ValueType
+  definition: An amount of money in euros.
+  type: number
+  minimum: 0
 ```
 
 ```yaml
-# defs/table.of.yaml
+# defs/recipe.of.yaml
 
 import:
   - from: file:names.of.yaml
-    use: [Name, RetentionDays]
+    use: [Name, Minutes, Price]
 ```
 
 | Key | Required | Value |
@@ -128,5 +134,5 @@ import:
   - Neither field names a value type, and both fields have the same built-in
     type.
 
-  `RetentionDays` and a plain `integer` are different types. A field that
+  `Minutes` and a plain `integer` are different types. A field that
   narrows a value type ([VT3](#value-types)) keeps that value type.

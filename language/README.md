@@ -38,10 +38,10 @@ make these standards difficult for software people:
 | see all of the language on one page | [the cheat sheet](cheatsheet.md) |
 | run it | [the `of-lang` tool](../cli/README.md) |
 
-Every example uses one small, fictional domain: teams own databases,
-databases hold tables, applications run jobs, and jobs read and write tables.
-[examples/data-model](../examples/data-model/) holds the full domain as one
-package.
+Every example uses one small, fictional restaurant. Stations in the kitchen
+make recipes, dishes use recipes and ingredients, and ingredients contain
+allergens. [examples/restaurant](../examples/restaurant/) holds the full
+domain as one package.
 
 ## Conventions
 
@@ -80,8 +80,8 @@ Thus, an error from the tool can identify the rule that it enforces.
 |---|---|---|
 | **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm | an ontology with `owl:imports` |
 | **[statement](reference/files.md)** | one named item in a file; its `is:` key tells what it is | — |
-| **[kind](reference/kind.md)** | a kind of thing (database, table, application) | `owl:Class` |
-| **[field](reference/field.md)** | a value of the thing itself (a name, a format); JSON Schema describes it | an attribute (`owl:DatatypeProperty`) |
+| **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish) | `owl:Class` |
+| **[field](reference/field.md)** | a value of the thing itself (a name, a price); JSON Schema describes it | an attribute (`owl:DatatypeProperty`) |
 | **[value type](reference/field.md#value-types)** | a named, reusable description of a field's value | `rdfs:Datatype` |
 | **[link](reference/link.md)** | a named, directed relationship between two things | `owl:ObjectProperty` |
 | **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; only the items that carry it are exported to RDF | — |

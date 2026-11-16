@@ -20,41 +20,116 @@ question:
 An example is a file of facts with one `Test` statement:
 
 ```yaml
-# tests/examples/table-inherits-database-team.of.yaml
+# tests/examples/allergen-through-a-sauce.of.yaml
 import:
-  - from: file:../../defs/team.of.yaml
-    use: [Team]
-  - from: file:../../defs/database.of.yaml
-    use: [Database, ownedByTeam]
-  - from: file:../../defs/table.of.yaml
-    use: [Table, inDatabase, belongsToTeam]
+  - from: file:../../defs/station.of.yaml
+    use: [Station, dependsOnStation]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [hasAllergen, listsAllergen]
 
-tableInheritsDatabaseTeam:
+allergenThroughASauce:
   is: Test
-  says: A table belongs to the team that owns its database.
+  says: >
+    The margherita uses the pesto, which contains nuts. Parmesan, which
+    contains milk, is on the margherita as a garnish. Thus, the margherita
+    contains nuts and milk. The menu gives a warning about the two allergens,
+    so the dish breaks no constraint. The pizza station depends on the sauce
+    station.
   expect:
     derived:
-      - link: belongsToTeam
-        from: db/sales/table/order_lines
-        to:   team/commerce
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/nuts
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/milk
+      - link: usesIngredient
+        from: dish/margherita
+        to:   ingredient/parmesan
+      - link: dependsOnStation
+        from: station/pizza
+        to:   station/sauce
+    notDerived:
+      - link: hasAllergen
+        from: dish/marinara
+        to:   allergen/nuts
+      - link: dependsOnStation
+        from: station/sauce
+        to:   station/pizza
     rejected: []
 
-team/commerce:
+station/pizza:
   is: Fact
-  kind: Team
-  name: commerce
+  kind: Station
+  name: pizza
 
-db/sales:
+station/sauce:
   is: Fact
-  kind: Database
-  name: sales
-  ownedByTeam: team/commerce
+  kind: Station
+  name: sauce
 
-db/sales/table/order_lines:
+allergen/nuts:
   is: Fact
-  kind: Table
-  name: order_lines
-  inDatabase: db/sales
+  kind: Allergen
+  name: nuts
+
+allergen/milk:
+  is: Fact
+  kind: Allergen
+  name: milk
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  name: pine_nuts
+  containsAllergen: allergen/nuts
+
+ingredient/parmesan:
+  is: Fact
+  kind: Ingredient
+  name: parmesan
+  containsAllergen: allergen/milk
+
+ingredient/tomatoes:
+  is: Fact
+  kind: Ingredient
+  name: tomatoes
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  name: pesto
+  madeAtStation: station/sauce
+  usesIngredient: ingredient/pine_nuts
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  name: tomato_sauce
+  madeAtStation: station/sauce
+  usesIngredient: ingredient/tomatoes
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  name: margherita
+  price: 12
+  madeAtStation: station/pizza
+  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+  usesGarnish: ingredient/parmesan
+  listsAllergen: [allergen/nuts, allergen/milk]
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  name: marinara
+  price: 10
+  madeAtStation: station/pizza
+  usesRecipe: recipe/tomato_sauce
 ```
 
 | Key under `expect` | Value |
@@ -93,25 +168,29 @@ conditions to narrow the matches. Then it compares the things that a variable
 represented with the expected list.
 
 ```yaml
-# tests/questions/who-breaks-if-order-intake-goes.of.yaml
+# tests/questions/which-dishes-contain-nuts.of.yaml
 import:
-  - from: file:../../defs/application.of.yaml
-    use: [Application, dependsOnApp]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Dish]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Allergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [hasAllergen]
 
-whoBreaksIfOrderIntakeGoes:
+whichDishesContainNuts:
   is: Question
-  asks: Which applications depend on order intake?
-  given: file:../examples/two-apps-sharing-a-table.of.yaml
+  asks: Which dishes contain nuts?
+  given: file:../examples/allergen-through-a-sauce.of.yaml
   match:
-    - link: dependsOnApp
-      from: {$app: Application}
-      to:   {$target: Application}
+    - link: hasAllergen
+      from: {$dish: Dish}
+      to:   {$allergen: Allergen}
   filter:
-    - node: $target
+    - node: $allergen
       equals:
-        value: app/order_intake
+        value: allergen/nuts
   expect:
-    $app: [app/revenue_report]
+    $dish: [dish/margherita]
 ```
 
 | Key | Required | Value |
@@ -152,7 +231,7 @@ comparison word. `any of` holds when one of its listed conditions holds.
   every time and also in nested blocks. Every mention of a variable MUST give
   the same kind. The kind MUST be the kind of the link at that end, or a kind
   that extends it.
-- **TS7.** Conditions MUST write a variable without its kind (`$target`), and
+- **TS7.** Conditions MUST write a variable without its kind (`$allergen`), and
   every variable that they use MUST appear in a `match` item. A question
   MUST NOT use a variable outside a nested block if the variable appears only
   in that block.

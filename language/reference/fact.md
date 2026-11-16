@@ -14,20 +14,24 @@ are [derived](#derived-facts). Facts that running systems write are deferred
 
 ```yaml
 import:
-  - from: file:../../defs/table.of.yaml
-    use: [Table, inDatabase]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, usesRecipe]
 
-db/sales/table/order_lines:
+dish/margherita:
   is: Fact
-  kind: Table
-  name: order_lines
-  visibility: public
-  inDatabase: db/sales
+  kind: Dish
+  name: margherita
+  price: 12
+  madeAtStation: station/pizza
+  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
 ```
+
+The fact omits `status`, so the dish takes the default, `active`. The kind
+`Dish` extends `Recipe`, so the fact can state `name` and `madeAtStation`.
 
 | Key | Required | Value |
 |---|---|---|
-| the fact's id | — | the name of the statement: any text, usually a path such as `db/sales/table/order_lines` |
+| the fact's id | — | the name of the statement: any text, usually a path such as `dish/margherita` |
 | `is` | yes | `Fact` |
 | `kind` | yes | the kind of the thing |
 | the name of a field | as the kind tells | the value of the field |
@@ -48,8 +52,9 @@ db/sales/table/order_lines:
 - **FC4.** Each field value MUST be a value that its field allows.
 - **FC5.** The value of a link MUST be the id of a fact in the same file, or a
   list of such ids. Each of these facts MUST be of the kind where the link
-  ends. A fact MAY use an inverse name: `hasTable: db/sales/table/order_lines`
-  on a database states the same fact as `inDatabase: db/sales` on the table.
+  ends. A fact MAY use an inverse name: `makesRecipe: recipe/pesto` on a
+  station states the same fact as `madeAtStation: station/sauce` on the
+  recipe.
 - **FC6.** Facts define nothing: a fact never declares a kind, a link or a
   field.
 

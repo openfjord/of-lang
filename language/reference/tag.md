@@ -8,27 +8,31 @@ title: Tags — The OpenFjord modeling language
 
 A tag marks definitions that belong together for one purpose, so that only
 those definitions are exported to RDF (Resource Description Framework). For
-example, a lineage tool needs tables, jobs and the links between them. A
-catalog needs tables and databases. Each purpose has a tag, and each
-definition lists the tags that it belongs to.
+example, an allergen app needs recipes, ingredients, allergens and the links
+between them. The menu app needs dishes and their prices. Each purpose has a
+tag, and each definition lists the tags that it belongs to.
 
 ```yaml
 # defs/tags.of.yaml
-lineage:
+allergens:
   is: Tag
-  definition: What a lineage tool needs to trace data from table to table.
+  definition: What an allergen app needs to tell guests which dishes contain which allergens.
+
+menu:
+  is: Tag
+  definition: What the menu app needs to show the dishes and their prices.
 ```
 
 ```yaml
-# defs/table.of.yaml
+# defs/recipe.of.yaml
 import:
   - from: file:tags.of.yaml
-    use: [lineage]
+    use: [allergens]
 
-Table:
+Recipe:
   is: Kind
-  definition: A set of rows with one schema, stored in a database.
-  tags: [lineage]
+  definition: The steps that make one food from ingredients and other recipes.
+  tags: [allergens]
 ```
 
 | Key | Required | Value |

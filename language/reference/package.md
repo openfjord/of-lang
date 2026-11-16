@@ -14,18 +14,16 @@ them.
 ## Layout
 
 ```
-data-model/
+restaurant/
   package.yaml                     # the manifest
   defs/                            # definitions
     names.of.yaml                     # value types
-    team.of.yaml                      # Team
-    database.of.yaml                  # Database, and the links that come out of it
-    table.of.yaml                     # Table, its links, the derivatives about tables
-    job.of.yaml
-    application.of.yaml
-    reading-across-applications.of.yaml   # a constraint spanning several kinds
+    station.of.yaml                   # Station, its links, the derivative about stations
+    recipe.of.yaml                    # Recipe and its kinds, their links, the derivative about recipes
+    ingredient.of.yaml                # Ingredient, Allergen, and the link between them
+    allergens.of.yaml                 # a constraint and derivatives that concern several kinds
   docs/                            # Markdown that explains the definitions
-    tables.md
+    allergens.md
   tests/                           # examples and questions
     examples/
     questions/
@@ -47,20 +45,20 @@ data-model/
 ## The manifest
 
 ```yaml
-package: "@openfjord/data-model"  # namespace, then name; quoted, since YAML reserves a leading @
-version: 0.3.0
-owner: product                    # who must approve any change to the package
-rdfNamespace: data                # used only in exported RDF, never in the files
+package: "@bistro/kitchen"        # namespace, then name; quoted, since YAML reserves a leading @
+version: 0.1.0
+owner: kitchen                    # who must approve any change to the package
+rdfNamespace: kitchen             # used only in exported RDF, never in the files
 dependsOn:
-  "@openfjord/org-model": ^1.2    # semantic-version range, pinned in a lock file
+  "@bistro/suppliers": ^1.2       # semantic-version range, pinned in a lock file
 exports:                          # what other packages may use; the rest is internal
-  kinds: [Database, Table, Application, Job]
-  links: [inDatabase, readsTable, writesTable, jobOf]
-  valueTypes: [Name]
-  tags: [lineage]
+  kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
+  links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
+  valueTypes: [Name, Minutes, Price]
+  tags: [allergens]
 openFor:                          # extension points: what other packages may add to
-  - extend: Table                 #   another package may declare a kind of table
-  - under: readsTable             #   another package may declare a narrower link under readsTable
+  - extend: Recipe                #   another package may declare a kind of recipe
+  - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
 ```
 
 | Key | Required | Value |
@@ -79,8 +77,8 @@ openFor:                          # extension points: what other packages may ad
 
 ## Names and namespaces
 
-A package name can start with a namespace, as in npm: `@openfjord/data-model`
-is the package `data-model` in the namespace `@openfjord`.
+A package name can start with a namespace, as in npm: `@bistro/kitchen`
+is the package `kitchen` in the namespace `@bistro`.
 
 - **PK6.** A package name MUST be lowercase letters, digits and hyphens,
   with a letter first. An optional namespace can come before the name: `@`,
@@ -138,15 +136,17 @@ Markdown files in `docs/` give the reasons, the methods and the context
 reader sees the text and the definitions together:
 
 ````markdown
-# Tables
+# Allergens
 
-A table holds rows with one schema. Every table sits in exactly one database:
+An allergen can cause a dangerous reaction in some persons. A recipe contains
+each allergen of its ingredients:
 
-![](../defs/table.of.yaml#Table)
+![](../defs/allergens.of.yaml#allergenFromIngredient)
 
-Teams kept breaking each other by reading internal tables, so reading across
-applications needs a contract — see
-[crossAppReadNeedsContract](../defs/reading-across-applications.of.yaml#crossAppReadNeedsContract).
+In the past, a guest became ill. The pesto in a dish contained nuts, and the
+menu did not tell the guest. Thus, the menu must give a warning about each
+allergen in a dish. Refer to
+[dishListsItsAllergens](../defs/allergens.of.yaml#dishListsItsAllergens).
 ````
 
 | Written | Means |

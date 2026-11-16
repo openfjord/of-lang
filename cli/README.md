@@ -13,7 +13,7 @@ compares two sets of facts, and runs a package's tests.
 > named in `says`, kinds given only on a variable's first mention, `Rule`
 > instead of `Derivative`, `require` instead of `unless`, `definitions/` instead of `defs/`, and `.yaml`
 > instead of `.of.yaml`. It does not run the
-> [example package](../examples/data-model/) as it stands. It will be brought
+> [example package](../examples/restaurant/) as it stands. It will be brought
 > up to date once the draft settles.
 
 ## Build
@@ -58,15 +58,15 @@ All examples below run in the folder that holds the package.
 ### `check`
 
 ```
-$ of-lang check data-model
+$ of-lang check restaurant
 ok
 ```
 
 Each problem is one line, with the file, line and column:
 
 ```
-$ of-lang check data-model
-data-model/defs/table.yaml:39:3: reads: of inDatabase must use both {from} and {to}
+$ of-lang check restaurant
+restaurant/defs/recipe.yaml:59:3: reads: of madeAtStation must use both {from} and {to}
 ```
 
 The draft has each error name the rule it enforces, such as `(LK2)`; the tool
@@ -78,25 +78,23 @@ Every derived fact as its `reads` sentence, with what derived it: a derivative, 
 `under` or `chains` on a link. Then every rejection, with its message.
 
 ```
-$ of-lang run data-model data-model/tests/examples/two-apps-sharing-a-table.yaml
+$ of-lang run restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml
 derived:
-  app/order_intake/job/ingest_orders uses db/sales/table/order_lines  (under)
-  app/revenue_report/job/compute_revenue uses db/sales/table/order_lines  (under)
-  app/revenue_report/job/compute_revenue uses db/sales/table/revenue_daily  (under)
-  app/revenue_report depends on app/order_intake  (rule appDependsOnWriter)
-  db/sales/table/order_lines belongs to team/commerce  (rule tableTeamFromDatabase)
-  db/sales/table/revenue_daily belongs to team/commerce  (rule tableTeamFromDatabase)
-  db/sales/table/order_lines feeds db/sales/table/revenue_daily  (rule tableFeedsTable)
+  dish/margherita uses ingredient/parmesan  (under)
+  station/pizza depends on station/sauce  (rule stationDependsOnStation)
+  recipe/pesto contains allergen/nuts  (rule allergenFromIngredient)
+  dish/margherita contains allergen/milk  (rule allergenFromIngredient)
+  dish/margherita contains allergen/nuts  (rule allergenFromRecipe)
 rejected:
   nothing
 ```
 
 ```
-$ of-lang run data-model data-model/tests/examples/cross-app-read-without-contract.yaml
+$ of-lang run restaurant restaurant/tests/examples/dish-without-allergen-warning.yaml
 derived:
   ...
 rejected:
-  crossAppReadNeedsContract: app/revenue_report/job/compute_revenue reads db/sales/table/order_lines from app/order_intake without a contract.
+  dishListsItsAllergens: The menu must warn that dish/margherita contains allergen/nuts.
 ```
 
 A rejection makes `run` exit with 1.
@@ -108,22 +106,25 @@ the match used. A derived fact among them unfolds into its own explanation,
 indented below it.
 
 ```
-$ of-lang explain data-model data-model/tests/examples/two-apps-sharing-a-table.yaml app/revenue_report dependsOnApp app/order_intake
-app/revenue_report depends on app/order_intake  (rule appDependsOnWriter)
-  An application depends on every other application whose jobs write a table that one of its own jobs reads.
-  with $app = app/revenue_report, $other = app/order_intake, $reader = app/revenue_report/job/compute_revenue, $table = db/sales/table/order_lines, $writer = app/order_intake/job/ingest_orders
+$ of-lang explain restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml dish/margherita hasAllergen allergen/nuts
+dish/margherita contains allergen/nuts  (rule allergenFromRecipe)
+  A recipe contains each allergen that one of its recipes contains.
+  with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
   because:
-    app/revenue_report/job/compute_revenue is a job of app/revenue_report  (written at data-model/tests/examples/two-apps-sharing-a-table.yaml:87:3)
-    app/revenue_report/job/compute_revenue reads db/sales/table/order_lines  (written at data-model/tests/examples/two-apps-sharing-a-table.yaml:88:3)
-    app/order_intake/job/ingest_orders writes db/sales/table/order_lines  (written at data-model/tests/examples/two-apps-sharing-a-table.yaml:81:3)
-    app/order_intake/job/ingest_orders is a job of app/order_intake  (written at data-model/tests/examples/two-apps-sharing-a-table.yaml:80:3)
+    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:99:3)
+    recipe/pesto contains allergen/nuts  (rule allergenFromIngredient)
+      A recipe contains each allergen that one of its ingredients contains.
+      with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
+      because:
+        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:84:3)
+        ingredient/pine_nuts contains allergen/nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:66:3)
 ```
 
 ```
-$ of-lang explain data-model data-model/tests/examples/critical-table.yaml db/sales/table/customers CriticalTable
-db/sales/table/customers is a CriticalTable  (rule criticalTable)
-  A table read by more than two jobs is critical.
-  with $table = db/sales/table/customers
+$ of-lang explain restaurant restaurant/tests/examples/base-recipe.yaml recipe/tomato_sauce BaseRecipe
+recipe/tomato_sauce is a BaseRecipe  (rule baseRecipe)
+  A recipe that more than two other recipes use, directly or through other recipes, is a base recipe.
+  with $recipe = recipe/tomato_sauce
 ```
 
 ### `diff`
@@ -132,26 +133,19 @@ What changes from one facts file to the other, in three parts: facts stated,
 facts derived, and rejections. `+` is added, `-` is gone. A field value is a
 fact of its own, so a changed value shows as one `-` and one `+`.
 
+In this example, a copy of the test file adds the pesto to the marinara and
+increases its price. The file is `marinara-with-pesto.yaml`.
+
 ```
-$ of-lang diff data-model data-model/tests/examples/cross-app-read-without-contract.yaml data-model/tests/examples/two-apps-sharing-a-table.yaml
+$ of-lang diff restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml marinara-with-pesto.yaml
 asserted:
-  + app/revenue_report consumes contract/orders
-  + app/revenue_report/job/compute_revenue writes db/sales/table/revenue_daily
-  + contract/orders covers db/sales/table/order_lines
-  + contract/orders has name orders
-  + contract/orders is a Contract
-  + db/sales/table/order_lines has visibility public
-  + db/sales/table/revenue_daily has name revenue_daily
-  + db/sales/table/revenue_daily has visibility internal
-  + db/sales/table/revenue_daily is a Table
-  + db/sales/table/revenue_daily is in db/sales
-  - db/sales/table/order_lines has visibility internal
+  + dish/marinara has price 11
+  + dish/marinara uses recipe/pesto
+  - dish/marinara has price 10
 derived:
-  + app/revenue_report/job/compute_revenue uses db/sales/table/revenue_daily
-  + db/sales/table/order_lines feeds db/sales/table/revenue_daily
-  + db/sales/table/revenue_daily belongs to team/commerce
+  + dish/marinara contains allergen/nuts
 rejected:
-  - crossAppReadNeedsContract: app/revenue_report/job/compute_revenue reads db/sales/table/order_lines from app/order_intake without a contract.
+  + dishListsItsAllergens: The menu must warn that dish/marinara contains allergen/nuts.
 ```
 
 `diff` always exits with 0: a difference is not a problem.
@@ -162,12 +156,12 @@ One line per test or question, then a total. A failure says what was
 expected and did not happen.
 
 ```
-$ of-lang test data-model
-pass  test tableReadByThreeJobs  (data-model/tests/examples/critical-table.yaml)
-pass  test crossAppReadWithoutContract  (data-model/tests/examples/cross-app-read-without-contract.yaml)
-FAIL  test twoAppsSharingATable  (data-model/tests/examples/two-apps-sharing-a-table.yaml)
-      expected derived, but not: app/revenue_report depends on app/crm
-pass  question whoBreaksIfOrderIntakeGoes  (data-model/tests/questions/who-breaks-if-order-intake-goes.yaml)
+$ of-lang test restaurant
+FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-sauce.yaml)
+      expected derived, but not: dish/margherita contains allergen/milk
+pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.yaml)
+pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.yaml)
+pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.yaml)
 3 passed, 1 failed
 ```
 
@@ -179,10 +173,10 @@ to read. A derived link, for example:
 ```json
 {
   "type": "link",
-  "sentence": "app/revenue_report depends on app/order_intake",
-  "from": "app/revenue_report",
-  "link": "dependsOnApp",
-  "to": "app/order_intake"
+  "sentence": "dish/margherita contains allergen/nuts",
+  "from": "dish/margherita",
+  "link": "hasAllergen",
+  "to": "allergen/nuts"
 }
 ```
 
@@ -191,10 +185,11 @@ stood for:
 
 ```json
 {
-  "constraint": "crossAppReadNeedsContract",
-  "message": "app/revenue_report/job/compute_revenue reads db/sales/table/order_lines from app/order_intake without a contract.",
+  "constraint": "dishListsItsAllergens",
+  "message": "The menu must warn that dish/margherita contains allergen/nuts.",
   "bindings": [
-    { "var": "$job", "id": "app/revenue_report/job/compute_revenue" }
+    { "var": "$dish", "id": "dish/margherita" },
+    { "var": "$allergen", "id": "allergen/nuts" }
   ]
 }
 ```
@@ -212,12 +207,16 @@ was derived, never repeating the stated one. Its `kind` is the kind a
 derivative made the thing, or the stated kind if no derivative did.
 
 ```yaml
-db/sales/table/order_lines:
+recipe/tomato_sauce:
   is: Fact
-  kind: CriticalTable              # a derivative made it a critical table
+  kind: BaseRecipe                 # a derivative made it a base recipe
   derived: true
-  belongsToTeam: team/commerce     # from tableTeamFromDatabase
-  feedsTable: [db/sales/table/revenue_daily]
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe                     # the stated kind; no derivative changed it
+  derived: true
+  hasAllergen: [allergen/nuts]     # from allergenFromIngredient
 ```
 
 The tool does not write facts in this form yet.
@@ -234,29 +233,30 @@ examples, before it lands. It joins `diff` and `explain`: what was stated,
 what newly follows and why, what no longer follows, and what is rejected.
 
 ```
-Stated (1)
-  + job compute-revenue (app/revenue-report) readsTable order_lines
+Stated (2)
+  + dish/margherita usesRecipe recipe/pesto
+  + dish/marinara usesRecipe recipe/pesto
 
 Derived (3)
-  + app/revenue-report dependsOnApp app/order-intake
-      derivative  appDependsOnWriter
-      match   $app = app/revenue-report, $reader = compute-revenue,
-              $table = order_lines, $writer = ingest-orders,
-              $other = app/order-intake
-      links   app/revenue-report hasJob compute-revenue
-              compute-revenue readsTable order_lines
-              ingest-orders writesTable order_lines
-              ingest-orders jobOf app/order-intake
-      filter  app/order-intake does not equal app/revenue-report
-  + order_lines feedsTable revenue_daily
-      derivative  tableFeedsTable
-  + (1 more, grouped: feedsTable)
+  + station/pizza dependsOnStation station/sauce
+      derivative  stationDependsOnStation
+      match   $station = station/pizza, $recipe = dish/margherita,
+              $part = recipe/pesto, $other = station/sauce
+      links   station/pizza makesRecipe dish/margherita
+              dish/margherita usesRecipe recipe/pesto
+              recipe/pesto madeAtStation station/sauce
+      filter  station/sauce does not equal station/pizza
+  + dish/margherita hasAllergen allergen/nuts
+      derivative  allergenFromRecipe
+  + (1 more, grouped: hasAllergen)
 
 No longer derived (0)
 
-Rejected (1)
-  ✗ crossAppReadNeedsContract
-    compute-revenue must not read order_lines from app/order-intake without a contract.
+Rejected (2)
+  ✗ dishListsItsAllergens
+    The menu must warn that dish/margherita contains allergen/nuts.
+  ✗ dishListsItsAllergens
+    The menu must warn that dish/marinara contains allergen/nuts.
 ```
 
 Large results are grouped by link, with new kinds of conclusion and
@@ -268,16 +268,15 @@ A page per definition for product: the definition, examples and
 non-examples, every count as a sentence, and every constraint and derivative as its
 `says`, shown as written.
 
-> **Table** — A set of rows with one schema, stored in a database.
-> - Every table is in exactly one database.
-> - A table belongs to the team that owns its database. *(derivative)*
-> - A job of one application may read a table that a job of another
->   application writes, only if the table is public and the reading
->   application consumes a contract that covers the table.
+> **Recipe** — The steps that make one food from ingredients and other recipes.
+> - Every recipe is made at exactly one station.
+> - A recipe contains each allergen that one of its ingredients contains.
+>   *(derivative)*
+> - The menu must give a warning about each allergen in an active dish.
 >   *(constraint)*
 >
-> Example: the order_lines table in the sales database. Not a table: a
-> temporary copy a test run makes and throws away.
+> Example: the tomato sauce. Not a recipe: a new dish that a cook tries one
+> time and does not keep.
 
 A change to a product-owned package shows the sentences that changed, for
 approval on that page.
@@ -316,9 +315,9 @@ exported. A reference to a definition that is not exported is left out,
 and the export lists each one:
 
 ```
-$ of-lang export --tags lineage,catalog examples/data-model
-left out: link belongsToTeam (Table to Team): Team is not exported
-left out: Table extends Dataset: Dataset is not exported
+$ of-lang export --tags menu examples/restaurant
+left out: link listsAllergen (Dish to Allergen): Allergen is not exported
+left out: Dish extends Recipe: Recipe is not exported
 ```
 
 ## Planned: a language server
@@ -363,7 +362,7 @@ needs them to.
 | Feature | What it does |
 |---|---|
 | Diagnostics | the check's errors as you type, each with its rule code, linked to that rule in the reference |
-| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `{$x: Kind}`, fact ids, docs links such as `table.of.yaml#Table`, and a `$variable` to its first mention |
+| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `{$x: Kind}`, fact ids, docs links such as `recipe.of.yaml#Recipe`, and a `$variable` to its first mention |
 | Find references | where a definition is used, including the docs that link to it or embed it |
 | Hover | a key's description from the schema; a definition's `definition`; a link's `reads`; a variable's kind; on a fact, what derivatives add to it |
 | Completion | the keys and words the schema allows at that place; after `link:`, the links the file imports; in `{$x: …}`, only kinds that fit that end of the link; after `field:`, only fields of that node's kind; a name not yet imported, with its import |

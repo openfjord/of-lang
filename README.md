@@ -7,48 +7,54 @@ title: A modeling language for software people — Research
 > **Status: a first draft, explored, not decided.** It lists why ontologies are
 > hard for software product and development people to read and write, and
 > sketches a language that answers each reason. Nothing here is binding. The
-> examples use a small made-up domain — teams, databases, tables, applications
-> and the jobs that read and write tables. Written 2026-11-13.
+> examples use a small made-up restaurant: the stations in its kitchen, its
+> recipes and dishes, and their ingredients and allergens. Written 2026-11-13.
 >
 > **[The language specification](language/README.md)** teaches and defines
 > the language: a reference and a cheat sheet. A command-line tool,
 > [`of-lang`](cli/README.md), implements an earlier version of it, and
-> [examples/data-model/](examples/data-model/) is an example package.
+> [examples/restaurant/](examples/restaurant/) is an example package.
 
 ## Why
 
 ### The problem
 
-A software product is made of many things. In the example in this folder,
-those things are teams, databases, tables, applications and jobs. There are
-also many rules about these things:
+Every business has things, and rules about those things. Take a restaurant,
+which is the example in this folder. Its things are dishes, recipes,
+ingredients, allergens and the stations in the kitchen. Some of its rules
+are:
 
-- A table belongs to the team that owns its database.
-- An application must not read an internal table of a different
-  application.
-- A table that many jobs read needs extra care when it changes.
+- A dish contains each allergen of its ingredients, and of the sauces that it
+  uses.
+- The menu must give a warning about each allergen in a dish.
+- A sauce that many dishes use needs extra care when it changes.
 
 Usually, nobody writes these things and rules down in one place. They are in
-the heads of people, in wiki pages, in code comments and in the code itself.
-This causes problems:
+the heads of the cooks, in recipe books, in the menu text and in the code of
+the ordering app. This causes problems:
 
-- **The same word has different meanings.** One team says "table" for a
-  stored table, and a different team also uses it for a view. Nobody sees the
-  difference until something breaks.
-- **Nothing checks a rule that is only text.** A rule in a wiki page does not
-  stop a change that breaks it. People find the problem later, in production.
-- **Nobody sees the effect of a change.** A team deletes a table. Which jobs
-  read it? Which applications fail? To get the answer, somebody must search
-  through many systems by hand.
-- **The people who own the meaning cannot read where it is written.** Product
-  decides what a "critical table" is. But the decision ends up in code, which
-  product does not read.
-- **Each tool keeps its own copy.** A data catalog, a lineage tool and a
-  permissions system each describe the same tables in their own way. The
-  copies do not agree.
-- **AI agents guess.** An AI agent that changes code or answers a question
-  reads the code and the wiki pages. It finds no exact meanings and no exact
-  rules, so it guesses. A wrong guess looks the same as a correct answer.
+- **The same word has different meanings.** One cook says "pesto" for a pesto
+  with pine nuts. A different cook uses the same word for a pesto without
+  nuts. Nobody sees the difference until a guest becomes ill.
+- **Nothing checks a rule that is only text.** A rule in a recipe book does
+  not stop a change that breaks it. A cook adds nuts to a sauce, and the menu
+  does not change. People find the problem later, when a guest eats the dish.
+- **Nobody sees the effect of a change.** The sauce station closes for a day.
+  Which dishes can the kitchen not make? To get the answer, somebody must read
+  all the recipes by hand.
+- **The people who own the meaning cannot read where it is written.** The
+  head chef decides what a "base recipe" is. But the decision ends up in the
+  code of the ordering app, which the chef does not read.
+- **Each tool keeps its own copy.** The menu app, the ordering app and the
+  stock system each describe the same dishes in their own way. The copies do
+  not agree.
+- **AI agents guess.** A guest asks a chatbot: "Is the margherita free of
+  nuts?" The chatbot reads the menu text, finds no exact rules, and guesses.
+  A wrong guess looks the same as a correct answer.
+
+A software product has the same problems. Its things are services, tables
+and jobs in place of dishes and recipes, but the rules are spread out in the
+same way.
 
 ### What a model gives
 
@@ -57,27 +63,28 @@ contains four types of information:
 
 | Information | Example |
 |---|---|
-| the kinds of things, and their fields | a table has a name and a visibility |
-| the links between things | a job reads a table; a table is in a database |
-| what follows from other facts | if a job of application A reads a table that a job of application B writes, then A depends on B |
-| what is not allowed | a job must not read a table of a different application, unless the table is public and a contract covers it |
+| the kinds of things, and their fields | a dish has a name and a price |
+| the links between things | a dish uses a recipe; an ingredient contains an allergen |
+| what follows from other facts | if a dish uses a sauce, and the sauce contains nuts, then the dish contains nuts |
+| what is not allowed | an active dish must not contain an allergen that the menu does not give a warning about |
 
-Then a tool can do things that text in a wiki cannot do:
+Then a tool can do things that text in a recipe book cannot do:
 
 - **Check.** The tool compares data with the rules, and rejects data that
   breaks a rule. It tells which rule and why.
 - **Derive.** The tool finds facts that nobody wrote. Nobody wrote "the
-  revenue report depends on order intake". The tool finds it from the jobs and
-  the tables, and shows the steps.
-- **Answer questions.** "Which applications fail if order intake stops?" The
-  tool answers from the model, not from a search by hand.
+  margherita contains nuts". The tool finds it from the recipes and the
+  ingredients, and shows the steps.
+- **Answer questions.** "Which dishes contain nuts?" The tool answers from the
+  model, not from a search by hand.
 - **Show the effect of a change.** Before a change is merged, the tool shows
   the new facts that follow, the facts that no longer follow, and the rules
   that the change breaks.
-- **Give product a page to read.** The tool makes a page for each term, in
-  sentences and examples. Product reviews the page, not the YAML.
+- **Give the owners of the meaning a page to read.** The tool makes a page for
+  each term, in sentences and examples. The owners review the page, not the
+  YAML.
 - **Give other tools one source.** The tool exports the model in standard
-  formats. A catalog or a lineage tool reads the export, so there is one
+  formats. A menu app or a stock system reads the export, so there is one
   source, not many copies.
 - **Give AI agents exact knowledge.** An AI agent reads the model to learn
   what a term means and which rules apply. It asks the tool questions, and
@@ -96,7 +103,7 @@ already exist. The W3C (World Wide Web Consortium) published them, and many
 tools read them:
 
 - **RDF** (Resource Description Framework) stores each fact as three parts:
-  a thing, a link and a different thing. "job_42 reads orders" is one fact.
+  a thing, a link and a different thing. "margherita uses pesto" is one fact.
 - **RDFS** (RDF Schema) and **OWL** (Web Ontology Language) describe the
   kinds of things and the links, and what follows from them.
 - **SHACL** (Shapes Constraint Language) describes what is not allowed.
@@ -163,7 +170,7 @@ closed-world checking and adds inference by derivatives.
 - [The `of-lang` tool](cli/README.md): commands, output, and what is
   planned: the change report, product's pages, the RDF export and a
   language server.
-- [The example package](examples/data-model/).
+- [The example package](examples/restaurant/).
 
 ## What it leaves out, and why
 
@@ -199,15 +206,15 @@ closed-world checking and adds inference by derivatives.
   reuse it, at the cost of a second schema interface to keep in step; the
   logic is written against this language's own kinds and links instead.
 - **Fields on links, as in a property graph.** It lets a link say when it
-  started or how much it carries. But derived and chained links would have
+  started, or how much of an ingredient a recipe uses. But derived and chained links would have
   nothing to fill the fields with, and matches would need a way to reach
   them. A link stays only its link, from and to; anything said about it
-  becomes a thing in the middle, such as a `Read` between a job and a table.
+  becomes a thing in the middle, such as a `Portion` between a recipe and an ingredient.
 
 ## Deferred: mappings to outside vocabularies
 
 Saying that a definition means the same as a term in another vocabulary —
-`Table` as a class in someone else's ontology — is left out of the
+`Dish` as a class in someone else's ontology — is left out of the
 specification until it is designed.
 
 ## Deferred: facts at runtime
@@ -223,19 +230,32 @@ reasons table wait on them:
 ## Open questions
 
 1. **Optional links in a match.** Every link in a match must exist, or
-   there is no match. A derivative that wants "every table, and its team if it has
-   one" loses the tables without a team. Should a link in a match be markable
+   there is no match. A derivative that wants "every dish, and its garnish if it has
+   one" loses the dishes without a garnish. Should a link in a match be markable
    as optional, or should authors work around it with two derivatives or `any of`?
 2. **Limits on chains.** `repeated: true` follows a link any number of steps:
-   table to table to table. Sometimes only nearby things matter, such as
-   "tables at most two steps upstream". Should chains take a limit
+   recipe to recipe to recipe. Sometimes only nearby things matter, such as
+   "recipes at most two steps away". Should chains take a limit
    (`at most: 2`), or stay unlimited?
 3. **Dates and durations.** Conditions compare a value with another value.
-   They cannot say "a job that has not run for 30 days", because that needs
-   "now minus 30 days". Should conditions gain date arithmetic, and if so, in
+   They cannot say "an ingredient that the kitchen bought more than 3 days
+   ago", because that needs "now minus 3 days". Should conditions gain date arithmetic, and if so, in
    what YAML form?
 4. **References out of a tagged subset.** A tagged definition that refers
    to an untagged one, such as a tagged kind extending an untagged kind, has
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
+
+## Explored, not decided: what the tool must do
+
+This is an early list, not a decision. The tool may need to:
+
+- **Validate packages.** Check each package against every rule in the
+  specification.
+- **Compile packages to RDF.** Make RDF, OWL and SHACL from a package and its
+  dependencies, with an optional list of tags that selects a subset.
+- **Support editors through the LSP** (Language Server Protocol): errors,
+  completion and links to definitions while a person writes.
+- **Give a user interface** to look at the packages and change them. Its form
+  is not yet discussed.

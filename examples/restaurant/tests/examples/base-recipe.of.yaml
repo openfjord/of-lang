@@ -1,0 +1,64 @@
+import:
+  - from: file:../../defs/station.of.yaml
+    use: [Station]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, BaseRecipe, madeAtStation, usesRecipe]
+
+tomatoSauceInThreeDishes:
+  is: Test
+  says: >
+    A recipe that three dishes use is a base recipe. A recipe that only one
+    dish uses is not a base recipe.
+  expect:
+    derived:
+      - node:    recipe/tomato_sauce
+        becomes: BaseRecipe
+    notDerived:
+      - node:    recipe/pesto
+        becomes: BaseRecipe
+
+station/pizza:
+  is: Fact
+  kind: Station
+  name: pizza
+
+station/sauce:
+  is: Fact
+  kind: Station
+  name: sauce
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  name: tomato_sauce
+  madeAtStation: station/sauce
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  name: pesto
+  madeAtStation: station/sauce
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  name: margherita
+  price: 12
+  madeAtStation: station/pizza
+  usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  name: marinara
+  price: 10
+  madeAtStation: station/pizza
+  usesRecipe: recipe/tomato_sauce
+
+dish/lasagne:
+  is: Fact
+  kind: Dish
+  name: lasagne
+  price: 14
+  madeAtStation: station/pizza
+  usesRecipe: recipe/tomato_sauce

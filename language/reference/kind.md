@@ -6,38 +6,50 @@ title: Kinds — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-A kind is a category of things, for example a database, a table or an
-application. A kind tells what the thing is and gives examples of it. It also
+A kind is a category of things, for example a station, a recipe or a
+dish. A kind tells what the thing is and gives examples of it. It also
 lists the fields of the thing, and the links that the thing has, with a count
 for each link.
 
 ```yaml
-Table:
+Recipe:
   is: Kind
-  definition: A set of rows with one schema, stored in a database.
+  definition: The steps that make one food from ingredients and other recipes.
   examples:
-    - the order_lines table in the sales database
+    - the tomato sauce
+    - the pizza dough
   notExamples:
-    - a temporary copy a test run makes and throws away
-    - a view computed on read
+    - a food that the restaurant buys and does not make, such as flour
+    - a new dish that a cook tries one time and does not keep
   fields:
     name:
       type: Name
-    visibility:
-      enum: [public, internal]
-      default: internal
-    retentionDays:
-      type: RetentionDays
+    prepMinutes:
+      type: Minutes
       optional: true
   links:
-    inDatabase: exactly 1
-    belongsToTeam: at most 1
-    feedsTable: any number
+    madeAtStation: exactly 1
+    usesRecipe: any number
+    usesIngredient: any number
+    usesGarnish: any number
+    hasAllergen: any number
 
-CriticalTable:
+Dish:
   is: Kind
-  extends: Table
-  definition: A table read by so many jobs that a change to it needs extra care.
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.
+  examples:
+    - the pizza margherita
+  notExamples:
+    - the tomato sauce, which is only a part of a dish
+  fields:
+    price:
+      type: Price
+    status:
+      enum: [active, retired]
+      default: active
+  links:
+    listsAllergen: any number
 ```
 
 | Key | Required | Value |
@@ -69,8 +81,8 @@ CriticalTable:
 
 ## What counts mean
 
-A count is a check. It is never an inference. A database that names two
-owning teams is an error. The language never infers that "the two teams are
+A count is a check. It is never an inference. A recipe that names two
+stations is an error. The language never infers that "the two stations are
 the same". A fact cannot state a link that its kind does not list under
 `links`.
 

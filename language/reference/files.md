@@ -7,7 +7,7 @@ title: Files and statements — The OpenFjord modeling language
 > Part of [the reference](README.md).
 
 All of the language is in YAML files with names that end in `.of.yaml`,
-such as `table.of.yaml`. The extension tells editors and tools which files are
+such as `recipe.of.yaml`. The extension tells editors and tools which files are
 in the language. The only exception is the manifest of a package. Its name is
 always `package.yaml`. A file is a mapping: an optional `import` block, and
 then statements. The key of each statement is its name.
@@ -19,20 +19,22 @@ then statements. The key of each statement is its name.
 import:
   - from: file:names.of.yaml
     use: [Name]
+  - from: file:station.of.yaml
+    use: [Station]
 
-Table:
+Recipe:
   is: Kind
-  definition: A set of rows with one schema, stored in a database.
+  definition: The steps that make one food from ingredients and other recipes.
   fields:
     name:
       type: Name
 
-inDatabase:
+madeAtStation:
   is: Link
-  from: Table
-  to: Database
-  reads: "{from} is in {to}"
-  definition: The database that stores the table.
+  from: Recipe
+  to: Station
+  reads: "{from} is made at {to}"
+  definition: The station where cooks make the recipe.
 ```
 
 ## Statements
@@ -66,10 +68,10 @@ The `is:` key of every statement tells what the statement is.
 
 | Statement | Written as | Examples |
 |---|---|---|
-| kind, value type | UpperCamelCase | `Table`, `CriticalTable`, `RetentionDays` |
-| link, link inverse | lowerCamelCase, two words or more | `inDatabase`, `readsTable`, `hasJob` |
-| constraint, derivative, tag, test, question | lowerCamelCase | `crossAppReadNeedsContract`, `lineage` |
-| fact | an id: any text, usually a path | `db/sales/table/order_lines` |
+| kind, value type | UpperCamelCase | `Recipe`, `BaseRecipe`, `Minutes` |
+| link, link inverse | lowerCamelCase, two words or more | `madeAtStation`, `usesRecipe`, `makesRecipe` |
+| constraint, derivative, tag, test, question | lowerCamelCase | `dishListsItsAllergens`, `allergens` |
+| fact | an id: any text, usually a path | `dish/margherita` |
 
 - **FL6.** The name of a definition MUST be unique in its package. The
   inverse name that a link declares is also a name of that package.
@@ -86,12 +88,12 @@ A file can use a name only if the file defines or imports that name. The
 
 ```yaml
 import:
-  - from: file:table.of.yaml              # a file in this package, relative to this one
-    use: [Table, inDatabase]
-  - from: file:../shared/team.of.yaml     # going up a folder
-    use: [Team]
-  - from: pkg:@openfjord/org-model     # another package
-    use: [Contract, { name: Team, as: OrgTeam }]
+  - from: file:recipe.of.yaml             # a file in this package, relative to this one
+    use: [Recipe, madeAtStation]
+  - from: file:../shared/station.of.yaml  # a file in the parent folder
+    use: [Station]
+  - from: pkg:@bistro/suppliers           # another package
+    use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
 ```
 
 | Key | Value |
@@ -111,8 +113,8 @@ import:
 - **FL12.** Two names in one file MUST NOT be the same; use `as` to rename one
   of them.
 - **FL13.** A file MAY import the inverse name of a link alone, as for any
-  other name. For example, `hasJob` is the inverse of `jobOf`, and a file can
-  import `hasJob` without `jobOf`.
+  other name. For example, `makesRecipe` is the inverse of `madeAtStation`, and a
+  file can import `makesRecipe` without `madeAtStation`.
 - **FL14.** Field names are not imported: a field belongs to its kind.
 
 ## Free-form text
@@ -137,8 +139,8 @@ for each word, active voice and simple verb tenses.
 
 ## Ids
 
-Files use plain names, for example `Table` for a kind and
-`db/sales/table/order_lines` for a fact. Imports show the source of each name.
+Files use plain names, for example `Recipe` for a kind and
+`dish/margherita` for a fact. Imports show the source of each name.
 An id is a name, not a web address (reason 10 in
 [the research](../../README.md)). The tool builds the full IRI
 (Internationalized Resource Identifier) from the `rdfNamespace` of the
