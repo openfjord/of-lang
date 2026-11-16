@@ -68,9 +68,13 @@ Dish:
 - **KD1.** A kind MUST have a `definition`.
 - **KD2.** `extends` MUST name a kind. A kind MUST NOT extend itself,
   directly or through other kinds.
-- **KD3.** A kind that extends a different kind has all the fields and link
-  counts of that kind. It MAY add its own fields and link counts. A thing of
-  the narrower kind is also a thing of the broader kind.
+- **KD3.** When kind B extends kind A:
+  - B has every field and every link count of A.
+  - B MAY add fields and link counts of its own.
+  - Each thing of kind B is also a thing of kind A.
+
+  For example, `Dish` extends `Recipe`. A dish has the fields and links of a
+  recipe, and also a price. Each dish is also a recipe.
 - **KD4.** Each key under `links` MUST be a link, or the inverse name of a
   link, that starts at this kind or at a kind that this kind extends. For an
   inverse name, the link must end at that kind.
