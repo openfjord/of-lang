@@ -4,7 +4,7 @@ title: Pending changes — The OpenFjord modeling language
 
 # Pending changes
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A pending change is a change to a package that nobody has accepted yet. The
 change is in the files of the package, as marks on the statements that it

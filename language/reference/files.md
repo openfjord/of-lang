@@ -4,7 +4,7 @@ title: Files and statements — The OpenFjord modeling language
 
 # Files and statements
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 Packages, the `defs/` and `tests/` folders, files and imports are the same
 in every form of the language ([principle 7](../README.md#principles)). Only

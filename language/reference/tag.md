@@ -4,7 +4,7 @@ title: Tags — The OpenFjord modeling language
 
 # Tags
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A tag marks definitions that belong together for one purpose. By default,
 the export to RDF (Resource Description Framework) includes the full package.

@@ -4,7 +4,7 @@ title: Kinds, fields and value types — The OpenFjord modeling language
 
 # Kinds, fields and value types
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A kind is a category of things, for example a station, a recipe or a
 dish. A kind tells what the thing is and gives examples of it. It also

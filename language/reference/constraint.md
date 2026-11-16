@@ -4,7 +4,7 @@ title: Constraints — The OpenFjord modeling language
 
 # Constraints
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A constraint rejects facts. It finds things and the links between them, and
 it uses conditions to narrow the matches. It reports each match as a

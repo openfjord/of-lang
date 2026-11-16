@@ -4,7 +4,7 @@ title: Packages — The OpenFjord modeling language
 
 # Packages
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A package is the unit that people version, own, review and depend on. It
 holds definitions: kinds, links, value types, constraints and derivatives. It

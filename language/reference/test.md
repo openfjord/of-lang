@@ -4,7 +4,7 @@ title: Tests — The OpenFjord modeling language
 
 # Tests
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A package uses tests in its `tests/` folder to prove that it is correct
 (reason 16 in [the research](../../README.md)). A test is an example or a

@@ -26,7 +26,7 @@ statements, derives what follows, and rejects what breaks a rule.
 
 | If you want to | Read |
 |---|---|
-| find exactly how something works | [the reference](reference/README.md), one page for each part of the language |
+| find exactly how something works | [the reference](#reference), one page for each part of the language |
 | see all of the language on one page | [the cheat sheet](cheatsheet.md) |
 | run it | [the `of-lang` tool](../cli/README.md) |
 
@@ -100,3 +100,21 @@ Thus, an error from the tool can identify the rule that it enforces.
 
 Fields and links are different: a field is a value of the thing, and a link
 points to another thing.
+
+## Reference
+
+Each page describes one part of the language: its purpose, every key that it
+takes, and the requirements that the tool checks.
+
+| Page | Covers | Codes |
+|---|---|---|
+| [Files and statements](reference/files.md) | files, statements, `is:`, names, imports, ids | FL |
+| [Packages](reference/package.md) | the manifest, owners, namespaces, the fixed layout, exports, docs | PK, DC |
+| [Kinds, fields and value types](reference/kind.md) | kinds, `extends`, unions, fields as a JSON Schema subset, value types | KD, FD, VT |
+| [Links](reference/link.md) | links, `under`, `inverse`, `chains` | LK |
+| [Tags](reference/tag.md) | tags, and the export of a subset to RDF | TG |
+| [Constraints](reference/constraint.md) | `match`, `filter`, `unless`, messages, how they run | CN |
+| [Derivatives](reference/derivative.md) | `match`, `filter`, `derive`, how they run, explanations | DV |
+| [Facts](reference/fact.md) | facts in tests, derived facts | FC |
+| [Tests](reference/test.md) | examples, and questions with their own `match` and `filter` | TS |
+| [Pending changes](reference/pending.md) | `pending` and `was`: a change that nobody has accepted yet | PD |

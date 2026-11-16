@@ -4,7 +4,7 @@ title: Derivatives — The OpenFjord modeling language
 
 # Derivatives
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A derivative adds facts that follow from other facts. It finds things and the
 links between them, and it uses conditions to narrow the matches. For each

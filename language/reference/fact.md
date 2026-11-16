@@ -4,7 +4,7 @@ title: Facts — The OpenFjord modeling language
 
 # Facts
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A fact tells what a thing is: its kind, its fields and its links. Facts that
 files contain are stated facts. They occur only in the tests of a package,

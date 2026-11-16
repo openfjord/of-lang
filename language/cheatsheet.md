@@ -5,7 +5,7 @@ title: Cheat sheet — The OpenFjord modeling language
 # Cheat sheet
 
 > Part of [the OpenFjord modeling language](README.md). All of the syntax is
-> on one page, in the default YAML form. [The reference](reference/README.md) gives the exact rules.
+> on one page, in the default YAML form. [The reference](README.md#reference) gives the exact rules.
 
 ## A package
 

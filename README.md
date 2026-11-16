@@ -165,7 +165,7 @@ closed-world checking and adds inference by derivatives.
 
 - [The language specification](language/README.md): what the language is,
   its principles and vocabulary, with
-  - [a reference](language/reference/README.md) with every rule, and
+  - [a reference](language/README.md#reference) with every rule, and
   - [a cheat sheet](language/cheatsheet.md).
 - [The `of-lang` tool](cli/README.md): commands, output, and what is
   planned: the change report, product's pages, the RDF export and a

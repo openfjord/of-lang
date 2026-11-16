@@ -4,7 +4,7 @@ title: Links — The OpenFjord modeling language
 
 # Links
 
-> Part of [the reference](README.md).
+> Part of [the reference](../README.md#reference).
 
 A link is a named relationship from a kind to a kind, in one direction. A link
 is declared one time, as its own statement. Usually, it is in the same file as
