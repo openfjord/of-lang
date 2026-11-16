@@ -106,5 +106,5 @@ To reject the change, the tool does these steps as one operation:
 - **PD4.** The version without the change and the version with the change
   MUST each pass every rule in this specification.
 
-The manifest, `package.yaml`, and the Markdown files in `docs/` have no
+The manifest and the Markdown files in `docs/` have no
 pending marks. A pending change to them is deferred.

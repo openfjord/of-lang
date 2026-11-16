@@ -29,10 +29,13 @@ restaurant/
     questions/
 ```
 
-- **PK1.** The top level of a package MUST hold `package.yaml` and `defs/`, MAY
-  hold `docs/` and `tests/`, and MUST NOT hold anything else.
+- **PK1.** The top level of a package MUST hold the manifest and `defs/`, MAY
+  hold `docs/` and `tests/`, and MUST NOT hold anything else. The manifest
+  is a YAML file named `package.yaml` or `package.yml`, in every form of the
+  language. A package MUST NOT hold both.
 - **PK2.** In `defs/`, `docs/` and `tests/`, the author chooses the layout.
-  Files in `defs/` and `tests/` have names that match `*.of.yaml`
+  Files in `defs/` and `tests/` have names that end in `.of.`, then the
+  name of the form of the package, such as `.of.yaml`
   ([FL15](files.md#files-and-statements)). A file in `defs/` MAY hold
   definitions of any sort, in any combination.
 - **PK3.** In `defs/`, a definition SHOULD be next to the item that it is
@@ -76,7 +79,7 @@ tags:                             # the labels that statements of this package c
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
 | `tags` | no | a list of [tags](tag.md), each with a `name` and a `description` |
 
-- **PK4.** `package.yaml` MUST have `package`, `version`, `owner` and
+- **PK4.** The manifest MUST have `package`, `version`, `owner` and
   `rdfNamespace`, and MUST NOT have a key that is not in the table.
 - **PK5.** `version` MUST be `MAJOR.MINOR.PATCH`, three whole numbers.
 - **PK15.** Each item in `tags` MUST have a `name` and a `description`, and

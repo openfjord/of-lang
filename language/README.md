@@ -74,7 +74,9 @@ Thus, an error from the tool can identify the rule that it enforces.
    them, and this specification shows them in YAML. A different form, such as
    JSON, can hold the same statements. Packages, the `defs/` and `tests/`
    folders, files and imports are the same in every form. Only the syntax
-   inside a file changes. The tool reads each form into the same model. A
+   inside a file and the ending of its name change, and a package uses one
+   form. The manifest is always YAML. The tool reads each form into the
+   same model. A
    user interface is not a form. It edits packages: it changes the files of a
    package, in whichever form those files are.
 8. **No prior knowledge.** A reader needs no knowledge of RDF or of

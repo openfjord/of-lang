@@ -9,8 +9,9 @@ title: Cheat sheet — The OpenFjord modeling language
 
 ## A package
 
-The name of every file in `defs/` and `tests/` ends in `.of.yaml`. The
-manifest is always `package.yaml`.
+The name of every file in `defs/` and `tests/` ends in `.of.yaml` (in the
+JSON form, `.of.json`; a package uses one form). The manifest is always YAML:
+`package.yaml` or `package.yml`.
 
 ```
 my-package/

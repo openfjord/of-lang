@@ -9,15 +9,25 @@ title: Files and statements — The OpenFjord modeling language
 Packages, the `defs/` and `tests/` folders, files and imports are the same
 in every form of the language ([principle 7](../README.md#principles)). Only
 the syntax inside a file depends on its form. This page shows the YAML form,
-which is the default. In this form, the names of the files end in
-`.of.yaml`, such as `recipe.of.yaml`. The extension tells editors and tools
-which files are in the language. The only exception is the manifest of a package. Its name is
-always `package.yaml`. A file is a mapping: an optional `import` block, and
-then statements. The key of each statement is its name.
+which is the default.
 
-- **FL15.** Every file in `defs/` and `tests/` MUST be in a form that the
-  tool reads. In the YAML form, its name MUST end in `.of.yaml`. Any other
-  file there is an error. The tool does not ignore it.
+The name of a file ends in `.of.`, then the name of its form: `.of.yaml`
+for YAML, `.of.json` for JSON. For example, `recipe.of.yaml`. The ending
+tells editors and tools which files are in the language and which form they
+use. All the files of one package use the same form.
+
+The manifest of a package is different. It is always YAML, whatever the form
+of the package, and its name is `package.yaml` or `package.yml`
+([the manifest](package.md#the-manifest)).
+
+In the YAML form, a file is a mapping: an optional `import` block, and then
+statements. The key of each statement is its name.
+
+- **FL15.** The name of every file in `defs/` and `tests/` MUST end in
+  `.of.`, then the name of a form that the tool reads. Any other file there
+  is an error. The tool does not ignore it.
+- **FL18.** All the files in `defs/` and `tests/` of a package MUST use the
+  same form.
 
 ```yaml
 import:

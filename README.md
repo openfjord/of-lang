@@ -246,11 +246,7 @@ reasons table wait on them:
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
-5. **Names of files in other forms.** Packages, folders, files and imports
-   are the same in every form. In the YAML form, a file name ends in
-   `.of.yaml`, and the manifest is `package.yaml`. What are these names in a
-   different form, such as JSON? Can one package mix forms?
-6. **Tags and the knowledge in a subset.** An export must hold the same
+5. **Tags and the knowledge in a subset.** An export must hold the same
    knowledge as its package and answer the same questions. A tagged export
    must hold only the tagged knowledge: it must not answer a question that
    needs knowledge without the tag. Two parts are open. How do constraints
