@@ -246,12 +246,10 @@ reasons table wait on them:
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
-5. **What belongs to the YAML form only.** YAML is the default form, not the
-   language. Some rules still refer to files: the `.of.yaml` extension, the
-   `defs/` and `tests/` folders, and "a file imports each name that it uses".
-   Which of these are part of the language, and which are only part of the
-   YAML form? What does an import mean when the statements come from a user
-   interface?
+5. **Names of files in other forms.** Packages, folders, files and imports
+   are the same in every form. In the YAML form, a file name ends in
+   `.of.yaml`, and the manifest is `package.yaml`. What are these names in a
+   different form, such as JSON? Can one package mix forms?
 
 ## Explored, not decided: what the tool must do
 

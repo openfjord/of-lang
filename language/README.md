@@ -77,8 +77,10 @@ Thus, an error from the tool can identify the rule that it enforces.
 7. **YAML is the default form, not the language.** The language is the
    statements, their keys and their values. YAML is the default way to write
    them, and this specification shows them in YAML. A different form, such as
-   JSON or a user interface, can hold the same statements. The tool reads
-   each form into the same model.
+   JSON or a user interface, can hold the same statements. Packages, the
+   `defs/` and `tests/` folders, files and imports are the same in every
+   form. Only the syntax inside a file changes. The tool reads each form into
+   the same model.
 
 ## Vocabulary
 

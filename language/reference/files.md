@@ -6,16 +6,18 @@ title: Files and statements — The OpenFjord modeling language
 
 > Part of [the reference](README.md).
 
-This page describes the YAML form of the language, which is the default
-form ([principle 7](../README.md#principles)). In this form, the statements
-are in YAML files with names that end in `.of.yaml`,
-such as `recipe.of.yaml`. The extension tells editors and tools which files are
-in the language. The only exception is the manifest of a package. Its name is
+Packages, the `defs/` and `tests/` folders, files and imports are the same
+in every form of the language ([principle 7](../README.md#principles)). Only
+the syntax inside a file depends on its form. This page shows the YAML form,
+which is the default. In this form, the names of the files end in
+`.of.yaml`, such as `recipe.of.yaml`. The extension tells editors and tools
+which files are in the language. The only exception is the manifest of a package. Its name is
 always `package.yaml`. A file is a mapping: an optional `import` block, and
 then statements. The key of each statement is its name.
 
-- **FL15.** Every file in `defs/` and `tests/` MUST have a name that ends in
-  `.of.yaml`. Any other file there is an error. The tool does not ignore it.
+- **FL15.** Every file in `defs/` and `tests/` MUST be in a form that the
+  tool reads. In the YAML form, its name MUST end in `.of.yaml`. Any other
+  file there is an error. The tool does not ignore it.
 
 ```yaml
 import:
@@ -60,7 +62,7 @@ The `is:` key of every statement tells what the statement is.
 - **FL2.** A statement MUST NOT have a key that its page does not list. The
   tool rejects all keys that are not listed, so a misspelled key is an error.
   The tool does not ignore it.
-- **FL3.** A YAML file MUST NOT repeat a key in the same mapping.
+- **FL3.** A file MUST NOT repeat a key in the same mapping.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
   `Constraint`, `Derivative` or `Tag`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
