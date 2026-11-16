@@ -102,8 +102,18 @@ import:
 
 | Key | Value |
 |---|---|
-| `from` | `file:` and a path relative to the importing file, or `pkg:` and the full name of a package |
+| `from` | the source: a scheme, then a colon, then a value that the scheme defines |
 | `use` | a list of names; a name can be `{ name: …, as: … }` to rename it in this file |
+
+The scheme tells where the names come from. The language has two schemes:
+
+| Scheme | Value | Source |
+|---|---|---|
+| `file:` | a path relative to the importing file | a file in the same package |
+| `pkg:` | the full name of a package | a different package |
+
+The list of schemes can grow. A later version of the language can add a
+scheme for a different source. The other import rules apply to all schemes.
 
 - **FL9.** A file MUST import every name that it uses but does not define.
   This includes names from other files of the same package. Thus, the top of
@@ -114,6 +124,8 @@ import:
 - **FL11.** A `pkg:` import MUST identify a package that is in the `dependsOn`
   of the importing package. It MUST use only names that the package
   [exports](package.md#exports).
+- **FL17.** `from` MUST start with a scheme that the language defines. The
+  tool rejects an unknown scheme.
 - **FL12.** Two names in one file MUST NOT be the same; use `as` to rename one
   of them.
 - **FL13.** A file MAY import the inverse name of a link alone, as for any

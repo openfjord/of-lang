@@ -51,6 +51,7 @@ SomeStatement:
   is: Kind        # or Link, ValueType, Tag, Constraint, Derivative — Fact, Test, Question in tests/
 ```
 
+The import schemes are `file:` and `pkg:`. A later version can add more.
 A file imports each name that it uses but does not define. A file does not
 import field names.
 
