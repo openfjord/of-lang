@@ -46,6 +46,9 @@ This causes problems:
 - **Each tool keeps its own copy.** A data catalog, a lineage tool and a
   permissions system each describe the same tables in their own way. The
   copies do not agree.
+- **AI agents guess.** An AI agent that changes code or answers a question
+  reads the code and the wiki pages. It finds no exact meanings and no exact
+  rules, so it guesses. A wrong guess looks the same as a correct answer.
 
 ### What a model gives
 
@@ -76,6 +79,10 @@ Then a tool can do things that text in a wiki cannot do:
 - **Give other tools one source.** The tool exports the model in standard
   formats. A catalog or a lineage tool reads the export, so there is one
   source, not many copies.
+- **Give AI agents exact knowledge.** An AI agent reads the model to learn
+  what a term means and which rules apply. It asks the tool questions, and
+  gets answers with their steps. The tool checks each change that the agent
+  makes, and rejects a change that breaks a rule.
 
 A database schema or a JSON Schema does not do this. A database schema tells
 how one system stores its data. A JSON Schema checks one document. Neither
