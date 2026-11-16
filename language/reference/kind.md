@@ -127,6 +127,41 @@ a rule accepts a kind that extends a different kind, the rule also accepts a
 listed kind in place of the union kind. For example, `usesFood` can link a
 recipe to an ingredient.
 
+A business menu shows a different use. It is a lunch with fixed courses at
+one price. The guest picks one drink: a light drink or a glass of wine.
+
+```yaml
+LightDrink:
+  is: Kind
+  definition: A drink with little or no alcohol, such as juice or water.
+
+Wine:
+  is: Kind
+  definition: A glass of wine.
+
+Drink:
+  is: Kind
+  definition: The drink that comes with a business menu.
+  oneOf: [LightDrink, Wine]
+
+BusinessLunch:
+  is: Kind
+  definition: One business menu that a guest orders.
+
+comesWithDrink:
+  is: Link
+  from: BusinessLunch
+  to: Drink
+  reads: "{from} comes with {to}"
+  definition: The drink that the guest picks for the business lunch.
+```
+
+A business lunch can come with a light drink or with a wine. A drink is
+never both, because each drink is exactly one listed kind. A business lunch
+cannot come with a dish, because a dish is not a drink. A [constraint](constraint.md) with `count` can make sure that each
+business lunch comes with exactly one drink
+([links of a thing](#links-of-a-thing)).
+
 A union is closed. Only the statement itself lists its kinds. No other kind,
 and no other package, can add a kind to it.
 
@@ -198,30 +233,15 @@ decision in a different part of the language:
 
 ### Variants
 
-Some values have one of a small number of shapes. For example, the price of
-most dishes is a fixed amount. The price of a fish dish is an amount for
-each 100 grams, because each fish has a different weight. `oneOf` lists the
-shapes. Each value matches exactly one of them.
-
-```yaml
-fields:
-  price:
-    oneOf:
-      - type: object
-        properties:
-          variant: { const: fixed }
-          amount:  { type: Price }
-      - type: object
-        properties:
-          variant: { const: perWeight }
-          amount:  { type: Price }
-          grams:   { type: integer, minimum: 1 }
-```
-
-Each `object` shape has a part with a fixed value, here `variant`. Thus a
-reader, a constraint and a derivative can see which shape a value has.
-Constraints and derivatives read a part with the
+Some values have one of a small number of shapes. `oneOf` lists the shapes,
+and each value matches exactly one of them. When the shapes are objects,
+each shape SHOULD have a part with a fixed value, so that a reader, a
+constraint and a derivative can see which shape a value has
+([FD8](#field-rules)). Constraints and derivatives read a part with the
 [`part` key](constraint.md#filter-and-unless).
+
+A choice between sorts of things, such as a light drink or a wine, is not a
+field. It is a [union of kinds](#unions).
 
 ### Field rules
 
