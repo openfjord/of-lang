@@ -12,7 +12,7 @@ the syntax inside a file depends on its form. This page shows the YAML form,
 which is the default.
 
 The name of a file ends in `.of.`, then the name of its form: `.of.yaml`
-for YAML, `.of.json` for JSON. For example, `recipe.of.yaml`. The ending
+or `.of.yml` for YAML, `.of.json` for JSON. For example, `recipe.of.yaml`. The ending
 tells editors and tools which files are in the language and which form they
 use. All the files of one package use the same form.
 
