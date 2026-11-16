@@ -74,8 +74,7 @@ subset. Examples of these references are:
 - a link whose `from` or `to` kind is untagged
 - a kind that extends an untagged kind
 - a field whose value type is untagged
-- a link `under` an untagged link
-- a count for a link that is not exported.
+- a link `under` an untagged link.
 
 Each such reference is not exported. A link whose `from` or `to` kind is not
 exported is not exported at all. The export lists each item that it removes.

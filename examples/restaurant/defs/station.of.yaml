@@ -13,8 +13,6 @@ Station:
   fields:
     name:
       type: Name
-  links:
-    dependsOnStation: any number
 
 dependsOnStation:
   is: Link

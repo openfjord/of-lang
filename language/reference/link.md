@@ -8,8 +8,8 @@ title: Links — The OpenFjord modeling language
 
 A link is a named relationship from a kind to a kind, in one direction. A link
 is declared one time, as its own statement. Usually, it is in the same file as
-the kind where it starts. That kind tells how many of the link each thing has
-([KD4](kind.md#kind-rules)).
+the kind where it starts. A thing can have each link that starts at its kind
+([links of a thing](kind.md#links-of-a-thing)).
 
 ```yaml
 madeAtStation:

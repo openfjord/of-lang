@@ -8,8 +8,7 @@ title: Kinds, fields and value types — The OpenFjord modeling language
 
 A kind is a category of things, for example a station, a recipe or a
 dish. A kind tells what the thing is and gives examples of it. It also
-lists the fields of the thing, and the links that the thing has, with a count
-for each link.
+lists the fields of the thing.
 
 ```yaml
 Recipe:
@@ -27,12 +26,6 @@ Recipe:
     prepMinutes:
       type: Minutes
       optional: true
-  links:
-    madeAtStation: exactly 1
-    usesRecipe: any number
-    usesIngredient: any number
-    usesGarnish: any number
-    hasAllergen: any number
 
 Dish:
   is: Kind
@@ -48,8 +41,6 @@ Dish:
     status:
       enum: [active, retired]
       default: active
-  links:
-    listsAllergen: any number
 ```
 
 | Key | Required | Value |
@@ -61,7 +52,6 @@ Dish:
 | `examples` | no | a list of things of this kind, in words |
 | `notExamples` | no | a list of things that look like things of this kind, but are not |
 | `fields` | no | the [fields](#fields) of the kind, by name |
-| `links` | no | the links that a thing of this kind has, each with a count |
 | `tags` | no | the [tags](tag.md) that the kind belongs to |
 
 ## Kind rules
@@ -70,27 +60,42 @@ Dish:
 - **KD2.** `extends` MUST name a kind. A kind MUST NOT extend itself,
   directly or through other kinds.
 - **KD3.** When kind B extends kind A:
-  - B has every field and every link count of A.
-  - B MAY add fields and link counts of its own.
+  - B has every field of A.
+  - B MAY add fields of its own.
   - Each thing of kind B is also a thing of kind A.
 
   For example, `Dish` extends `Recipe`. A dish has the fields and links of a
   recipe, and also a price. Each dish is also a recipe.
-- **KD4.** Each key under `links` MUST be a link, or the inverse name of a
-  link, that starts at this kind or at a kind that this kind extends. For an
-  inverse name, the link must end at that kind.
-- **KD5.** Each count MUST be one of `exactly N`, `at least N`, `at most N`
-  or `any number`, where N is a whole number.
+## Links of a thing
 
-## What counts mean
+A kind does not list its links. Each [link](link.md) names the kind where it
+starts and the kind where it ends. A thing can have each link that starts at
+its kind, at a kind that its kind extends, or at a union that lists its kind.
 
-A count is a check. A recipe that names two stations is an error. A fact cannot state a link that its kind does not list under
-`links`.
+A kind does not set how many links a thing has. A
+[constraint](constraint.md) does that, with `count`:
+
+```yaml
+recipeAtOneStation:
+  is: Constraint
+  says: Cooks make each recipe at exactly one station.
+  filter:
+    - count:
+        match:
+          - link: madeAtStation
+            from: {$recipe: Recipe}
+            to:   {$station: Station}
+      does not equal:
+        value: 1
+  message: "{$recipe} must be made at exactly one station."
+```
+
+A recipe without a station is an error, and so is a recipe with two
+stations. A link with no such constraint can occur any number of times,
+or not at all.
 
 Every field is required, unless it has `optional: true` or a `default`
-([FD3](#field-rules)). These two rules together mean that a fact must have
-all the items that its kind asks for, and nothing more
-([FC3](fact.md#rules)).
+([FD3](#field-rules)).
 
 ## Unions
 
@@ -128,8 +133,8 @@ and no other package, can add a kind to it.
 - **KD7.** `oneOf` MUST list two or more kinds. No listed kind MAY extend a
   different listed kind, directly or through other kinds, because then each
   thing of the narrower kind is two listed kinds at once.
-- **KD8.** A kind with `oneOf` MUST NOT have `fields` or `links`. Its
-  listed kinds keep their own fields and links.
+- **KD8.** A kind with `oneOf` MUST NOT have `fields`. Its listed kinds
+  keep their own fields.
 - **KD9.** No kind MAY extend a kind with `oneOf`.
 - **KD10.** A fact MUST NOT name a kind with `oneOf` as its `kind`. It names
   one of the listed kinds.

@@ -5,8 +5,6 @@ import:
     use: [Station]
   - from: file:ingredient.of.yaml
     use: [Ingredient]
-  - from: file:allergens.of.yaml
-    use: [hasAllergen, listsAllergen]
 
 Recipe:
   is: Kind
@@ -23,12 +21,6 @@ Recipe:
     prepMinutes:
       type: Minutes
       optional: true
-  links:
-    madeAtStation: exactly 1
-    usesRecipe: any number
-    usesIngredient: any number
-    usesGarnish: any number
-    hasAllergen: any number
 
 Dish:
   is: Kind
@@ -44,8 +36,6 @@ Dish:
     status:
       enum: [active, retired]
       default: active
-  links:
-    listsAllergen: any number
 
 BaseRecipe:
   is: Kind
@@ -100,3 +90,16 @@ baseRecipe:
   derive:
     - node: $recipe
       becomes: BaseRecipe
+
+recipeAtOneStation:
+  is: Constraint
+  says: Cooks make each recipe at exactly one station.
+  filter:
+    - count:
+        match:
+          - link: madeAtStation
+            from: {$recipe: Recipe}
+            to:   {$station: Station}
+      does not equal:
+        value: 1
+  message: "{$recipe} must be made at exactly one station."

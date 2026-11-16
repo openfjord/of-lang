@@ -47,7 +47,8 @@ The `is:` key of every statement tells what the statement is.
 
 At the top level of a statement, every key belongs to the language. The
 names that users choose, such as the names of fields and links, are always
-one level lower: under `fields` and `links` in a kind and in a fact. Thus, a
+one level lower: under `fields` in a kind, and under `fields` and `links`
+in a fact. Thus, a
 name that a user chooses never clashes with a key of the language. This
 includes keys that a later version of the language adds.
 

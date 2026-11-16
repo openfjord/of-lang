@@ -267,7 +267,7 @@ rejections listed first.
 ### Product's pages
 
 A page per definition for product: the definition, examples and
-non-examples, every count as a sentence, and every constraint and derivative as its
+non-examples, and every constraint and derivative as its
 `says`, shown as written.
 
 > **Recipe** — The steps that make one food from ingredients and other recipes.
@@ -301,7 +301,6 @@ tools. Nobody writes them.
 | `under` | `rdfs:subPropertyOf` |
 | `inverse` | `owl:inverseOf` |
 | `chains` | `owl:TransitiveProperty` |
-| counts | `sh:minCount`, `sh:maxCount`, never an OWL cardinality restriction |
 | constraint | a SHACL shape with a SPARQL (SPARQL Protocol and RDF Query Language) check |
 | derivative | a SHACL rule |
 | definition, `reads` | `rdfs:comment`, and the generated sentence as a label for readers |
@@ -334,8 +333,8 @@ other language server, including the YAML one.
 - **Structure, from a schema.** One JSON Schema per statement kind, chosen by
   `is:`, plus one for `package.yaml`, hand-written and embedded in the
   binary. The schemas are the source of truth for the shape of statements:
-  every key, its description, and the fixed words it allows (`exactly 1`,
-  `is at most`, `becomes`). The field keywords are part of them, so a field
+  every key, its description, and the fixed words it allows (`is at most`,
+  `becomes`). The field keywords are part of them, so a field
   definition is checked and completed like any other part of a statement.
   The checker's structural errors (unknown keys, wrong shapes, words not in
   the list) are this validation, mapped back to a line and column.

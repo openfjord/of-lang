@@ -70,9 +70,8 @@ Recipe:                                  # UpperCamelCase
   fields:
     name:        { type: Name }                       # required by default
     prepMinutes: { type: Minutes, optional: true }
-  links:
-    madeAtStation: exactly 1             # exactly N | at least N | at most N | any number
-    usesRecipe:    any number
+                                         # no links here: a link names its own from and to;
+                                         # a constraint with count limits how many
 
 Dish:
   is: Kind

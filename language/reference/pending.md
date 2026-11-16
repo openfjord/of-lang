@@ -37,11 +37,6 @@ Recipe:                      # the change updates this statement
     prepMinutes:
       type: Minutes
       optional: true
-  links:
-    madeAtStation: exactly 1
-    usesRecipe: any number
-    usesIngredient: any number
-    hasAllergen: any number
   was:
     definition: The steps that make one food from ingredients and other recipes.
     fields:
@@ -50,12 +45,6 @@ Recipe:                      # the change updates this statement
       prepMinutes:
         type: Minutes
         optional: true
-    links:
-      madeAtStation: exactly 1
-      usesRecipe: any number
-      usesIngredient: any number
-      usesGarnish: any number
-      hasAllergen: any number
 ```
 
 `pending` and `was` are annotations: keys that the language adds to any
@@ -70,8 +59,7 @@ the names of fields or links, because those names are always one level lower
 
 An updated statement shows its new version. `was` keeps the old version, so
 that the tool can show the difference and can reject the change. In this
-example, the update changes the definition of `Recipe`. It also removes the
-count for `usesGarnish`, because the change removes that link.
+example, the update changes the definition of `Recipe`.
 
 ## One change at a time
 

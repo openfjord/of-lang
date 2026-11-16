@@ -13,8 +13,6 @@ Ingredient:
   fields:
     name:
       type: Name
-  links:
-    containsAllergen: any number
 
 Allergen:
   is: Kind

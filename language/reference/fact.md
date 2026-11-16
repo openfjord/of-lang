@@ -37,18 +37,19 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 | `is` | yes | `Fact` |
 | `kind` | yes | the kind of the thing |
 | `fields` | as the kind tells | the value of each field, by the name of the field |
-| `links` | as the counts of the kind tell | for each link, one id or a list of ids |
+| `links` | no | for each link, one id or a list of ids |
 
 ## Rules
 
 - **FC1.** A fact MUST name its `kind`, and the kind MUST be imported.
 - **FC2.** Each key under `fields` MUST be a field of the kind (inherited
   fields included). Each key under `links` MUST be a link that the file
-  imports. Fields do not need an import, but links do.
-- **FC3.** The facts about a thing, stated and derived together, MUST have:
-  - every field that its kind requires,
-  - every link that the counts of its kind require,
-  - and nothing that its kind does not list.
+  imports, and the link MUST start at the kind of the fact
+  ([links of a thing](kind.md#links-of-a-thing)). Fields do not need an
+  import, but links do.
+- **FC3.** The facts about a thing, stated and derived together, MUST have
+  every field that its kind requires, and no field that its kind does not
+  list.
 
   An omitted field takes its `default`, if it has one.
 - **FC4.** Each field value MUST be a value that its field allows.
