@@ -131,12 +131,14 @@ When a condition compares a thing without a field, it compares the id of the
 thing. A field with no value fails all comparisons except `is not set`.
 
 A condition on an `object` field can name one of its parts with `part`,
-for example `field: serving, part: variant`. For a part in a part, `part`
+for example `field: price, part: variant`. For a part in a part, `part`
 is a list: `part: [plating, garnish]`. When the value has no such part, the
 condition holds only for `is not set`.
 
-A comparison holds only when the value has the shape of the other side. For
-example, `is above: { value: 20 }` does not hold for a price of `market`.
+For example, `field: price, part: amount` reads the amount in each shape.
+`field: price, part: grams` reads a part that only the per-weight shape has.
+For a fixed price, a condition on it holds only for `is not set`. A
+comparison holds only when the value has the type of the other side.
 
 A condition cannot see links directly. It reaches links through a nested
 block. A nested block has its own `match` and an optional `filter`. It runs

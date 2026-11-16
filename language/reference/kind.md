@@ -199,26 +199,23 @@ decision in a different part of the language:
 ### Variants
 
 Some values have one of a small number of shapes. For example, the price of
-a dish is an amount, or "market price", which the waiter tells the guest. A
-serving is a weight in grams, or a number of pieces. `oneOf` lists the
+most dishes is a fixed amount. The price of a fish dish is an amount for
+each 100 grams, because each fish has a different weight. `oneOf` lists the
 shapes. Each value matches exactly one of them.
 
 ```yaml
 fields:
   price:
     oneOf:
-      - type: Price
-      - const: market
-  serving:
-    oneOf:
       - type: object
         properties:
-          variant: { const: portion }
+          variant: { const: fixed }
+          amount:  { type: Price }
+      - type: object
+        properties:
+          variant: { const: perWeight }
+          amount:  { type: Price }
           grams:   { type: integer, minimum: 1 }
-      - type: object
-        properties:
-          variant: { const: pieces }
-          count:   { type: integer, minimum: 1 }
 ```
 
 Each `object` shape has a part with a fixed value, here `variant`. Thus a
