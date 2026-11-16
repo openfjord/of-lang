@@ -15,7 +15,7 @@ manifest is always `package.yaml`.
 ```
 my-package/
   package.yaml       # required: the manifest
-  defs/              # required: Kind, Link, ValueType, Tag, Constraint, Derivative
+  defs/              # required: Kind, Link, ValueType, Constraint, Derivative
   docs/              # optional: Markdown that links to or embeds definitions
   tests/             # optional: Fact, Test, Question
 ```
@@ -32,7 +32,6 @@ exports:
   kinds: [Recipe]
   links: [madeAtStation]
   valueTypes: [Name]
-  tags: [allergens]
 openFor:
   - extend: Recipe
   - under: usesIngredient
@@ -48,7 +47,7 @@ import:
     use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
 
 SomeStatement:
-  is: Kind        # or Link, ValueType, Tag, Constraint, Derivative — Fact, Test, Question in tests/
+  is: Kind        # or Link, ValueType, Constraint, Derivative — Fact, Test, Question in tests/
 ```
 
 The import schemes are `file:` and `pkg:`. A later version can add more.
@@ -64,7 +63,7 @@ All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 Recipe:                                  # UpperCamelCase
   is: Kind
   definition: The steps that make one food from ingredients and other recipes.   # required
-  tags: [allergens]                      # optional; kinds, links and value types only
+  tags: [allergens]                      # optional labels; kinds, links and value types only
   examples:    [the tomato sauce]
   notExamples: [a new dish that a cook tries one time and does not keep]
   fields:
@@ -115,10 +114,6 @@ Minutes:
   type: integer                          # a type and its keywords
   minimum: 1
   maximum: 1440
-
-allergens:                               # lowerCamelCase
-  is: Tag
-  definition: What an allergen app needs to tell guests which dishes contain which allergens.
 ```
 
 By default, the RDF export holds everything. An optional list of tags limits it. Tags do not pass through

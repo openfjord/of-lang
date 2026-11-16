@@ -59,7 +59,6 @@ includes keys that a later version of the language adds.
 | `ValueType` | `defs/` | [Value types](kind.md#value-types) |
 | `Constraint` | `defs/` | [Constraints](constraint.md) |
 | `Derivative` | `defs/` | [Derivatives](derivative.md) |
-| `Tag` | `defs/` | [Tags](tag.md) |
 | `Fact` | `tests/` | [Facts](fact.md) |
 | `Test` | `tests/` | [Tests](test.md) |
 | `Question` | `tests/` | [Tests](test.md#questions) |
@@ -72,7 +71,7 @@ includes keys that a later version of the language adds.
   The tool does not ignore it.
 - **FL3.** A file MUST NOT repeat a key in the same mapping.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
-  `Constraint`, `Derivative` or `Tag`. Statements in `tests/` MUST be `Fact`, `Test` or
+  `Constraint` or `Derivative`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
 - **FL5.** No statement MAY be named `import`.
 
@@ -82,13 +81,13 @@ includes keys that a later version of the language adds.
 |---|---|---|
 | kind, value type | UpperCamelCase | `Recipe`, `BaseRecipe`, `Minutes` |
 | link, link inverse | lowerCamelCase, two words or more | `madeAtStation`, `usesRecipe`, `makesRecipe` |
-| constraint, derivative, tag, test, question | lowerCamelCase | `dishListsItsAllergens`, `allergens` |
+| constraint, derivative, test, question | lowerCamelCase | `dishListsItsAllergens`, `whichDishesContainNuts` |
 | fact | an id: any text, usually a path | `dish/margherita` |
 
 - **FL6.** The name of a definition MUST be unique in its package. The
   inverse name that a link declares is also a name of that package.
 - **FL7.** Kind and value type names MUST be UpperCamelCase; constraint,
-  derivative, tag, test and question names MUST be lowerCamelCase.
+  derivative, test and question names MUST be lowerCamelCase.
   [LK1](link.md#rules) gives the rule for link names.
 - **FL8.** The name of a statement in a test file MUST NOT be the name of a
   definition in the package. Statements in a test file are local to that file.

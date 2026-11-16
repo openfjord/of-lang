@@ -250,6 +250,13 @@ reasons table wait on them:
    are the same in every form. In the YAML form, a file name ends in
    `.of.yaml`, and the manifest is `package.yaml`. What are these names in a
    different form, such as JSON? Can one package mix forms?
+6. **Tags and the knowledge in a subset.** An export must hold the same
+   knowledge as its package and answer the same questions. A tagged export
+   must hold only the tagged knowledge: it must not answer a question that
+   needs knowledge without the tag. Two parts are open. How do constraints
+   and derivatives join a subset, when each one concerns several tagged
+   definitions? And how does the tool check that a tagged export answers the
+   tagged questions, and no others?
 
 ## Explored, not decided: what the tool must do
 

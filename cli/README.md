@@ -289,23 +289,19 @@ RDF (Resource Description Framework), OWL (Web Ontology Language) and SHACL
 (Shapes Constraint Language) are generated for exchange and for existing
 tools. Nobody writes them.
 
-| In the language | Exported as |
-|---|---|
-| package | an ontology with a version and `owl:imports`; its statements in their own named graph |
-| kind | `owl:Class`, plus a closed `sh:NodeShape` for its fields and links |
-| `extends` | `rdfs:subClassOf` |
-| field | `owl:DatatypeProperty`, checked by a `sh:property` built from its JSON Schema keywords |
-| value type | `rdfs:Datatype` with restrictions (`xsd:pattern`, `xsd:maxLength`, `xsd:minInclusive` and the like) |
-| `string`, `integer`, `number`, `boolean`, `date`, `date-time`, `duration` | `xsd:string`, `xsd:integer`, `xsd:decimal`, `xsd:boolean`, `xsd:date`, `xsd:dateTime`, `xsd:duration` |
-| link | `owl:ObjectProperty`; `from` and `to` as SHACL checks, never `rdfs:domain` or `rdfs:range` |
-| `under` | `rdfs:subPropertyOf` |
-| `inverse` | `owl:inverseOf` |
-| `chains` | `owl:TransitiveProperty` |
-| constraint | a SHACL shape with a SPARQL (SPARQL Protocol and RDF Query Language) check |
-| derivative | a SHACL rule |
-| definition, `reads` | `rdfs:comment`, and the generated sentence as a label for readers |
-| facts | RDF triples in the package's named graph |
-| derived facts | RDF triples in a derived graph, with PROV-O (the W3C provenance vocabulary) linking each to its derivative |
+The export does not translate each statement into one RDF item. One
+statement can give many RDF items, or none, and several statements can give
+one. The export holds the same knowledge as the package and its
+dependencies. The check for this: each `Question` of the package gets the
+same answer from the exported RDF, with the same example facts, as from the
+package.
+
+The export keeps these properties:
+
+- The `from` and `to` of a link are checks. They never give a thing a kind.
+- Constraints reject. They never add facts.
+- The statements of each package are in their own named graph.
+- Each derived fact keeps the reason that it is true.
 
 Each IRI (Internationalized Resource Identifier) is built from the package's
 `rdfNamespace` and the definition's name.

@@ -63,7 +63,9 @@ Thus, an error from the tool can identify the rule that it enforces.
 5. **RDF is an export, not the source.** The tool generates RDF (Resource
    Description Framework), OWL (Web Ontology Language) and SHACL (Shapes
    Constraint Language) for exchange and for existing tools. Nobody writes
-   them.
+   them. The export does not translate each statement into one RDF item. It
+   holds the same knowledge as the package and its dependencies, so it
+   answers the same questions.
 6. **All text is Simplified Technical English.** This specification and all
    free-form text in a package follow ASD-STE100 Simplified Technical
    English (STE). See [FL16](reference/files.md#free-form-text).
@@ -90,7 +92,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
 | **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
 | **[link](reference/link.md)** | a named, directed relationship between two things |
-| **[tag](reference/tag.md)** | a named purpose that kinds, links and value types can carry; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
+| **[tag](reference/tag.md)** | a label for a purpose that kinds, links and value types can carry; it is not a statement, and nothing declares it; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |

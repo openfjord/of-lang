@@ -55,7 +55,6 @@ exports:                          # what other packages may use; the rest is int
   kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
   links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
   valueTypes: [Name, Minutes, Price]
-  tags: [allergens]
 openFor:                          # extension points: what other packages may add to
   - extend: Recipe                #   another package may declare a kind of recipe
   - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
@@ -68,7 +67,7 @@ openFor:                          # extension points: what other packages may ad
 | `owner` | yes | who must approve any change to the package |
 | `rdfNamespace` | yes | the prefix that the tool puts in front of each name in the exported RDF |
 | `dependsOn` | no | a mapping from package names to version ranges |
-| `exports` | no | the `kinds`, `links`, `valueTypes` and `tags` that other packages can import |
+| `exports` | no | the `kinds`, `links` and `valueTypes` that other packages can import |
 | `openFor` | no | a list of extension points, each `extend: <kind>` or `under: <link>` |
 
 - **PK4.** `package.yaml` MUST have `package`, `version`, `owner` and
