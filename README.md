@@ -24,12 +24,6 @@ With [Homebrew](https://brew.sh):
 brew install openfjord/tap/of-lang
 ```
 
-With Go:
-
-```bash
-go install github.com/openfjord/of-lang/cli/cmd/of-lang@latest
-```
-
 Or download a binary for macOS or Linux from the
 [releases](https://github.com/openfjord/of-lang/releases).
 
