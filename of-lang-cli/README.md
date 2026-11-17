@@ -16,7 +16,25 @@ compares two sets of facts, and runs a package's tests.
 > [example package](../examples/restaurant/) as it stands. It will be brought
 > up to date once the draft settles.
 
-## Build
+## Install
+
+With [Homebrew](https://brew.sh), from the
+[OpenFjord tap](https://github.com/openfjord/homebrew-tap):
+
+```bash
+brew install --HEAD openfjord/tap/of-lang
+```
+
+The tool has no release yet, so Homebrew builds it from the latest source.
+To update it:
+
+```bash
+brew upgrade --fetch-HEAD of-lang
+```
+
+## Build from source
+
+With Go installed, from the repository root:
 
 ```bash
 cd of-lang-cli && go build -o of-lang ./cmd/of-lang
