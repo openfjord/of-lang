@@ -8,11 +8,11 @@ title: Pending changes — The OpenFjord modeling language
 
 A pending change is a change to a package that nobody has accepted yet. The
 change is in the files of the package, as marks on the statements that it
-adds, removes or updates. Thus, the tool and the web app can show what the
+adds, removes or updates. Thus, the tool and a user interface can show what the
 change does without git.
 
 ```yaml
-# defs/recipe.of.yaml
+# defs/recipe.of.yaml, in a package where no other file uses usesGarnish
 Garnish:                     # the change adds this statement
   is: Kind
   pending: added
@@ -55,7 +55,7 @@ the names of fields or links, because those names are always one level lower
 | Key | Required | Value |
 |---|---|---|
 | `pending` | no | `added`, `removed` or `updated` |
-| `was` | only with `pending: updated` | the whole statement as it was before the change, without `is` |
+| `was` | only with `pending: updated` | the whole statement as it was before the change, without `is`, `pending` and `was` |
 
 An updated statement shows its new version. `was` keeps the old version, so
 that the tool can show the difference and can reject the change. In this

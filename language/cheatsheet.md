@@ -36,7 +36,7 @@ exports:
 openFor:
   - extend: Recipe
   - under: usesIngredient
-tags:                                # each label that statements can carry
+tags:                                # each label that definitions can carry
   - name: allergens
     description: What an allergen app needs to tell guests which dishes contain which allergens.
 ```
@@ -145,8 +145,7 @@ match:                                   # things and links that must exist
     to:   $dish
   - link: usesRecipe
     from: $dish
-    to:   $part
-    repeated: true                       # one or more steps
+    to:   $part                          # usesRecipe chains, so this also finds longer chains
 filter:                                  # conditions; all must hold
   - node: $part
     does not equal: { same as: $dish }
@@ -155,7 +154,11 @@ filter:                                  # conditions; all must hold
     equals: { value: active }
 ```
 
-A kind item with no link item gives a variable each thing of its kind:
+`repeated: true` on a link item follows a link that does not chain for one or
+more steps.
+
+A match can hold only a kind item. The variable then represents each thing
+of the kind:
 
 ```yaml
 match:

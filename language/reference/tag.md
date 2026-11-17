@@ -62,12 +62,11 @@ allergenFromRecipe:
       to:   $allergen
 ```
 
-A tagged derivative is in the subset, and so are the facts that it adds. A
-tagged constraint is in the subset, and it rejects in the subset what it
-rejects in the full package.
+A tagged derivative or constraint is in the subset, as a rule of the
+export.
 
-Tags only select what is exported. They have no effect on checks,
-derivatives, constraints or tests.
+Tags select what is exported. They do not change how derivatives,
+constraints and tests run.
 
 Tags do not pass from one definition to a different definition. A kind that
 extends a tagged kind does not have the tag, unless it lists the tag itself.
@@ -78,15 +77,17 @@ itself, so a package cannot tag the definitions of a different package.
 
 ## Exporting a subset
 
-By default, an export includes the full package. An optional list of tags
-limits the export: then it includes each definition of the package that has
-one or more of these tags.
+By default, an export includes the full package and its dependencies. An
+optional list of tags limits the export: then it includes, in each package,
+each definition that has one or more of these tags.
 
-A subset is always complete: each definition that a tagged definition
-refers to has the same tag ([TG5](#rules)). Thus a subset answers each of its
-questions as the full package does. Without this rule, an export must drop
-the reference, which gives wrong answers, or export the untagged definition,
-which adds knowledge that nobody tagged.
+A subset is complete in its references: each definition that a tagged
+definition refers to has the same tag ([TG5](#rules)). Without this rule, an
+export must drop the reference, which gives wrong answers, or export the
+untagged definition, which adds knowledge that nobody tagged. TG5 does not
+cover an untagged derivative that adds facts that a tagged definition uses.
+How the tool checks that a subset answers its questions as the full package
+does is still open (see [the research](../../README.md#open-questions)).
 
 For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
 `Recipe` must also have it. Otherwise the tool rejects the package and names

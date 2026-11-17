@@ -77,7 +77,7 @@ usesGarnish:
 baseRecipe:
   is: Derivative
   says: >
-    A recipe that more than two other recipes use, directly or through other
+    A recipe that more than two recipes use, directly or through other
     recipes, is a base recipe.
   match:
     - kind: { name: Recipe, as: $recipe }

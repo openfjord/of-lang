@@ -7,7 +7,7 @@ title: Tests — The OpenFjord modeling language
 > Part of [the reference](../README.md#reference).
 
 A package uses tests in its `tests/` folder to prove that it is correct
-(reason 16 in [the research](../../README.md)). A test is an example or a
+(reason 16 in [the research](../../README.md#why-ontologies-are-hard-for-software-people)). A test is an example or a
 question:
 
 - An **example** tells what a set of facts must derive, and which constraints
@@ -18,7 +18,10 @@ question:
 
 ## Examples
 
-An example is a file of facts with one `Test` statement:
+An example is a file of facts with one `Test` statement. All the
+derivatives and constraints of the package run on the facts of the
+example. A question asks about the stated facts and the derived facts
+together.
 
 ```yaml
 # tests/examples/allergen-through-a-sauce.of.yaml
@@ -156,7 +159,7 @@ dish/marinara:
 | `notDerived` | facts and terms that must not hold |
 | `rejected` | all constraints that the facts must break |
 
-A fact under `derived` or `notDerived` has the same form as a derivation,
+A fact under `derived` or `notDerived` has the same form as an item under `derive`,
 with ids in place of variables:
 
 | Fact | Written |
@@ -178,8 +181,9 @@ with ids in place of variables:
 - **TS3.** The file MUST import each link, kind and constraint that the test
   names.
 - **TS15.** A term under `derived` or `notDerived` MUST have one of the
-  forms in [derived terms](#derived-terms). A file with no facts MAY have
-  only terms under `expect`.
+  forms in [derived terms](#derived-terms). A test MAY list only terms. A
+  test in a file with no facts MUST list only terms under `expect`, and no
+  `rejected`.
 
 ## Derived terms
 
@@ -197,7 +201,7 @@ garnishIsAnIngredient:
   is: Test
   says: >
     A garnish is one of the ingredients that a recipe uses. A dish is a
-    recipe, so a dish has a station. A recipe can use a recipe that uses
+    recipe, so a dish can have a station. A recipe can use a recipe that uses
     another recipe.
   expect:
     derived:
@@ -218,7 +222,7 @@ garnishIsAnIngredient:
 |---|---|---|
 | a kind is another kind | `kind`, `is a` | `extends`, in one or more steps, and the kinds that a [union](kind.md#unions) lists |
 | two kinds never share a thing | `kind`, `never is` | a union |
-| a kind can have a link | `kind`, `can have` | the `from` of the link, `extends` and unions |
+| a kind can have a link | `kind`, `can have` | the `from` of the link, or the `to` for an inverse name, with `extends` and unions |
 | a link implies another link | `link`, `implies` | `under`, in one or more steps |
 | a link chains | `link`, `chains: true` | `chains` |
 | a link is another link in the opposite direction | `link`, `inverse of` | the inverse name |
@@ -277,7 +281,8 @@ exactly one kind item. A link item is one link that must exist, with
 alone for a thing that nothing else refers to. `repeated: true` on a link
 item follows the link for one or more steps. `match` finds each combination
 of things for which all its items hold. Each combination is one match, which
-gives one thing to each end.
+gives one thing to each variable. An end with a kind alone only has to
+exist.
 
 `filter` keeps the matches for which each condition holds. A condition names
 a `node`, an optional `field`, a comparison word and what to compare with:
@@ -287,7 +292,7 @@ a `node`, an optional `field`, a comparison word and what to compare with:
 | `equals`, `does not equal`, `is above`, `is below`, `is at least`, `is at most` | `value:` or `same as:` |
 | `is one of` | `values: [...]` |
 | `is a` | a kind |
-| `is set`, `is not set` | nothing more |
+| `is set`, `is not set` | a `field`, and nothing more |
 
 A condition can also contain a nested block with its own `match` and
 `filter`. The words for this are `at least one`, `none`, or `count` with a
@@ -304,18 +309,19 @@ A condition can also name a `part` of an `object` field, as in
   `from` and `to`, and MAY have `repeated: true`. `link` MUST be a link, or
   an inverse name, that the file imports.
 - **TS6.** Each `from` and each `to` MUST be a variable or a kind. A
-  variable there MUST have a kind item, in the same `match` or in the
-  `match` around its nested block. The kind at each end MUST be the kind of
+  variable there MUST have a kind item, in the same `match` or in a
+  `match` that encloses its nested block. The kind at each end MUST be the kind of
   the link at that end, or a kind that extends it. For a variable, this is
   the kind in its kind item.
 - **TS7.** Conditions MUST write a variable alone (`$allergen`), and every
-  variable that they use MUST have a kind item. A question MUST NOT use a
-  variable outside a nested block if the variable appears only in that
-  block.
+  variable that they use MUST have a kind item. A variable of a nested block
+  MUST NOT be used outside that block.
 - **TS8.** A comparison MUST compare values of the same type: two fields that
   name the same value type, or two fields that name no value type and have
   the same built-in type. A literal MUST be a value that the field allows. A
-  field MUST be a field of the kind of its node. Two nodes that a condition
+  literal compared with a node without a field MUST be the id of a fact. A
+  field MUST be a field of the kind of its node, or of a kind that it
+  extends. Two nodes that a condition
   compares without fields MUST have the same kind, or kinds where one
   extends the other.
 - **TS9.** Each key under `expect` MUST be a variable of the question's
@@ -327,10 +333,15 @@ A condition can also name a `part` of an `object` field, as in
   MUST be a part that the schema of the field defines. For a `oneOf`, one
   or more of the choices MUST define it. The comparison uses the type of
   that part.
-- **TS12.** Each nested block MUST have `match`, with at least one item.
-- **TS13.** Each variable MUST have exactly one kind item. A kind item
-  MUST NOT give a variable that another kind item gives, in the same `match`
-  or in the `match` around its nested block.
-- **TS14.** Each variable MUST occur two or more times in the question: in
-  ends, kind items, conditions and `expect`. A variable that occurs one time
-  refers to nothing, so a link end gives only the kind instead.
+- **TS12.** A question MUST have `match`, with at least one item. Each
+  nested block MUST also have `match`, with at least one item.
+- **TS13.** Each variable MUST have exactly one kind item. Two kind items
+  in one question MUST NOT give the same variable.
+- **TS14.** Each variable MUST be used outside its kind item: at two or
+  more places, or in a condition or `expect`. A variable at one link end
+  and nowhere else refers to nothing, so that end gives the kind alone.
+- **TS16.** A condition MUST be one of the forms above. `is set` and `is
+  not set` MUST name a field. `is a` MUST name a kind.
+- **TS17.** `count` MUST have one comparison word: `equals`, `does not
+  equal`, `is above`, `is below`, `is at least` or `is at most`. Its value
+  MUST be `value:` with a whole number, 0 or more.

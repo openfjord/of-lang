@@ -82,7 +82,7 @@ Then a tool can do things that text in a recipe book cannot do:
   that the change breaks.
 - **Give the owners of the meaning a page to read.** The tool makes a page for
   each term, in sentences and examples. The owners review the page, not the
-  YAML.
+  files.
 - **Give other tools one source.** The tool exports the model in standard
   formats. A menu app or a stock system reads the export, so there is one
   source, not many copies.
@@ -138,7 +138,7 @@ and remove what makes them hard for software people?
 | 13 | **Mechanics, lint and business rules look alike.** An OWL "exactly one owner" merges two owners into one instead of rejecting. | One construct per kind of rule, each with its own owner and its own behavior on failure. |
 | 14 | **The type system and the knowledge are mixed** (the TBox, terminology, and the ABox, assertions). | Separate packages for types and for facts, reviewed differently. |
 | 15 | **Schema changes and data changes are the same language** — there is no DDL/DML (data definition / data manipulation language) split. | Facts can never define anything. How facts written at runtime are kept from changing the types is deferred, with runtime facts. |
-| 16 | **No separation of concerns,** and no tests. | Each concern a separate statement — kind, link, constraint, derivative — placed next to what it is about; competency questions and example data as tests. |
+| 16 | **No separation of concerns,** and no tests. | Each concern a separate statement — kind, link, value type, constraint, derivative — placed next to what it is about; competency questions and example data as tests. |
 | 17 | **Trust and freshness are not modeled.** Every fact looks equally sure and equally current. | Source, confirmation and expiry per fact; trust levels; views filtered by trust. |
 | 18 | **Inference must be visible.** Its value is the knowledge nobody wrote down, which only counts if people see it when they add something. | Every change reports what is newly derived and what is no longer derived, each derived fact with its explanation. |
 
@@ -158,7 +158,7 @@ and remove what makes them hard for software people?
   and metric definitions. It answers namespaces and provenance, and has no
   typed links.
 
-Both platforms chose closed-world checking and no inference. This draft keeps
+Foundry and Unity Catalog both chose closed-world checking and no inference. This draft keeps
 closed-world checking and adds inference by derivatives.
 
 ## The draft
@@ -168,8 +168,8 @@ closed-world checking and adds inference by derivatives.
   - [a reference](language/README.md#reference) with every rule, and
   - [a cheat sheet](language/cheatsheet.md).
 - [The `of-lang` tool](cli/README.md): commands, output, and what is
-  planned: the change report, product's pages, the RDF export and a
-  language server.
+  planned: the change report, product's pages, the RDF export, a
+  language server and a user interface.
 - [The example package](examples/restaurant/).
 
 ## What it leaves out, and why
@@ -179,7 +179,18 @@ closed-world checking and adds inference by derivatives.
 - **`owl:sameAs` and anything that merges things.** One mistaken statement
   would silently join two records.
 - **Domain and range as inference.** They become checks.
-- **OWL restrictions as constraints.** Counts and allowed values are SHACL.
+- **OWL restrictions as constraints.** Constraints are not exported as OWL
+  restrictions, which infer. Counts and allowed values become SHACL shapes,
+  which reject.
+- **Arithmetic on dates and the current time.** A rule about "now" gives a
+  different answer tomorrow with the same facts. Time belongs to the system
+  that is modeled, not to the definitions. Dates are plain field values.
+- **Optional links in a match.** Nothing in the language returns rows with
+  empty cells. "Every dish, and its garnish if it has one" is two
+  statements, or a condition with `at least one` or `none`.
+- **A limit on chains.** The links that chain, such as "uses" and "contains
+  an allergen", are true at any distance. A rule that needs exactly two
+  steps writes two link items.
 - **Facts as definitions.** Facts appear only in tests and examples, and
   define nothing.
 
@@ -196,9 +207,10 @@ closed-world checking and adds inference by derivatives.
   Expression Language) or a string syntax of our own. Shorter, but a reader
   must parse operators and paths in their head, and dotted paths hide the
   things they pass through.
-- **Datalog as written.** The semantics wanted, but variables threaded through
+- **Datalog (a logic language of facts and rules) as written.** The semantics wanted, but variables threaded through
   terse lines few developers read comfortably.
-- **MongoDB-style operators, as in Mingo.** YAML-native, but one document at a
+- **MongoDB-style operators, as in Mingo (a JavaScript library that runs
+  MongoDB queries).** YAML-native, but one document at a
   time, with no derivation or explanations.
 - **A graph query language,** such as GQL (Graph Query Language) or Cypher.
   Readable patterns, but as strings, and for querying rather than deriving.
@@ -232,8 +244,10 @@ reasons table wait on them:
 1. **Checking a tagged export.** An export must hold the same knowledge as
    its package and answer the same questions. A tagged export must hold only
    the tagged knowledge: it must not answer a question that needs knowledge
-   without the tag. How does the tool check that a tagged export answers the
-   tagged questions and passes the tagged tests, and no others?
+   without the tag. Tests and questions carry no tags. Which of them belong
+   to a subset, and how does the tool check that a tagged export passes
+   those, and no others? An untagged derivative that adds facts to a tagged
+   link is part of this question: the subset then misses those facts.
 
 ## Explored, not decided: what the tool must do
 

@@ -63,12 +63,12 @@ Four principles apply to constraints:
 
 1. **Readability comes before brevity.** Keys and words state each part
    in full. There are no expression strings to parse.
-2. **No implicit variables.** Each thing that a constraint refers to has a
-   name and a kind. A constraint does not reach a thing through a dotted path
-   that skips an unnamed thing.
+2. **No implicit variables.** Each variable has a kind item. A constraint
+   never reaches a thing through a dotted path. A thing that the constraint
+   refers to again has a variable.
 3. **Variables start with `$`,** so a reader cannot confuse a variable with a
    kind, a link, a field or a value.
-4. **The sentence is plain words.** Product reads `says`, so `says` names no
+4. **The sentence is plain words.** Product people read `says`, so `says` names no
    variables. Variables are part of the logic.
 
 | Key | Required | Value |
@@ -113,11 +113,13 @@ that the constraint refers to again. A kind alone is for a thing that nothing
 else refers to, as in `from: Recipe`. A constraint has no unused variables.
 
 `match` finds each combination of things for which all its items hold. Each
-combination is one match: a row that gives one thing to each end. Two
-matches that give the same things to the same ends are one match. Two
+combination is one match: a row that gives one thing to each variable. Two
+matches that give the same things to the same variables are one match. An
+end with a kind alone only has to exist. In a nested block, a row also gives
+one thing to each end with a kind alone. Thus `count` counts the different
+things there, for example the recipes that use a recipe in `baseRecipe`. Two
 variables can represent the same thing, unless a condition prevents it. One
-variable that occurs two times, as in `noRecipeLoop`, is the same thing at
-each occurrence.
+variable at two ends, as in `noRecipeLoop`, is the same thing at both ends.
 
 The inverse name of a link reads the link in the opposite direction:
 `link: makesRecipe, from: $station, to: $recipe` matches exactly the same
@@ -128,15 +130,18 @@ between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
 ```yaml
-- link: usesRecipe
-  from: $recipe
-  to:   $part
+- link: dependsOnStation
+  from: $station
+  to:   $other
   repeated: true
 ```
 
+`repeated` is for a link that does not chain. A link with `chains: true`
+already holds for each longer chain.
+
 A narrower kind limits the matches. For example, with
-`kind: { name: BaseRecipe, as: $part }`, the link item above matches only
-recipes that use base recipes.
+`kind: { name: BaseRecipe, as: $part }`, a `usesRecipe` link item from
+`$recipe` to `$part` matches only recipes that use base recipes.
 
 ## Filter and unless
 
@@ -203,10 +208,10 @@ negative cases, and each condition stays easy to read alone.
 
 ## Messages
 
-A message states the rule that the match breaks. It uses the words "must" or
-"must not". It quotes variables in braces, and the match gives their values.
-`{$dish}` gives the id of the thing. `{$dish: status}` gives the value of a
-field.
+A message states the rule that the match breaks. It SHOULD use the words
+"must" or "must not". It quotes variables in braces, and the match gives
+their values. `{$dish}` gives the id of the thing. `{$dish: status}` gives
+the value of a field, or the words "not set" when the field has no value.
 
 ## Rules
 
@@ -218,22 +223,24 @@ field.
   `link`, `from` and `to`, and MAY have `repeated: true`. `link` MUST be a
   link, or an inverse name, that the file defines or imports.
 - **CN3.** Each `from` and each `to` MUST be a variable or a kind. A
-  variable there MUST have a kind item, in the same `match` or in the
-  `match` around its nested block.
+  variable there MUST have a kind item, in the same `match` or in a
+  `match` that encloses its nested block.
 - **CN4.** The kind at each end of a link item MUST be the kind that the
   link joins at that end, or a kind that extends it. For a variable, this is
   the kind in its kind item.
-- **CN5.** Conditions and messages MUST write a variable alone (`$recipe`), and
-  every variable that they use MUST have a kind item.
-- **CN6.** A variable that appears only in a nested block belongs to that
-  block. The constraint MUST NOT use it outside that block, and this includes
-  the message.
+- **CN5.** Conditions MUST write a variable alone (`$recipe`). A message
+  MUST write `{$variable}` or `{$variable: field}`. Every variable that they
+  use MUST have a kind item.
+- **CN6.** A variable belongs to the `match` that has its kind item: the
+  constraint's own `match`, or the `match` of a nested block. A variable of a
+  nested block MUST NOT be used outside that block, and this includes the message.
 - **CN7.** A condition MUST be one of the forms above. `is set` and `is not
   set` MUST name a field. `is a` MUST name a kind.
 - **CN8.** A comparison MUST compare values of the same type: two fields
   that name the same value type, or two fields that name no value type and
   have the same built-in type. A literal MUST be a value that the field
-  allows.
+  allows. A literal that a condition compares with a node without a field
+  MUST be the id of a fact.
 - **CN9.** A field can occur in a condition, next to `node` or in `same as`.
   A field can also occur in a message. Such a field MUST be a field of that
   variable's kind, or of a kind that it extends.
@@ -249,16 +256,18 @@ field.
   that part.
 - **CN16.** A constraint MUST have `match`, with at least one item. Each
   nested block MUST also have `match`, with at least one item.
-- **CN17.** Each variable MUST have exactly one kind item. A kind item
-  MUST NOT give a variable that another kind item gives, in the same `match`
-  or in the `match` around its nested block.
-- **CN18.** Each variable MUST occur two or more times in the constraint:
-  in ends, kind items, conditions and the message. A variable that occurs one
-  time refers to nothing, so a link end gives only the kind instead.
+- **CN17.** Each variable MUST have exactly one kind item. Two kind items
+  in one constraint MUST NOT give the same variable.
+- **CN18.** Each variable MUST be used outside its kind item: at two or
+  more places, or in a condition or the message. A variable at one link end and nowhere else
+  refers to nothing, so that end gives the kind alone.
+- **CN19.** `count` MUST have one comparison word: `equals`, `does not
+  equal`, `is above`, `is below`, `is at least` or `is at most`. Its value
+  MUST be `value:` with a whole number, 0 or more.
 
 ## How constraints run
 
-Constraints run after each [derivative](derivative.md) finishes. They run over
+Constraints run after all [derivatives](derivative.md) finish. They run over
 stated facts and derived facts, and they add no facts. A link that is not
 stated and not derived does not exist. A field with no value is not set, not unknown.
 

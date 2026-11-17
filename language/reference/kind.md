@@ -71,7 +71,7 @@ Dish:
 
 Each [link](link.md) names the kind where it starts and the kind where it
 ends. A thing can have each link that starts at its kind, at a kind that its
-kind extends, or at a union that lists its kind.
+kind extends, or at a union that lists its kind or a kind that it extends.
 
 A [constraint](constraint.md) with `count` sets how many links a thing has:
 
@@ -124,9 +124,9 @@ from it. `Food` gives a name to the two kinds together. Thus, a link, a
 match or a condition can use `Food` where a recipe or an ingredient can
 occur.
 
-Each thing of a listed kind is also a thing of the union kind. Thus, where
-a rule accepts a kind that extends a different kind, the rule also accepts a
-listed kind in place of the union kind. For example, `usesFood` can link a
+Each thing of a listed kind is also a thing of the union kind. Each rule
+that accepts a narrower kind in place of a kind also accepts a listed kind
+in place of its union kind. For example, `usesFood` can link a
 recipe to an ingredient.
 
 A business menu shows a different use. It is a lunch with fixed courses at
@@ -167,14 +167,15 @@ business lunch comes with exactly one drink
 A union is closed. Only the statement itself lists its kinds. No other kind,
 and no other package, can add a kind to it.
 
-- **KD7.** `oneOf` MUST list two or more kinds. No listed kind MAY extend a
+- **KD7.** `oneOf` MUST list two or more kinds. A listed kind MUST NOT extend a
   different listed kind, directly or through other kinds, because then each
   thing of the narrower kind is two listed kinds at once.
 - **KD8.** A kind with `oneOf` MUST NOT have `fields`. Its listed kinds
   keep their own fields.
-- **KD9.** No kind MAY extend a kind with `oneOf`.
-- **KD10.** A fact MUST NOT name a kind with `oneOf` as its `kind`. It names
-  one of the listed kinds.
+- **KD9.** A kind MUST NOT extend a kind with `oneOf`.
+- **KD10.** A fact MUST NOT name a kind with `oneOf` as its `kind`, and a
+  derivative MUST NOT name it in `becomes`. They name one of the listed
+  kinds.
 - **KD11.** After the derivatives run, each thing of a union kind MUST be a
   thing of exactly one listed kind. The tool rejects a thing that a
   derivative makes a thing of two listed kinds.
@@ -230,8 +231,8 @@ decision in a different part of the language:
 | `oneOf`, `anyOf`, `allOf`, `not`, `if`/`then`/`else` combine schemas | only `oneOf` | `oneOf` gives variants; value types give reuse; conditional logic goes in constraints |
 | `additionalProperties` controls if parts that are not listed are allowed | always false | the language rejects all items that are not listed |
 
-`number` is exact, so `0.1 + 0.2` is `0.3`. It is exported as
-`xsd:decimal`, never as a floating-point type.
+`number` is exact, so `0.1 + 0.2` is `0.3`. The export keeps it as an exact
+decimal number, never as a floating-point number.
 
 ### Variants
 
@@ -327,8 +328,8 @@ import:
   - Both fields name the same value type.
   - Neither field names a value type, and both fields have the same built-in
     type.
-- **VT6.** A field that names a value type with `oneOf` MUST NOT add
-  keywords to it, other than `optional` and `default`.
 
   `Minutes` and a plain `integer` are different types. A field that
   narrows a value type ([VT3](#value-types)) keeps that value type.
+- **VT6.** A field that names a value type with `oneOf` MUST NOT add
+  keywords to it, other than `optional` and `default`.

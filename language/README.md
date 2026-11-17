@@ -18,7 +18,7 @@ in git next to the code. The statements describe:
 - what follows from those links
 - what is not allowed.
 
-Developers read and write the statements. Product reads the sentences and
+Developers read and write the statements. Product people read the sentences and
 pages that a tool generates from the same statements. The tool checks the
 statements, derives what follows, and rejects what breaks a rule.
 
@@ -44,13 +44,14 @@ NOT** and **MAY** as RFC (Request for Comments) 2119 defines them:
 - SHOULD and SHOULD NOT are strong advice.
 - MAY is a permission.
 
-Each requirement has a code, such as **KD3** (the third rule about kinds).
+Each requirement has a code, such as **KD3** (rule 3 about kinds). A code
+never changes and is never used again.
 Thus, an error from the tool can identify the rule that it enforces.
 
 ## Principles
 
 1. **One model, two readings.** Developers write and read objects. Product
-   reads the sentences and examples that the tool generates from the same
+   people read the sentences and examples that the tool generates from the same
    files.
 2. **Constraints reject, derivatives derive.** No construct does both. Only
    a derivative can give a thing a narrower kind. A link never changes the
@@ -66,9 +67,10 @@ Thus, an error from the tool can identify the rule that it enforces.
    them. The export does not translate each statement into one RDF item. It
    holds the same knowledge as the package and its dependencies, so it
    answers the same questions.
-6. **All text is Simplified Technical English.** This specification and all
-   free-form text in a package follow ASD-STE100 Simplified Technical
-   English (STE). See [FL16](reference/files.md#free-form-text).
+6. **All text is Simplified Technical English.** This specification follows
+   ASD-STE100, the Simplified Technical English (STE) standard of ASD (the
+   AeroSpace and Defence Industries Association of Europe). All free-form
+   text in a package should follow it too. See [FL16](reference/files.md#free-form-text).
 7. **YAML is the default form, not the language.** The language is the
    statements, their keys and their values. YAML is the default way to write
    them, and this specification shows them in YAML. A different form, such as
@@ -88,8 +90,9 @@ Thus, an error from the tool can identify the rule that it enforces.
 
 | Word | Meaning |
 |---|---|
-| **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm |
+| **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm (the Node.js package manager) |
 | **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is |
+| **definition** | a statement in `defs/`: a kind, a link, a value type, a constraint or a derivative |
 | **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
 | **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
 | **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
@@ -99,7 +102,9 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |
 | **[derived fact](reference/fact.md#derived-facts)** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one |
-| **[test](reference/test.md)** | facts with what they must derive and reject, or a question with the answer it expects |
+| **[test](reference/test.md)** | facts with what they must derive and reject, or what the definitions must derive about kinds and links |
+| **[question](reference/test.md#questions)** | a match over the facts of an example, with the answer it expects |
+| **[derived term](reference/test.md#derived-terms)** | what the definitions derive about kinds and links, with no facts: a dish is a recipe, and a garnish link implies an ingredient link; tests can expect one |
 | **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most |
 
 Fields and links are different: a field is a value of the thing, and a link
@@ -120,5 +125,5 @@ takes, and the requirements that the tool checks.
 | [Constraints](reference/constraint.md) | `match`, `filter`, `unless`, messages, how they run | CN |
 | [Derivatives](reference/derivative.md) | `match`, `filter`, `derive`, how they run, explanations | DV |
 | [Facts](reference/fact.md) | facts in tests, derived facts | FC |
-| [Tests](reference/test.md) | examples, and questions with their own `match` and `filter` | TS |
+| [Tests](reference/test.md) | examples, derived terms, and questions with their own `match` and `filter` | TS |
 | [Pending changes](reference/pending.md) | `pending` and `was`: a change that nobody has accepted yet | PD |

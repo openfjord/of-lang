@@ -10,7 +10,7 @@ compares two sets of facts, and runs a package's tests.
 
 > **It lags the draft.** The tool implements an earlier version of the
 > language: `links` and `where` instead of `match` and `filter`, variables
-> named in `says`, kinds given only on a variable's first mention, `Rule`
+> named in `says`, kinds given on a variable's first mention instead of in kind items, `Rule`
 > instead of `Derivative`, `require` instead of `unless`, `definitions/` instead of `defs/`, and `.yaml`
 > instead of `.of.yaml`. It does not run the
 > [example package](../examples/restaurant/) as it stands. It will be brought
@@ -26,9 +26,9 @@ cd cli && go build -o of-lang ./cmd/of-lang
 
 ```
 of-lang check <package-dir>...
-of-lang run <package-dir> <facts.yaml>
-of-lang explain <package-dir> <facts.yaml> <subject> <link-or-kind> [object]
-of-lang diff <package-dir> <before.yaml> <after.yaml>
+of-lang run <package-dir> <facts-file>
+of-lang explain <package-dir> <facts-file> <subject> <link-or-kind> [object]
+of-lang diff <package-dir> <before-file> <after-file>
 of-lang test <package-dir>
 ```
 
@@ -38,7 +38,7 @@ of-lang test <package-dir>
 | `run` | derives what follows from a facts file, then checks constraints |
 | `explain` | shows why one fact holds: a link (`subject link object`) or a kind (`subject Kind`) |
 | `diff` | shows what changes between two facts files: stated, derived and rejected |
-| `test` | runs every example and question in the package's `tests/` |
+| `test` | runs every test and question in the package's `tests/`, including tests of derived terms |
 
 | Flag | Means |
 |---|---|
@@ -66,7 +66,7 @@ Each problem is one line, with the file, line and column:
 
 ```
 $ of-lang check restaurant
-restaurant/defs/recipe.yaml:59:3: reads: of madeAtStation must use both {from} and {to}
+restaurant/defs/recipe.of.yaml:49:3: the reads of madeAtStation must use both {from} and {to} (LK2)
 ```
 
 The draft has each error name the rule it enforces, such as `(LK2)`; the tool
@@ -78,19 +78,19 @@ Every derived fact as its `reads` sentence, with what derived it: a derivative, 
 `under` or `chains` on a link. Then every rejection, with its message.
 
 ```
-$ of-lang run restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml
+$ of-lang run restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml
 derived:
   dish/margherita uses ingredient/parmesan  (under)
-  station/pizza depends on station/sauce  (rule stationDependsOnStation)
-  recipe/pesto contains allergen/nuts  (rule allergenFromIngredient)
-  dish/margherita contains allergen/milk  (rule allergenFromIngredient)
-  dish/margherita contains allergen/nuts  (rule allergenFromRecipe)
+  station/pizza depends on station/sauce  (derivative stationDependsOnStation)
+  recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
+  dish/margherita contains allergen/milk  (derivative allergenFromIngredient)
+  dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
 rejected:
   nothing
 ```
 
 ```
-$ of-lang run restaurant restaurant/tests/examples/dish-without-allergen-warning.yaml
+$ of-lang run restaurant restaurant/tests/examples/dish-without-allergen-warning.of.yaml
 derived:
   ...
 rejected:
@@ -106,24 +106,24 @@ the match used. A derived fact among them unfolds into its own explanation,
 indented below it.
 
 ```
-$ of-lang explain restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml dish/margherita hasAllergen allergen/nuts
-dish/margherita contains allergen/nuts  (rule allergenFromRecipe)
+$ of-lang explain restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml dish/margherita hasAllergen allergen/nuts
+dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
   A recipe contains each allergen that one of its recipes contains.
   with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
   because:
-    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:99:3)
-    recipe/pesto contains allergen/nuts  (rule allergenFromIngredient)
+    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:114:5)
+    recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
       A recipe contains each allergen that one of its ingredients contains.
       with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
       because:
-        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:84:3)
-        ingredient/pine_nuts contains allergen/nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.yaml:66:3)
+        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:95:5)
+        ingredient/pine_nuts contains allergen/nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:72:5)
 ```
 
 ```
-$ of-lang explain restaurant restaurant/tests/examples/base-recipe.yaml recipe/tomato_sauce BaseRecipe
-recipe/tomato_sauce is a BaseRecipe  (rule baseRecipe)
-  A recipe that more than two other recipes use, directly or through other recipes, is a base recipe.
+$ of-lang explain restaurant restaurant/tests/examples/base-recipe.of.yaml recipe/tomato_sauce BaseRecipe
+recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipe)
+  A recipe that more than two recipes use, directly or through other recipes, is a base recipe.
   with $recipe = recipe/tomato_sauce
 ```
 
@@ -134,11 +134,11 @@ facts derived, and rejections. `+` is added, `-` is gone. A field value is a
 fact of its own, so a changed value shows as one `-` and one `+`.
 
 In this example, a copy of the test file adds the pesto to the marinara and
-increases its price. The file is `marinara-with-pesto.yaml`.
+increases its price. The file is `marinara-with-pesto.of.yaml`.
 
 ```
-$ of-lang diff restaurant restaurant/tests/examples/allergen-through-a-sauce.yaml marinara-with-pesto.yaml
-asserted:
+$ of-lang diff restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml marinara-with-pesto.of.yaml
+stated:
   + dish/marinara has price 11
   + dish/marinara uses recipe/pesto
   - dish/marinara has price 10
@@ -153,16 +153,18 @@ rejected:
 ### `test`
 
 One line per test or question, then a total. A failure says what was
-expected and did not happen.
+expected and did not happen. In this example, somebody removed the parmesan
+garnish from the margherita in `allergen-through-a-sauce.of.yaml`:
 
 ```
 $ of-lang test restaurant
-FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-sauce.yaml)
+FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-sauce.of.yaml)
       expected derived, but not: dish/margherita contains allergen/milk
-pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.yaml)
-pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.yaml)
-pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.yaml)
-3 passed, 1 failed
+pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.of.yaml)
+pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.of.yaml)
+pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
+pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.of.yaml)
+4 passed, 1 failed
 ```
 
 ### JSON
@@ -236,19 +238,19 @@ what newly follows and why, what no longer follows, and what is rejected.
 
 ```
 Stated (2)
-  + dish/margherita usesRecipe recipe/pesto
-  + dish/marinara usesRecipe recipe/pesto
+  + dish/margherita uses recipe/pesto
+  + dish/marinara uses recipe/pesto
 
 Derived (3)
-  + station/pizza dependsOnStation station/sauce
+  + station/pizza depends on station/sauce
       derivative  stationDependsOnStation
       match   $station = station/pizza, $recipe = dish/margherita,
               $part = recipe/pesto, $other = station/sauce
-      links   station/pizza makesRecipe dish/margherita
-              dish/margherita usesRecipe recipe/pesto
-              recipe/pesto madeAtStation station/sauce
+      links   dish/margherita is made at station/pizza
+              dish/margherita uses recipe/pesto
+              recipe/pesto is made at station/sauce
       filter  station/sauce does not equal station/pizza
-  + dish/margherita hasAllergen allergen/nuts
+  + dish/margherita contains allergen/nuts
       derivative  allergenFromRecipe
   + (1 more, grouped: hasAllergen)
 
@@ -271,7 +273,7 @@ non-examples, and every constraint and derivative as its
 `says`, shown as written.
 
 > **Recipe** — The steps that make one food from ingredients and other recipes.
-> - Every recipe is made at exactly one station.
+> - Cooks make each recipe at exactly one station.
 > - A recipe contains each allergen that one of its ingredients contains.
 >   *(derivative)*
 > - The menu must give a warning about each allergen in an active dish.
@@ -292,9 +294,9 @@ tools. Nobody writes them.
 The export does not translate each statement into one RDF item. One
 statement can give many RDF items, or none, and several statements can give
 one. The export holds the same knowledge as the package and its
-dependencies. The check for this: each `Question` of the package gets the
-same answer from the exported RDF, with the same example facts, as from the
-package.
+dependencies. The check for this: each question and each test of the
+package gets the same result from the exported RDF, with the same example
+facts, as from the package.
 
 The export keeps these properties:
 
@@ -306,16 +308,18 @@ The export keeps these properties:
 Each IRI (Internationalized Resource Identifier) is built from the package's
 `rdfNamespace` and the definition's name.
 
-`--tags` exports only the definitions carrying at least one of the named
+`of-lang export <package-dir> [--tags a,b]` writes the export. `--tags`
+exports only the definitions carrying at least one of the named
 [tags](../language/reference/tag.md); without it, the whole package is
 exported. A tagged subset is always complete, because each definition that
 a tagged definition refers to has the same tag
 ([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
-package that breaks this rule:
+package that breaks this rule. For example, if `Dish` had the tag
+`allergens` and `Recipe` did not:
 
 ```
-$ of-lang check examples/restaurant
-examples/restaurant/defs/recipe.of.yaml:31:3: Dish has the tag allergens and extends Recipe, which does not have it (TG5)
+$ of-lang check restaurant
+restaurant/defs/recipe.of.yaml:25:3: Dish has the tag allergens and extends Recipe, which does not have it (TG5)
 ```
 
 ## Planned: a language server
@@ -327,8 +331,8 @@ other language server, including the YAML one.
 
 ### Two layers in one server
 
-- **Structure, from a schema.** One JSON Schema per statement kind, chosen by
-  `is:`, plus one for `package.yaml`, hand-written and embedded in the
+- **Structure, from a schema.** One JSON Schema per statement type, chosen by
+  `is:`, plus one for the manifest (`package.yaml` or `package.yml`), hand-written and embedded in the
   binary. The schemas are the source of truth for the shape of statements:
   every key, its description, and the fixed words it allows (`is at most`,
   `becomes`). The field keywords are part of them, so a field
@@ -363,7 +367,7 @@ needs them to.
 | Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `kind: { name: … }`, fact ids, docs links such as `recipe.of.yaml#Recipe`, and a `$variable` to its kind item |
 | Find references | where a definition is used, including the docs that link to it or embed it |
 | Hover | a key's description from the schema; a definition's `definition`; a link's `reads`; a variable's kind; on a fact, what derivatives add to it |
-| Completion | the keys and words the schema allows at that place; after `link:`, the links the file imports; in `{$x: …}`, only kinds that fit that end of the link; after `field:`, only fields of that node's kind; a name not yet imported, with its import |
+| Completion | the keys and words the schema allows at that place; after `link:`, the links the file imports; in a link item's `from` and `to`, only variables and kinds that fit that end of the link; in `kind: { name: … }`, only kinds; after `field:`, only fields of that node's kind; a name not yet imported, with its import |
 | Code actions | add a missing import; rename a definition and the imports that use it, warning when the name is exported |
 | Inlay hints | in test files, the derived facts beside the facts they are about |
 | Code lens | run a `Test` or `Question` from above it |

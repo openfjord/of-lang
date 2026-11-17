@@ -8,7 +8,8 @@ title: Links — The OpenFjord modeling language
 
 A link is a named relationship from a kind to a kind, in one direction. A link
 is declared one time, as its own statement. Usually, it is in the same file as
-the kind where it starts. A thing can have each link that starts at its kind
+the kind where it starts. A thing can have each link that starts at its kind,
+at a kind that its kind extends, or at a union
 ([links of a thing](kind.md#links-of-a-thing)).
 
 ```yaml
@@ -58,7 +59,7 @@ that it uses.
 
 - **LK1.** A link's name, and its inverse name, MUST be lowerCamelCase, with
   two or more words that tell what the link connects and how: `usesRecipe`,
-  never `uses` (reason 2 in [the research](../../README.md)).
+  never `uses` (reason 2 in [the research](../../README.md#why-ontologies-are-hard-for-software-people)).
 - **LK2.** A link MUST have a `definition` and a `reads` sentence. `reads`
   MUST contain both `{from}` and `{to}` (reason 7).
 - **LK3.** `from` and `to` MUST each name a kind that the file defines or
@@ -70,8 +71,8 @@ that it uses.
   of the narrower link MUST be the `from` of the broader link, or a kind that
   extends it. The same rule applies to `to`. A link MUST NOT be under itself,
   directly or through other links.
-- **LK5.** A link with `chains: true` MUST connect a kind to the same kind, or
-  to a kind that extends it.
+- **LK5.** In a link with `chains: true`, `to` MUST be the same kind as
+  `from`, or a kind that extends it.
 
 ## What links imply
 

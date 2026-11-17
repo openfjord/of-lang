@@ -44,7 +44,7 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 - **FC1.** A fact MUST name its `kind`, and the kind MUST be imported.
 - **FC2.** Each key under `fields` MUST be a field of the kind (inherited
   fields included). Each key under `links` MUST be a link that the file
-  imports, and the link MUST start at the kind of the fact
+  imports, and the thing MUST be able to have the link
   ([links of a thing](kind.md#links-of-a-thing)). Fields do not need an
   import, but links do.
 - **FC3.** The facts about a thing, stated and derived together, MUST have
@@ -55,7 +55,7 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 - **FC4.** Each field value MUST be a value that its field allows.
 - **FC5.** The value of a link MUST be the id of a fact in the same file, or a
   list of such ids. Each of these facts MUST be of the kind where the link
-  ends. A fact MAY use an inverse name under `links`: `makesRecipe: recipe/pesto` on a
+  ends, of a kind that extends it, or of a kind that a union there lists. A fact MAY use an inverse name under `links`: `makesRecipe: recipe/pesto` on a
   station states the same fact as `madeAtStation: station/sauce` on the
   recipe.
 - **FC6.** Facts define nothing: a fact never declares a kind, a link or a

@@ -62,7 +62,7 @@ exports:                          # what other packages may use; the rest is int
 openFor:                          # extension points: what other packages may add to
   - extend: Recipe                #   another package may declare a kind of recipe
   - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
-tags:                             # the labels that statements of this package can carry
+tags:                             # the labels that definitions of this package can carry
   - name: allergens
     description: What an allergen app needs to tell guests which dishes contain which allergens.
   - name: menu
@@ -84,7 +84,7 @@ tags:                             # the labels that statements of this package c
   `rdfNamespace`, and MUST NOT have a key that is not in the table.
 - **PK5.** `version` MUST be `MAJOR.MINOR.PATCH`, three whole numbers.
 - **PK15.** Each item in `tags` MUST have a `name` and a `description`, and
-  no other key. No two items MAY have the same `name`.
+  no other key. Two items MUST NOT have the same `name`.
 
 ## Names and namespaces
 
@@ -101,7 +101,7 @@ is the package `kitchen` in the namespace `@bistro`.
 
 A package has one owner. That owner owns everything in the package:
 definitions, docs and tests. The owner must approve each change to the package
-(reasons 7 and 8 in [the research](../../README.md)). The users choose which
+(reasons 7 and 8 in [the research](../../README.md#why-ontologies-are-hard-for-software-people)). The users choose which
 packages hold which terms.
 
 - **PK8.** No item in a package has its own owner. Thus, terms with different

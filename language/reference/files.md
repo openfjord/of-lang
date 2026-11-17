@@ -24,7 +24,8 @@ In the YAML form, a file is a mapping: an optional `import` block, and then
 statements. The key of each statement is its name.
 
 - **FL15.** The name of every file in `defs/` and `tests/` MUST end in
-  `.of.`, then the name of a form that the tool reads. Any other file there
+  `.of.`, then an ending of a form that the tool reads: `yaml` or `yml` for
+  YAML, `json` for JSON. Any other file there
   is an error. The tool does not ignore it.
 - **FL18.** All the files in `defs/` and `tests/` of a package MUST use the
   same form.
@@ -83,7 +84,7 @@ includes keys that a later version of the language adds.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
   `Constraint` or `Derivative`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
-- **FL5.** No statement MAY be named `import`.
+- **FL5.** A statement MUST NOT be named `import`.
 
 ## Names
 
@@ -111,7 +112,7 @@ A file can use a name only if the file defines or imports that name. The
 import:
   - from: file:recipe.of.yaml             # a file in this package, relative to this one
     use: [Recipe, madeAtStation]
-  - from: file:../shared/station.of.yaml  # a file in the parent folder
+  - from: file:../station.of.yaml         # from defs/kitchen/: a file in defs/
     use: [Station]
   - from: pkg:@bistro/suppliers           # another package
     use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
@@ -149,6 +150,7 @@ scheme for a different source. The other import rules apply to all schemes.
   other name. For example, `makesRecipe` is the inverse of `madeAtStation`, and a
   file can import `makesRecipe` without `madeAtStation`.
 - **FL14.** Field names are not imported: a field belongs to its kind.
+- **FL19.** Files of one package MAY import each other, also in a circle.
 
 ## Free-form text
 
@@ -158,7 +160,8 @@ for each word, active voice and simple verb tenses.
 
 | Text | Where |
 |---|---|
-| `definition` | kinds, links, value types, tags |
+| `definition` | kinds, links, value types |
+| `description` | tags in the manifest |
 | `reads` | links |
 | `examples`, `notExamples` | kinds |
 | `says` | constraints, derivatives, tests |

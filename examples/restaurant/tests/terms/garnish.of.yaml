@@ -6,7 +6,7 @@ garnishIsAnIngredient:
   is: Test
   says: >
     A garnish is one of the ingredients that a recipe uses. A dish is a
-    recipe, so a dish has a station. A recipe can use a recipe that uses
+    recipe, so a dish can have a station. A recipe can use a recipe that uses
     another recipe.
   expect:
     derived:
