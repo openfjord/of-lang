@@ -74,6 +74,7 @@ Four principles apply to constraints:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Constraint` |
+| `tags` | no | the [tags](tag.md) of the definition |
 | `says` | yes | the rule, in plain words |
 | `match` | yes | the things and the links to find |
 | `filter` | no | conditions that narrow the matches |

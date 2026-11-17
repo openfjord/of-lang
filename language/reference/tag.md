@@ -37,9 +37,34 @@ export, the definitions that carry a tag with one of those names.
 
 ## Tagging a definition
 
-Kinds, links and value types can have an optional `tags` key, which is a list
-of tags. Nothing else has tags. Constraints, derivatives and single fields are
-always exported with the full package, never in a subset.
+Every definition can have an optional `tags` key, which is a list of tags:
+kinds, links, value types, constraints and derivatives. Single fields have no
+tags. They are exported with their kind.
+
+```yaml
+allergenFromRecipe:
+  is: Derivative
+  tags: [allergens]
+  says: A recipe contains each allergen that one of its recipes contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: hasAllergen
+      from: $part
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+```
+
+A tagged derivative is in the subset, and so are the facts that it adds. A
+tagged constraint is in the subset, and it rejects in the subset what it
+rejects in the full package.
 
 Tags only select what is exported. They have no effect on checks,
 derivatives, constraints or tests.
@@ -65,12 +90,14 @@ which adds knowledge that nobody tagged.
 
 For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
 `Recipe` must also have it. Otherwise the tool rejects the package and names
-`Recipe`.
+`Recipe`. In the same way, when `allergenFromRecipe` has the tag
+`allergens`, so must `Recipe`, `Allergen`, `usesRecipe` and `hasAllergen`.
 
 ## Rules
 
 - **TG2.** A tag MUST be lowerCamelCase.
-- **TG3.** `tags` MAY appear only on a kind, a link or a value type. Each
+- **TG3.** `tags` MAY appear only on a definition: a kind, a link, a value
+  type, a constraint or a derivative. Each
   tag in the list MUST be the `name` of a tag in the `tags` of the package
   manifest.
 - **TG4.** A definition MUST NOT list the same tag twice.
@@ -80,4 +107,6 @@ For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
   - the `from` and `to` kinds of a link
   - the kind that a kind extends, and the kinds that a union lists
   - the value type of each field
-  - the link that a link is `under`.
+  - the link that a link is `under`
+  - in a constraint or a derivative, each kind and each link that it names:
+    in `match`, in conditions, in nested blocks and in `derive`.

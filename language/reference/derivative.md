@@ -49,6 +49,7 @@ Four principles apply to derivatives:
 | Key | Required | Value |
 |---|---|---|
 | `is` | yes | `Derivative` |
+| `tags` | no | the [tags](tag.md) of the definition |
 | `says` | yes | what the derivative concludes, in plain words |
 | `match` | yes | the things and the links to find |
 | `filter` | no | conditions that narrow the matches |

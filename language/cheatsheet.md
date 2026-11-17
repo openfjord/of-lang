@@ -67,7 +67,7 @@ All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 Recipe:                                  # UpperCamelCase
   is: Kind
   definition: The steps that make one food from ingredients and other recipes.   # required
-  tags: [allergens]                      # optional; names from package.yaml; kinds, links and value types only
+  tags: [allergens]                      # optional; names from package.yaml; on any definition
   examples:    [the tomato sauce]
   notExamples: [a new dish that a cook tries one time and does not keep]
   fields:

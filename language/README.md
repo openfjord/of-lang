@@ -94,7 +94,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
 | **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
 | **[link](reference/link.md)** | a named, directed relationship between two things |
-| **[tag](reference/tag.md)** | a label for a purpose that kinds, links and value types can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
+| **[tag](reference/tag.md)** | a label for a purpose that any definition can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |

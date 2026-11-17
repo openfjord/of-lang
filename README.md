@@ -229,13 +229,11 @@ reasons table wait on them:
 
 ## Open questions
 
-1. **Tags and the knowledge in a subset.** An export must hold the same
-   knowledge as its package and answer the same questions. A tagged export
-   must hold only the tagged knowledge: it must not answer a question that
-   needs knowledge without the tag. Two parts are open. How do constraints
-   and derivatives join a subset, when each one concerns several tagged
-   definitions? And how does the tool check that a tagged export answers the
-   tagged questions, and no others?
+1. **Checking a tagged export.** An export must hold the same knowledge as
+   its package and answer the same questions. A tagged export must hold only
+   the tagged knowledge: it must not answer a question that needs knowledge
+   without the tag. How does the tool check that a tagged export answers the
+   tagged questions and passes the tagged tests, and no others?
 
 ## Explored, not decided: what the tool must do
 
