@@ -142,25 +142,6 @@ and remove what makes them hard for software people?
 | 17 | **Trust and freshness are not modeled.** Every fact looks equally sure and equally current. | Source, confirmation and expiry per fact; trust levels; views filtered by trust. |
 | 18 | **Inference must be visible.** Its value is the knowledge nobody wrote down, which only counts if people see it when they add something. | Every change reports what is newly derived and what is no longer derived, each derived fact with its explanation. |
 
-### What others do
-
-- **OKF (Open Knowledge Format, Google Cloud, version 0.2)** stores knowledge
-  as one Markdown page per concept with YAML frontmatter. It fits reasons 5, 7
-  and 17 well: prose first, readable by product, built for git, with fields for
-  sources, confirmation and expiry. Its links carry no type, its types are free
-  text, and readers must never reject anything, so it gives up reasons 2, 13
-  and 14 entirely.
-- **Palantir Foundry** models object types, link types and action types over
-  tables. Every write goes through a governed action — the clearest answer to
-  reason 15 found. It does not infer, and its model is managed in its own
-  interface rather than as code.
-- **Databricks Unity Catalog** is a catalog with a three-level name, lineage
-  and metric definitions. It answers namespaces and provenance, and has no
-  typed links.
-
-Foundry and Unity Catalog both chose closed-world checking and no inference. This draft keeps
-closed-world checking and adds inference by derivatives.
-
 ## The draft
 
 - [The language specification](language/README.md): what the language is,
