@@ -90,8 +90,10 @@ match:
     to:   {$ingredient: Ingredient}
 ```
 
-`from` and `to` each give a variable and the kind that the variable must
-have. A variable is `$`, then a lowercase letter, then letters and digits:
+`from` and `to` each give the kind of the thing at that end. When the
+constraint refers to that thing again, the end also gives it a variable, as
+`{$recipe: Recipe}`. When nothing else refers to it, the end gives only the
+kind, as `from: Recipe`. A constraint has no unused variables. A variable is `$`, then a lowercase letter, then letters and digits:
 `$recipe`, `$part`.
 
 A thing item is one variable and its kind, with no link:
@@ -107,8 +109,8 @@ the thing matter. A link item already gives each of its variables a kind,
 so a thing item for such a variable adds nothing.
 
 `match` finds each combination of things for which all its items hold. Each
-combination is one match: a row that gives one thing to each variable. Two
-matches that give the same things to the same variables are one match. Two
+combination is one match: a row that gives one thing to each end. Two
+matches that give the same things to the same ends are one match. Two
 variables can represent the same thing, unless a condition prevents it. One
 variable that occurs two times, as in `noRecipeLoop`, is the same thing at
 each occurrence.
@@ -204,9 +206,10 @@ field.
   imports. A thing item MUST have one key only, in the form
   `{$variable: Kind}`, and the kind MUST be a kind that the file defines or
   imports.
-- **CN3.** Each `from`, each `to` and each thing item MUST use the form `{$variable: Kind}`,
-  every time and also in nested blocks. Every mention of a variable MUST give
-  the same kind.
+- **CN3.** Each `from` and each `to` MUST be a kind, or a variable and its
+  kind in the form `{$variable: Kind}`. Each thing item MUST use the form
+  `{$variable: Kind}`. This applies also in nested blocks. Every mention of a
+  variable MUST give the same kind.
 - **CN4.** The kind MUST be the kind that the link joins at that end, or a
   kind that extends it.
 - **CN5.** Conditions and messages MUST write a variable without its kind
@@ -238,6 +241,9 @@ field.
 - **CN17.** A thing item MUST name a variable that no other item names, in
   the same `match` or in the `match` around its nested block. The tool
   rejects such an item, because it adds nothing.
+- **CN18.** Each variable MUST occur two or more times in the constraint:
+  in ends, thing items, conditions and the message. A variable that occurs one
+  time refers to nothing, so the end gives only the kind.
 
 ## How constraints run
 

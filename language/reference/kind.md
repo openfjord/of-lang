@@ -86,7 +86,7 @@ recipeAtOneStation:
         match:
           - link: madeAtStation
             from: {$recipe: Recipe}
-            to:   {$station: Station}
+            to:   Station
       does not equal:
         value: 1
   message: "{$recipe} must be made at exactly one station."

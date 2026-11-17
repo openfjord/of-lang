@@ -85,7 +85,7 @@ baseRecipe:
     - count:
         match:
           - link: usesRecipe
-            from: {$user: Recipe}
+            from: Recipe
             to:   {$recipe: Recipe}
       is above:
         value: 2
@@ -103,7 +103,7 @@ recipeAtOneStation:
         match:
           - link: madeAtStation
             from: {$recipe: Recipe}
-            to:   {$station: Station}
+            to:   Station
       does not equal:
         value: 1
   message: "{$recipe} must be made at exactly one station."

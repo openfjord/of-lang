@@ -221,12 +221,14 @@ whichDishesContainNuts:
 
 Each item in `match` is a link item or a thing item. A link item is one
 link that must exist, with `link`, `from` and `to`. `from` and `to` each give
-a variable and its kind, as `{$variable: Kind}`. `repeated: true` on a link
+the kind of the thing at that end, as `from: Recipe`. When the question
+refers to that thing again, the end also gives it a variable, as
+`{$variable: Kind}`. `repeated: true` on a link
 item follows the link for one or more steps. A thing item, such as
 `- {$dish: Dish}`, is a variable and its kind with no link: the variable
 represents each thing of that kind in turn. `match` finds each combination
 of things for which all its items hold. Each combination is one match, which
-gives one thing to each variable.
+gives one thing to each end.
 
 `filter` keeps the matches for which each condition holds. A condition names
 a `node`, an optional `field`, a comparison word and what to compare with:
@@ -252,9 +254,10 @@ A condition can also name a `part` of an `object` field, as in
   `link` MUST be a link, or an inverse name, that the file imports. A thing
   item MUST have one key only, in the form `{$variable: Kind}`, and the kind
   MUST be a kind that the file imports.
-- **TS6.** Each `from`, each `to` and each thing item MUST use the form `{$variable: Kind}`,
-  every time and also in nested blocks. Every mention of a variable MUST give
-  the same kind. The kind MUST be the kind of the link at that end, or a kind
+- **TS6.** Each `from` and each `to` MUST be a kind, or a variable and its
+  kind in the form `{$variable: Kind}`. Each thing item MUST use the form
+  `{$variable: Kind}`. This applies also in nested blocks. Every mention of a
+  variable MUST give the same kind. The kind MUST be the kind of the link at that end, or a kind
   that extends it.
 - **TS7.** Conditions MUST write a variable without its kind (`$allergen`), and
   every variable that they use MUST appear in a `match` item. A question
@@ -280,3 +283,6 @@ A condition can also name a `part` of an `object` field, as in
 - **TS13.** A thing item MUST name a variable that no other item names, in
   the same `match` or in the `match` around its nested block. The tool
   rejects such an item, because it adds nothing.
+- **TS14.** Each variable MUST occur two or more times in the question: in
+  ends, thing items, conditions and `expect`. A variable that occurs one time
+  refers to nothing, so the end gives only the kind.

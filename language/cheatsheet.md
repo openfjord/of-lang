@@ -139,8 +139,8 @@ others.
 ```yaml
 match:                                   # things and links that must exist
   - link: makesRecipe                    # a link or an inverse name
-    from: {$station: Station}            # every mention gives the variable's kind
-    to:   {$dish: Dish}
+    from: Station                        # a kind alone: nothing else refers to this end
+    to:   {$dish: Dish}                  # every mention gives the variable's kind
   - link: usesRecipe
     from: {$dish: Dish}
     to:   {$part: Recipe}
