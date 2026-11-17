@@ -308,13 +308,14 @@ Each IRI (Internationalized Resource Identifier) is built from the package's
 
 `--tags` exports only the definitions carrying at least one of the named
 [tags](../language/reference/tag.md); without it, the whole package is
-exported. A reference to a definition that is not exported is left out,
-and the export lists each one:
+exported. A tagged subset is always complete, because each definition that
+a tagged definition refers to has the same tag
+([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
+package that breaks this rule:
 
 ```
-$ of-lang export --tags menu examples/restaurant
-left out: link listsAllergen (Dish to Allergen): Allergen is not exported
-left out: Dish extends Recipe: Recipe is not exported
+$ of-lang check examples/restaurant
+examples/restaurant/defs/recipe.of.yaml:31:3: Dish has the tag allergens and extends Recipe, which does not have it (TG5)
 ```
 
 ## Planned: a language server

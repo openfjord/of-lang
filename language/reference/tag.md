@@ -57,16 +57,15 @@ By default, an export includes the full package. An optional list of tags
 limits the export: then it includes each definition of the package that has
 one or more of these tags.
 
-A definition in the subset can refer to a definition that is not in the
-subset. Examples of these references are:
+A subset is always complete: each definition that a tagged definition
+refers to has the same tag ([TG5](#rules)). Thus a subset answers each of its
+questions as the full package does. Without this rule, an export must drop
+the reference, which gives wrong answers, or export the untagged definition,
+which adds knowledge that nobody tagged.
 
-- a link whose `from` or `to` kind is untagged
-- a kind that extends an untagged kind
-- a field whose value type is untagged
-- a link `under` an untagged link.
-
-Each such reference is not exported. A link whose `from` or `to` kind is not
-exported is not exported at all. The export lists each item that it removes.
+For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
+`Recipe` must also have it. Otherwise the tool rejects the package and names
+`Recipe`.
 
 ## Rules
 
@@ -75,3 +74,10 @@ exported is not exported at all. The export lists each item that it removes.
   tag in the list MUST be the `name` of a tag in the `tags` of the package
   manifest.
 - **TG4.** A definition MUST NOT list the same tag twice.
+- **TG5.** Each definition that a tagged definition refers to MUST have a
+  tag with the same name. This applies to each tag of the definition, and to
+  definitions in other packages. The references are:
+  - the `from` and `to` kinds of a link
+  - the kind that a kind extends, and the kinds that a union lists
+  - the value type of each field
+  - the link that a link is `under`.
