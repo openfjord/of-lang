@@ -137,7 +137,7 @@ Derivatives, constraints and questions each define their own `match` and
 others.
 
 ```yaml
-match:                                   # links that must exist
+match:                                   # things and links that must exist
   - link: makesRecipe                    # a link or an inverse name
     from: {$station: Station}            # every mention gives the variable's kind
     to:   {$dish: Dish}
@@ -151,6 +151,18 @@ filter:                                  # conditions; all must hold
   - node: $dish
     field: status
     equals: { value: active }
+```
+
+A thing item gives a variable each thing of a kind, with no link. Use it
+only for a variable that no link item names:
+
+```yaml
+match:
+  - {$dish: Dish}                        # each dish in turn
+filter:
+  - node: $dish
+    field: price
+    is above: { value: 30 }
 ```
 
 | Comparison | Takes |

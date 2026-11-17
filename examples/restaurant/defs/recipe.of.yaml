@@ -79,6 +79,8 @@ baseRecipe:
   says: >
     A recipe that more than two other recipes use, directly or through other
     recipes, is a base recipe.
+  match:
+    - {$recipe: Recipe}
   filter:
     - count:
         match:
@@ -94,6 +96,8 @@ baseRecipe:
 recipeAtOneStation:
   is: Constraint
   says: Cooks make each recipe at exactly one station.
+  match:
+    - {$recipe: Recipe}
   filter:
     - count:
         match:

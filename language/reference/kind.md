@@ -79,6 +79,8 @@ A [constraint](constraint.md) with `count` sets how many links a thing has:
 recipeAtOneStation:
   is: Constraint
   says: Cooks make each recipe at exactly one station.
+  match:
+    - {$recipe: Recipe}
   filter:
     - count:
         match:

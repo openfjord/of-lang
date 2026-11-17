@@ -47,13 +47,15 @@ Four principles apply to derivatives:
 |---|---|---|
 | `is` | yes | `Derivative` |
 | `says` | yes | what the derivative concludes, in plain words |
-| `match` | yes, unless [DV11](#rules) makes it optional | the links to find |
+| `match` | yes | the things and the links to find |
 | `filter` | no | conditions that narrow the matches |
 | `derive` | yes | what to add for each match |
 
 ## Match
 
-Each item in `match` is one link that must exist between two things:
+`match` lists the things and the links to find. It has two sorts of item.
+
+A link item is one link that must exist between two things:
 
 ```yaml
 match:
@@ -66,7 +68,19 @@ match:
 have. A variable is `$`, then a lowercase letter, then letters and digits:
 `$recipe`, `$part`.
 
-`match` finds each combination of things for which all its links hold. Each
+A thing item is one variable and its kind, with no link:
+
+```yaml
+match:
+  - {$dish: Dish}
+```
+
+The variable represents each thing of that kind in turn. Use a thing item
+for a variable that no link item names, for example when only the fields of
+the thing matter. A link item already gives each of its variables a kind,
+so a thing item for such a variable adds nothing.
+
+`match` finds each combination of things for which all its items hold. Each
 combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. Two
 variables can represent the same thing, unless a condition prevents it.
@@ -190,6 +204,8 @@ baseRecipe:
   says: >
     A recipe that more than two other recipes use, directly or through other
     recipes, is a base recipe.
+  match:
+    - {$recipe: Recipe}
   filter:
     - count:
         match:
@@ -203,9 +219,9 @@ baseRecipe:
       becomes: BaseRecipe
 ```
 
-`baseRecipe` has no `match` of its own. Its only variable outside the nested
-block is `$recipe`, and `$recipe` represents each recipe in turn
-([DV11](#rules)).
+`baseRecipe` uses a thing item, because no link item names `$recipe`.
+`$recipe` represents each recipe in turn, and the nested block counts the
+recipes that use it.
 
 A derivative can match a link that a derivative adds. For example,
 `allergenFromRecipe` matches `hasAllergen`, and `allergenFromIngredient` adds
@@ -233,10 +249,13 @@ allergenFromRecipe:
 
 - **DV1.** A derivative MUST have a `says` sentence, and the sentence MUST
   NOT contain a `$` word.
-- **DV2.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
-  have `repeated: true`. `link` MUST be a link, or an inverse name, that the
-  file defines or imports.
-- **DV3.** Each `from` and each `to` MUST use the form `{$variable: Kind}`,
+- **DV2.** Every item in `match` MUST be a link item or a thing item. A link
+  item MUST have `link`, `from` and `to`, and MAY have `repeated: true`.
+  `link` MUST be a link, or an inverse name, that the file defines or
+  imports. A thing item MUST have one key only, in the form
+  `{$variable: Kind}`, and the kind MUST be a kind that the file defines or
+  imports.
+- **DV3.** Each `from`, each `to` and each thing item MUST use the form `{$variable: Kind}`,
   every time and also in nested blocks. Every mention of a variable MUST give
   the same kind.
 - **DV4.** The kind MUST be the kind that the link joins at that end, or a
@@ -255,9 +274,7 @@ allergenFromRecipe:
   MUST be a field of that node's kind, or of a kind that it extends.
 - **DV10.** When a condition compares two nodes without fields, the two
   variables MUST have the same kind, or kinds where one extends the other.
-- **DV11.** A derivative MAY have no `match` when each variable that it uses
-  appears in a nested block. Then each such variable represents, in turn,
-  every thing of its kind.
+
 - **DV12.** A derivative MUST have `derive`, with at least one item.
 - **DV13.** A derived link MUST join variables whose kinds the link allows
   ([LK3](link.md#rules)). A derived kind MUST be a kind. A derived field MUST
@@ -276,6 +293,11 @@ allergenFromRecipe:
   MUST be a part that the schema of the field defines. For a `oneOf`, one
   or more of the choices MUST define it. The comparison uses the type of
   that part.
+- **DV19.** A derivative MUST have `match`, with at least one item. Each
+  nested block MUST also have `match`, with at least one item.
+- **DV20.** A thing item MUST name a variable that no other item names, in
+  the same `match` or in the `match` around its nested block. The tool
+  rejects such an item, because it adds nothing.
 
 ## How derivatives run
 

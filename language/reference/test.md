@@ -215,15 +215,18 @@ whichDishesContainNuts:
 | `is` | yes | `Question` |
 | `asks` | yes | the question, in plain words |
 | `given` | no | `file:` and an example file with the facts to ask about; if not given, the facts in this file |
-| `match` | yes | the links to find |
+| `match` | yes | the things and the links to find |
 | `filter` | no | conditions that narrow the matches |
 | `expect` | yes | for each listed variable, the ids that it must represent |
 
-Each item in `match` is one link that must exist, with `link`, `from` and
-`to`. `from` and `to` each give a variable and its kind, as
-`{$variable: Kind}`. `match` finds each combination of things for which all
-its links hold. Each combination is one match, which gives one thing to each
-variable. `repeated: true` on an item follows the link for one or more steps.
+Each item in `match` is a link item or a thing item. A link item is one
+link that must exist, with `link`, `from` and `to`. `from` and `to` each give
+a variable and its kind, as `{$variable: Kind}`. `repeated: true` on a link
+item follows the link for one or more steps. A thing item, such as
+`- {$dish: Dish}`, is a variable and its kind with no link: the variable
+represents each thing of that kind in turn. `match` finds each combination
+of things for which all its items hold. Each combination is one match, which
+gives one thing to each variable.
 
 `filter` keeps the matches for which each condition holds. A condition names
 a `node`, an optional `field`, a comparison word and what to compare with:
@@ -244,10 +247,12 @@ A condition can also name a `part` of an `object` field, as in
 
 - **TS4.** A question MUST have an `asks` sentence, and the sentence MUST NOT
   contain a `$` word.
-- **TS5.** Every item in `match` MUST have `link`, `from` and `to`, and MAY
-  have `repeated: true`. `link` MUST be a link, or an inverse name, that the
-  file imports.
-- **TS6.** Each `from` and each `to` MUST use the form `{$variable: Kind}`,
+- **TS5.** Every item in `match` MUST be a link item or a thing item. A link
+  item MUST have `link`, `from` and `to`, and MAY have `repeated: true`.
+  `link` MUST be a link, or an inverse name, that the file imports. A thing
+  item MUST have one key only, in the form `{$variable: Kind}`, and the kind
+  MUST be a kind that the file imports.
+- **TS6.** Each `from`, each `to` and each thing item MUST use the form `{$variable: Kind}`,
   every time and also in nested blocks. Every mention of a variable MUST give
   the same kind. The kind MUST be the kind of the link at that end, or a kind
   that extends it.
@@ -270,3 +275,8 @@ A condition can also name a `part` of an `object` field, as in
   MUST be a part that the schema of the field defines. For a `oneOf`, one
   or more of the choices MUST define it. The comparison uses the type of
   that part.
+
+- **TS12.** Each nested block MUST have `match`, with at least one item.
+- **TS13.** A thing item MUST name a variable that no other item names, in
+  the same `match` or in the `match` around its nested block. The tool
+  rejects such an item, because it adds nothing.
