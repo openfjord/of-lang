@@ -10,15 +10,18 @@ A tag is a label that marks definitions that belong together for one
 purpose. By default, the export to RDF (Resource Description Framework)
 includes the full package. An optional list of tags limits the export to the
 definitions with those tags. For example, an allergen app needs recipes,
-ingredients, allergens and the links between them. The menu app needs dishes
-and their prices.
+ingredients, allergens and the links between them. A food safety app needs
+batches of ingredients and the places where the cooks keep them.
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
-  is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+# defs/ingredient.of.yaml
+containsAllergen:
+  is: Link
   tags: [allergens]
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.
 ```
 
 The manifest of the package lists its tags, each with a name and a description
@@ -29,6 +32,8 @@ The manifest of the package lists its tags, each with a name and a description
 tags:
   - name: allergens
     description: What an allergen app needs to tell guests which dishes contain which allergens.
+  - name: spoilage
+    description: What the kitchen needs to keep food safe until the cooks use it. Only the kitchen uses it, so the package does not export it.
 ```
 
 Thus, a misspelled tag is an error, not a new subset. Each package has its
@@ -42,6 +47,7 @@ kinds, links, value types, constraints and derivatives. Single fields have no
 tags. They are exported with their kind.
 
 ```yaml
+# defs/allergens.of.yaml
 allergenFromRecipe:
   is: Derivative
   tags: [allergens]

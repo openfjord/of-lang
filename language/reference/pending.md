@@ -12,39 +12,36 @@ adds, removes or updates. Thus, the tool and a user interface can show what the
 change does without git.
 
 ```yaml
-# defs/recipe.of.yaml, in a package where no other file uses usesGarnish
-Garnish:                     # the change adds this statement
+# defs/recipe.of.yaml
+Cook:                        # the change adds this statement
   is: Kind
   pending: added
-  definition: An ingredient that the cook puts on the food at the end.
+  definition: A person who makes recipes at one or more stations.
 
-usesGarnish:                 # the change removes this statement
-  is: Link
+recipeAtOneStation:          # the change removes this statement
+  is: Constraint
   pending: removed
-  from: Recipe
-  to: Ingredient
-  reads: "{from} is garnished with {to}"
-  definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
-  under: usesIngredient
+  says: Cooks make each recipe at exactly one station.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+  filter:
+    - count:
+        match:
+          - link: madeAtStation
+            from: $recipe
+            to:   Station
+      does not equal:
+        value: 1
+  message: "{$recipe} must be made at exactly one station."
 
-Recipe:                      # the change updates this statement
+BaseRecipe:                  # the change updates this statement
   is: Kind
   pending: updated
-  definition: The steps that make one dish or one part of a dish.
-  fields:
-    name:
-      type: Name
-    prepMinutes:
-      type: Minutes
-      optional: true
+  extends: Recipe
+  definition: A recipe that three or more other recipes use, so a change to it needs extra care.
   was:
-    definition: The steps that make one food from ingredients and other recipes.
-    fields:
-      name:
-        type: Name
-      prepMinutes:
-        type: Minutes
-        optional: true
+    extends: Recipe
+    definition: A recipe that many other recipes use, so a change to it needs extra care.
 ```
 
 `pending` and `was` are annotations: keys that the language adds to any
@@ -59,7 +56,7 @@ the names of fields or links, because those names are always one level lower
 
 An updated statement shows its new version. `was` keeps the old version, so
 that the tool can show the difference and can reject the change. In this
-example, the update changes the definition of `Recipe`.
+example, the update changes the definition of `BaseRecipe`.
 
 ## One change at a time
 

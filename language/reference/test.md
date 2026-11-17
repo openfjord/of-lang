@@ -117,6 +117,7 @@ recipe/pesto:
   kind: Recipe
   fields:
     name: pesto
+    steps: https://recipes.example.com/pesto
   links:
     madeAtStation: station/sauce
     usesIngredient: ingredient/pine_nuts
@@ -126,6 +127,7 @@ recipe/tomato_sauce:
   kind: Recipe
   fields:
     name: tomato_sauce
+    steps: https://recipes.example.com/tomato_sauce
   links:
     madeAtStation: station/sauce
     usesIngredient: ingredient/tomatoes
@@ -135,6 +137,7 @@ dish/margherita:
   kind: Dish
   fields:
     name: margherita
+    steps: https://recipes.example.com/margherita
     price: 12
   links:
     madeAtStation: station/pizza
@@ -147,6 +150,7 @@ dish/marinara:
   kind: Dish
   fields:
     name: marinara
+    steps: https://recipes.example.com/marinara
     price: 10
   links:
     madeAtStation: station/pizza

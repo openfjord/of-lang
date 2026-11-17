@@ -1,0 +1,26 @@
+Supplier:
+  is: Kind
+  definition: A company that sells food to the restaurant.
+  examples:
+    - the dairy that delivers the milk and the cheese
+  notExamples:
+    - a shop where a cook buys food one time, without an account
+  fields:
+    name:
+      type: string
+
+Ingredient:
+  is: Kind
+  definition: A product in the catalog of a supplier, under the name that the supplier gives it.
+  examples:
+    - the parmesan, 24 months, 1 kg, of the dairy
+  fields:
+    name:
+      type: string
+
+soldBy:
+  is: Link
+  from: Ingredient
+  to: Supplier
+  reads: "{from} is sold by {to}"
+  definition: The supplier that has the product in its catalog.

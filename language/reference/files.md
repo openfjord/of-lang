@@ -31,25 +31,27 @@ statements. The key of each statement is its name.
   same form.
 
 ```yaml
+# defs/station.of.yaml
 import:
   - from: file:names.of.yaml
     use: [Name]
-  - from: file:station.of.yaml
-    use: [Station]
 
-Recipe:
+Station:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A part of the kitchen where a group of cooks makes some of the recipes.
+  examples:
+    - the pizza station
+    - the pastry station
   fields:
     name:
       type: Name
 
-madeAtStation:
+dependsOnStation:
   is: Link
-  from: Recipe
+  from: Station
   to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
+  reads: "{from} depends on {to}"
+  definition: The first station cannot make all of its recipes when the second station stops work.
 ```
 
 ## Statements
@@ -112,14 +114,30 @@ A file can use a name only if the file defines or imports that name. The
 `import` block is at the top of the file. It shows the source of each name:
 
 ```yaml
+# defs/buying.of.yaml
 import:
-  - from: file:recipe.of.yaml             # a file in this package, relative to this one
-    use: [Recipe, madeAtStation]
-  - from: file:../station.of.yaml         # from defs/kitchen/: a file in defs/
-    use: [Station]
+  - from: file:ingredient.of.yaml         # a file in this package, relative to this one
+    use: [Ingredient]
   - from: pkg:@bistro/suppliers           # another package
     use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
+
+boughtFrom:
+  is: Link
+  from: Ingredient
+  to: Supplier
+  reads: "the kitchen buys {from} from {to}"
+  definition: The supplier that sells the ingredient to the kitchen.
+
+boughtAs:
+  is: Link
+  from: Ingredient
+  to: SupplierIngredient
+  reads: "the kitchen buys {from} as {to}"
+  definition: The product of a supplier that the kitchen buys to have the ingredient.
 ```
+
+Both packages have a kind named `Ingredient`, so the file renames the
+supplier's kind to `SupplierIngredient`.
 
 | Key | Value |
 |---|---|
@@ -130,7 +148,7 @@ The scheme tells where the names come from. The language has two schemes:
 
 | Scheme | Value | Source |
 |---|---|---|
-| `file:` | a path relative to the importing file | a file in the same package |
+| `file:` | a path relative to the importing file, such as `file:../station.of.yaml` from a folder in `defs/` | a file in the same package |
 | `pkg:` | the full name of a package | a different package |
 
 The list of schemes can grow. A later version of the language can add a

@@ -1,0 +1,27 @@
+# Checks that every YAML snippet in the language reference is a valid part of
+# the restaurant example (scripts/check_snippets.py).
+name: Snippets
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  snippets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: cli/go.mod
+          cache-dependency-path: cli/go.sum
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Check the snippets
+        run: uv run scripts/check_snippets.py

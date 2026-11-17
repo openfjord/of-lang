@@ -13,6 +13,7 @@ at a kind that its kind extends, or at a union
 ([links of a thing](kind.md#links-of-a-thing)).
 
 ```yaml
+# defs/recipe.of.yaml
 madeAtStation:
   is: Link
   from: Recipe
@@ -23,6 +24,7 @@ madeAtStation:
 
 usesGarnish:
   is: Link
+  tags: [allergens]
   from: Recipe
   to: Ingredient
   reads: "{from} is garnished with {to}"
@@ -31,6 +33,7 @@ usesGarnish:
 
 usesRecipe:
   is: Link
+  tags: [allergens]
   from: Recipe
   to: Recipe
   reads: "{from} uses {to}"

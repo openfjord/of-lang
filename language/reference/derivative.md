@@ -11,8 +11,10 @@ links between them, and it uses conditions to narrow the matches. For each
 match, it adds a link, a kind or a field value.
 
 ```yaml
+# defs/allergens.of.yaml
 allergenFromIngredient:
   is: Derivative
+  tags: [allergens]
   says: A recipe contains each allergen that one of its ingredients contains.
   match:
     - kind: { name: Recipe, as: $recipe }
@@ -59,28 +61,16 @@ Four principles apply to derivatives:
 
 `match` lists the things and the links to find. It has two sorts of item.
 
-A kind item names a kind, and gives a variable to the things of that kind:
-
-```yaml
-match:
-  - kind: { name: Dish, as: $dish }
-```
-
-The variable represents each thing of that kind in turn. A variable is `$`,
+A kind item names a kind, and gives a variable to the things of that kind,
+as in `kind: { name: Recipe, as: $recipe }` in `allergenFromIngredient`. The
+variable represents each thing of that kind in turn. A variable is `$`,
 then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
 variable has exactly one kind item, so its kind is written in one place.
 Every other mention of the variable is the variable alone.
 
-A link item is one link that must exist between two things:
-
-```yaml
-match:
-  - kind: { name: Recipe, as: $recipe }
-  - kind: { name: Ingredient, as: $ingredient }
-  - link: usesIngredient
-    from: $recipe
-    to:   $ingredient
-```
+A link item is one link that must exist between two things, such as the
+`usesIngredient` link from `$recipe` to `$ingredient` in
+`allergenFromIngredient`.
 
 `from` and `to` are each a variable or a kind. A variable is for a thing
 that the derivative refers to again. A kind alone is for a thing that nothing
@@ -100,14 +90,9 @@ things as `link: madeAtStation, from: $recipe, to: $station`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
-things is still one match. Explanations list the steps.
-
-```yaml
-- link: dependsOnStation
-  from: $station
-  to:   $other
-  repeated: true
-```
+things is still one match. Explanations list the steps. The constraint
+`noStationLoop` in [Constraints](constraint.md#match) matches
+`dependsOnStation` with `repeated: true`.
 
 `repeated` is for a link that does not chain. A link with `chains: true`
 already holds for each longer chain.
@@ -129,21 +114,39 @@ and `field`). Then it gives a comparison word and what to compare with:
 - `same as:` (a variable, or a variable and a field).
 
 ```yaml
-filter:
-  - node: $other
-    does not equal:
-      same as: $station
-  - node:  $dish
-    field: prepMinutes
-    is at least:
-      same as:
-        node:  $part
-        field: prepMinutes
-  - node:  $dish
-    field: status
-    is one of:
-      values: [active, retired]
+# defs/station.of.yaml
+stationDependsOnStation:
+  is: Derivative
+  says: >
+    A station depends on each different station that makes a recipe that one
+    of its own recipes uses.
+  match:
+    - kind: { name: Station, as: $station }
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Station, as: $other }
+    - link: makesRecipe
+      from: $station
+      to:   $recipe
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: madeAtStation
+      from: $part
+      to:   $other
+  filter:
+    - node: $other
+      does not equal:
+        same as: $station
+  derive:
+    - link: dependsOnStation
+      from: $station
+      to:   $other
 ```
+
+Read it as follows. A station makes a recipe that uses a part, and another
+station makes the part. When the two stations are different, the first
+station depends on the second.
 
 | Word | Holds when |
 |---|---|
@@ -186,36 +189,7 @@ negative cases, and each condition stays easy to read alone.
 | a field value | `node`, `field`, `set to` with `value:` or `same as:` | `node: $dish, field: status, set to: { value: retired }` |
 
 ```yaml
-stationDependsOnStation:
-  is: Derivative
-  says: >
-    A station depends on each different station that makes a recipe that one
-    of its own recipes uses.
-  match:
-    - kind: { name: Station, as: $station }
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Station, as: $other }
-    - link: makesRecipe
-      from: $station
-      to:   $recipe
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: madeAtStation
-      from: $part
-      to:   $other
-  filter:
-    - node: $other
-      does not equal:
-        same as: $station
-  derive:
-    - link: dependsOnStation
-      from: $station
-      to:   $other
-```
-
-```yaml
+# defs/recipe.of.yaml
 baseRecipeFromUses:
   is: Derivative
   says: >
@@ -246,8 +220,10 @@ A derivative can match a link that a derivative adds. For example,
 step. `chains: true` on the link adds the longer chains.
 
 ```yaml
+# defs/allergens.of.yaml
 allergenFromRecipe:
   is: Derivative
+  tags: [allergens]
   says: A recipe contains each allergen that one of its recipes contains.
   match:
     - kind: { name: Recipe, as: $recipe }

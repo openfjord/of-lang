@@ -48,6 +48,7 @@ restaurant/
 ## The manifest
 
 ```yaml
+# package.yaml
 package: "@bistro/kitchen"        # namespace, then name; quoted, since YAML reserves a leading @
 version: 0.1.0
 owner: kitchen                    # who must approve any change to the package
@@ -57,15 +58,15 @@ dependsOn:
 exports:                          # what other packages may use; the rest is internal
   kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
   links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
-  valueTypes: [Name, Minutes, Price]
+  valueTypes: [Name, Minutes, Price, URL]
 openFor:                          # extension points: what other packages may add to
   - extend: Recipe                #   another package may declare a kind of recipe
   - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
 tags:                             # the labels that definitions of this package can carry
   - name: allergens
     description: What an allergen app needs to tell guests which dishes contain which allergens.
-  - name: menu
-    description: What the menu app needs to show the dishes and their prices.
+  - name: spoilage
+    description: What the kitchen needs to keep food safe until the cooks use it. Only the kitchen uses it, so the package does not export it.
 ```
 
 | Key | Required | Value |
@@ -206,7 +207,14 @@ AllergenSafety:
 # defs/ingredient.of.yaml
 Allergen:
   is: Kind
+  tags: [allergens]
   definition: A substance in food that can cause a dangerous reaction in some persons.
+  examples:
+    - nuts
+    - milk
+  fields:
+    name:
+      type: Name
   docs: [AllergenSafety]
 ```
 

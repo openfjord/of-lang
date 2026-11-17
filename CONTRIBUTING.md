@@ -22,6 +22,21 @@ entry becomes the release notes, so links in it must be full URLs. A new major
 version starts a new file, and gets a line in
 [`changelog/README.md`](changelog/README.md).
 
+## Snippets in the reference
+
+Every YAML snippet in `language/reference/` is a file of the restaurant
+example, or a part of one. It starts with a comment that names the file, such
+as `# defs/recipe.of.yaml`. A statement that the restaurant has must be the
+same in the snippet, and a new statement must keep the package valid. Check
+them with:
+
+```bash
+uv run scripts/check_snippets.py
+```
+
+The snippets workflow (`.github/workflows/snippets.yml`) runs this check on
+each push to `main` and on each pull request.
+
 ## Releasing
 
 One version covers the whole repository. To release version `X.Y.Z`:

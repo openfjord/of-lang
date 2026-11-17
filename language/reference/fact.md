@@ -13,19 +13,25 @@ are [derived](#derived-facts). Facts that running systems write are deferred
 (see [the design notes](../../docs/design.md#deferred-facts-at-runtime)).
 
 ```yaml
+# tests/examples/allergen-through-a-sauce.of.yaml
 import:
   - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish, madeAtStation, usesRecipe]
+    use: [Dish, madeAtStation, usesRecipe, usesGarnish]
+  - from: file:../../defs/allergens.of.yaml
+    use: [listsAllergen]
 
 dish/margherita:
   is: Fact
   kind: Dish
   fields:
     name: margherita
+    steps: https://recipes.example.com/margherita
     price: 12
   links:
     madeAtStation: station/pizza
     usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+    usesGarnish: ingredient/parmesan
+    listsAllergen: [allergen/nuts, allergen/milk]
 ```
 
 The fact omits `status`, so the dish takes the default, `active`. The kind

@@ -11,8 +11,10 @@ dish. A kind tells what the thing is and gives examples of it. It also
 lists the fields of the thing.
 
 ```yaml
+# defs/recipe.of.yaml
 Recipe:
   is: Kind
+  tags: [allergens]
   definition: The steps that make one food from ingredients and other recipes.
   examples:
     - the tomato sauce
@@ -31,6 +33,7 @@ Recipe:
 
 Dish:
   is: Kind
+  tags: [allergens]
   extends: Recipe
   definition: A recipe that the restaurant sells to guests.
   examples:
@@ -85,6 +88,7 @@ kind extends, or at a union that lists its kind or a kind that it extends.
 A [constraint](constraint.md) with `count` sets how many links a thing has:
 
 ```yaml
+# defs/recipe.of.yaml
 recipeAtOneStation:
   is: Constraint
   says: Cooks make each recipe at exactly one station.
@@ -115,6 +119,7 @@ For example, the food that a recipe uses is a recipe or an ingredient. Each
 food is one of the two, and never both. `oneOf` states this:
 
 ```yaml
+# defs/recipe.of.yaml
 Food:
   is: Kind
   definition: Something that a recipe uses to make its food.
@@ -142,6 +147,7 @@ A business menu shows a different use. It is a lunch with fixed courses at
 one price. The guest picks one drink: a light drink or a glass of wine.
 
 ```yaml
+# defs/lunch.of.yaml
 LightDrink:
   is: Kind
   definition: A drink with little or no alcohol, such as juice or water.
@@ -201,21 +207,29 @@ itself, because JSON Schema describes one document and has no links between
 things.
 
 ```yaml
-fields:
-  name:
-    type: Name                 # a value type, imported
-  status:
-    enum: [active, retired]
-    default: active
-  servings:
-    type: integer
-    minimum: 1
-    optional: true
-  plating:
-    type: object
-    properties:
-      garnish: { type: string, optional: true }
-      plate:   { type: string }
+# defs/specials.of.yaml
+import:
+  - from: file:names.of.yaml
+    use: [Name]
+
+DailySpecial:
+  is: Kind
+  definition: A plate that the chef offers for one day, and that is not on the menu.
+  fields:
+    name:
+      type: Name                 # a value type, imported
+    status:
+      enum: [active, retired]
+      default: active
+    servings:
+      type: integer
+      minimum: 1
+      optional: true
+    plating:
+      type: object
+      properties:
+        garnish: { type: string, optional: true }
+        plate:   { type: string }
 ```
 
 ### Keywords
@@ -288,9 +302,9 @@ is imported in the same way:
 
 ```yaml
 # defs/names.of.yaml
-
 Name:
   is: ValueType
+  tags: [allergens, spoilage]
   definition: A lowercase identifier for stations, recipes, ingredients and allergens.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
@@ -298,6 +312,7 @@ Name:
 
 Minutes:
   is: ValueType
+  tags: [allergens]
   definition: A number of minutes of work.
   type: integer
   minimum: 1
@@ -305,12 +320,14 @@ Minutes:
 
 URL:
   is: ValueType
+  tags: [allergens]
   definition: The address of a page on the web.
   type: string
   format: uri
 
 Price:
   is: ValueType
+  tags: [allergens]
   definition: An amount of money in euros.
   type: number
   minimum: 0
@@ -318,10 +335,9 @@ Price:
 
 ```yaml
 # defs/recipe.of.yaml
-
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price]
+    use: [Name, Minutes, Price, URL]
 ```
 
 | Key | Required | Value |

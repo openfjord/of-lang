@@ -1,0 +1,6 @@
+package: "@bistro/suppliers"
+version: 1.2.0
+owner: purchasing
+rdfNamespace: suppliers
+exports:
+  kinds: [Supplier, Ingredient]

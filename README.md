@@ -46,7 +46,8 @@ of-lang test examples/restaurant
 - [The `of-lang` tool](cli/README.md): its commands and their output, and
   what is planned.
 - [The example package](examples/restaurant/): a restaurant's kitchen
-  stations, recipes, dishes, ingredients and allergens.
+  stations, recipes, dishes, ingredients and allergens. It depends on
+  [a second package](examples/suppliers/), the restaurant's suppliers.
 - [The design of the language](docs/design.md): why ontologies are hard for
   software people, what the language leaves out, the roads not taken, and
   the open questions.

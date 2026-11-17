@@ -14,8 +14,10 @@ violation.
 ## With `unless`
 
 ```yaml
+# defs/allergens.of.yaml
 dishListsItsAllergens:
   is: Constraint
+  tags: [allergens]
   says: >
     The menu must give a warning about each allergen in an active dish.
   match:
@@ -45,6 +47,7 @@ the dish.
 ## Without `unless`
 
 ```yaml
+# defs/recipe.of.yaml
 noRecipeLoop:
   is: Constraint
   says: A recipe must not use itself, directly or through other recipes.
@@ -85,28 +88,29 @@ Four principles apply to constraints:
 
 `match` lists the things and the links to find. It has two sorts of item.
 
-A kind item names a kind, and gives a variable to the things of that kind:
-
 ```yaml
-match:
-  - kind: { name: Dish, as: $dish }
+# defs/recipe.of.yaml
+baseRecipeHasNoGarnish:
+  is: Constraint
+  says: A base recipe has no garnish, because cooks put a garnish on a dish at the end.
+  match:
+    - kind: { name: BaseRecipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - link: usesGarnish
+      from: $recipe
+      to:   $ingredient
+  message: "{$recipe} must not have {$ingredient} as a garnish."
 ```
 
-The variable represents each thing of that kind in turn. A variable is `$`,
+A kind item names a kind, and gives a variable to the things of that kind,
+as in `kind: { name: BaseRecipe, as: $recipe }`. The variable represents
+each thing of that kind in turn. A variable is `$`,
 then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
 variable has exactly one kind item, so its kind is written in one place.
 Every other mention of the variable is the variable alone.
 
-A link item is one link that must exist between two things:
-
-```yaml
-match:
-  - kind: { name: Recipe, as: $recipe }
-  - kind: { name: Ingredient, as: $ingredient }
-  - link: usesIngredient
-    from: $recipe
-    to:   $ingredient
-```
+A link item is one link that must exist between two things, such as the
+`usesGarnish` link from `$recipe` to `$ingredient`.
 
 `from` and `to` are each a variable or a kind. A variable is for a thing
 that the constraint refers to again. A kind alone is for a thing that nothing
@@ -130,18 +134,25 @@ between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
 ```yaml
-- link: dependsOnStation
-  from: $station
-  to:   $other
-  repeated: true
+# defs/station.of.yaml
+noStationLoop:
+  is: Constraint
+  says: A station must not depend on itself, directly or through other stations.
+  match:
+    - kind: { name: Station, as: $station }
+    - link: dependsOnStation
+      from: $station
+      to:   $station
+      repeated: true
+  message: "{$station} must not depend on itself."
 ```
 
 `repeated` is for a link that does not chain. A link with `chains: true`
 already holds for each longer chain.
 
-A narrower kind limits the matches. For example, with
-`kind: { name: BaseRecipe, as: $part }`, a `usesRecipe` link item from
-`$recipe` to `$part` matches only recipes that use base recipes.
+A narrower kind limits the matches. In `baseRecipeHasNoGarnish`, the kind
+item `BaseRecipe` limits the `usesGarnish` link items to the garnishes of base
+recipes.
 
 ## Filter and unless
 
@@ -158,21 +169,36 @@ and `field`). Then it gives a comparison word and what to compare with:
 - `same as:` (a variable, or a variable and a field).
 
 ```yaml
-unless:
-  - node: $other
-    does not equal:
-      same as: $station
-  - node:  $dish
-    field: prepMinutes
-    is at least:
-      same as:
-        node:  $part
-        field: prepMinutes
-  - node:  $dish
-    field: status
-    is one of:
-      values: [active, retired]
+# defs/recipe.of.yaml
+dishTakesLongerThanItsParts:
+  is: Constraint
+  says: Cooks need more time for a dish than for each other recipe that it uses.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Recipe, as: $part }
+    - link: usesRecipe
+      from: $dish
+      to:   $part
+  filter:
+    - node: $part
+      does not equal:
+        same as: $dish
+    - node:  $part
+      field: prepMinutes
+      is at least:
+        same as:
+          node:  $dish
+          field: prepMinutes
+  unless:
+    - node:  $dish
+      field: status
+      is one of:
+        values: [retired]
+  message: "{$dish} must take more time than {$part}."
 ```
+
+Read it as follows. A dish uses another recipe that takes as long as the dish
+or longer. This is a violation, unless the dish is retired.
 
 | Word | Holds when |
 |---|---|
