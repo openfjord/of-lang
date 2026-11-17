@@ -12,7 +12,7 @@ title: A modeling language for software people
 >
 > **[The language specification](language/README.md)** teaches and defines
 > the language: a reference and a cheat sheet. A command-line tool,
-> [`of-lang`](cmd/of-lang/README.md), implements an earlier version of it, and
+> [`of-lang`](of-lang-cli/README.md), implements an earlier version of it, and
 > [examples/restaurant/](examples/restaurant/) is an example package.
 
 ## Why
@@ -112,7 +112,7 @@ These standards can describe a product exactly. But few product people or
 developers read or write them. [The next section](#why-ontologies-are-hard-for-software-people)
 gives eighteen reasons. This draft is a language that software people can
 read and write. It keeps what the standards do well, and its tool,
-[`of-lang`](cmd/of-lang/README.md), makes the standard formats from it.
+[`of-lang`](of-lang-cli/README.md), makes the standard formats from it.
 
 ## The question
 
@@ -167,7 +167,7 @@ closed-world checking and adds inference by derivatives.
   its principles and vocabulary, with
   - [a reference](language/README.md#reference) with every rule, and
   - [a cheat sheet](language/cheatsheet.md).
-- [The `of-lang` tool](cmd/of-lang/README.md): commands, output, and what is
+- [The `of-lang` tool](of-lang-cli/README.md): commands, output, and what is
   planned: the change report, product's pages, the RDF export, a
   language server and a user interface.
 - [The example package](examples/restaurant/).

@@ -73,7 +73,7 @@ The package has two versions:
 | without the change | not included | included, as written | the `was` version |
 | with the change | included | not included | the new version |
 
-The tool checks the two versions. The [change report](../../cmd/of-lang/README.md#the-change-report)
+The tool checks the two versions. The [change report](../../of-lang-cli/README.md#the-change-report)
 compares them: what the change states, what newly follows, what no longer
 follows, and what is rejected.
 
