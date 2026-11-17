@@ -81,6 +81,11 @@ func TestBrokenPackages(t *testing.T) {
 			command: "test", want: "expected derived, but not: Recipe is a Dish",
 		},
 		{
+			name: "names that differ only by case", file: "defs/recipe.of.yaml",
+			old: "baseRecipeFromUses:\n", replacement: "baseRecipe:\n",
+			command: "check", want: "baseRecipe differs from BaseRecipe, defined at",
+		},
+		{
 			name: "doc that does not exist", file: "defs/allergens.of.yaml",
 			old: "file:../docs/allergens.md", replacement: "file:../docs/nope.md",
 			command: "check", want: "allergens.of.yaml:9:3: ../docs/nope.md does not exist (DC3)",

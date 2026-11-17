@@ -81,7 +81,7 @@ usesGarnish:
   definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
   under: usesIngredient
 
-baseRecipe:
+baseRecipeFromUses:
   is: Derivative
   says: >
     A recipe that more than two recipes use, directly or through other

@@ -117,7 +117,7 @@ combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. An
 end with a kind alone only has to exist. In a nested block, a row also gives
 one thing to each end with a kind alone. Thus `count` counts the different
-things there, for example the recipes that use a recipe in `baseRecipe`. Two
+things there, for example the recipes that use a recipe in `baseRecipeFromUses`. Two
 variables can represent the same thing, unless a condition prevents it. One
 variable at two ends, as in `noRecipeLoop`, is the same thing at both ends.
 

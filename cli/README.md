@@ -141,7 +141,7 @@ dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
 
 ```
 $ of-lang explain restaurant restaurant/tests/examples/base-recipe.of.yaml recipe/tomato_sauce BaseRecipe
-recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipe)
+recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipeFromUses)
   A recipe that more than two recipes use, directly or through other recipes, is a base recipe.
   with $recipe = recipe/tomato_sauce
 ```

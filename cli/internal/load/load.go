@@ -318,6 +318,11 @@ func define(st *state, pkg *model.Package, name string, d model.Definition) {
 		st.diags = append(st.diags, diag.New(d.Pos, "%s is already defined at %s (FL6)", name, diag.Format(diag.Diagnostic{Pos: prev.Pos})))
 		return
 	}
+	for other, prev := range pkg.Defs {
+		if strings.EqualFold(other, name) {
+			st.diags = append(st.diags, diag.New(d.Pos, "%s differs from %s, defined at %s, only by case (FL6)", name, other, diag.Format(diag.Diagnostic{Pos: prev.Pos})))
+		}
+	}
 	pkg.Defs[name] = d
 }
 

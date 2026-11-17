@@ -96,13 +96,15 @@ includes keys that a later version of the language adds.
 | constraint, derivative, test, question | lowerCamelCase | `dishListsItsAllergens`, `whichDishesContainNuts` |
 | fact | an id: any text, usually a path | `dish/margherita` |
 
-- **FL6.** The name of a definition MUST be unique in its package. The
-  inverse name that a link declares is also a name of that package.
+- **FL6.** The name of a definition MUST be unique in its package, also
+  when case is ignored: a package cannot have both `BaseRecipe` and
+  `baseRecipe`. The inverse name that a link declares is also a name of that
+  package.
 - **FL7.** Kind, value type and doc names MUST be UpperCamelCase; constraint,
   derivative, test and question names MUST be lowerCamelCase.
   [LK1](link.md#rules) gives the rule for link names.
 - **FL8.** The name of a statement in a test file MUST NOT be the name of a
-  definition in the package. Statements in a test file are local to that file.
+  definition in the package, also when case is ignored. Statements in a test file are local to that file.
 
 ## Imports
 

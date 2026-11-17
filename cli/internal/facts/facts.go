@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"github.com/openfjord/of-lang/cli/internal/diag"
 	"github.com/openfjord/of-lang/cli/internal/engine"
@@ -48,8 +49,8 @@ func Read(l load.Loaded, path string) (File, []diag.Diagnostic, error) {
 	out := File{Path: path, Scope: scope, Graph: engine.NewGraph()}
 	var links []factLink
 	for _, e := range sf.Entries {
-		if _, ok := pkg.Defs[e.Name]; ok {
-			ds = append(ds, diag.New(e.Pos, "%s is already a definition in package %s; statements in a test file need their own names (FL8)", e.Name, pkg.Name))
+		if other, ok := definitionNamed(pkg, e.Name); ok {
+			ds = append(ds, diag.New(e.Pos, "%s is the name of the definition %s in package %s, also when case is ignored; statements in a test file need their own names (FL8)", e.Name, other, pkg.Name))
 			continue
 		}
 		switch model.Sort(e.Is) {
@@ -80,6 +81,17 @@ func Read(l load.Loaded, path string) (File, []diag.Diagnostic, error) {
 		engine.Add(&out.Graph, engine.LinkFact(from, fl.ref.Q, to), engine.Reason{Type: engine.ReasonStated, Pos: fl.pos})
 	}
 	return out, ds, nil
+}
+
+// definitionNamed finds a definition of the package with a name, ignoring
+// case.
+func definitionNamed(pkg model.Package, name string) (string, bool) {
+	for other := range pkg.Defs {
+		if strings.EqualFold(other, name) {
+			return other, true
+		}
+	}
+	return "", false
 }
 
 type factLink struct {
