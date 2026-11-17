@@ -15,11 +15,11 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"oflang/internal/diag"
-	"oflang/internal/engine"
-	"oflang/internal/model"
-	"oflang/internal/value"
-	"oflang/internal/world"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/engine"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/value"
+	"github.com/openfjord/of-lang/internal/world"
 )
 
 var (

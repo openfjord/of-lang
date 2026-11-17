@@ -14,13 +14,13 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/check"
-	"oflang/internal/diag"
-	"oflang/internal/engine"
-	"oflang/internal/facts"
-	"oflang/internal/load"
-	"oflang/internal/model"
-	"oflang/internal/suite"
+	"github.com/openfjord/of-lang/internal/check"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/engine"
+	"github.com/openfjord/of-lang/internal/facts"
+	"github.com/openfjord/of-lang/internal/load"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/suite"
 )
 
 const usage = `usage: of-lang <command> [flags] <args>

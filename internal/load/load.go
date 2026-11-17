@@ -12,9 +12,9 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/diag"
-	"oflang/internal/model"
-	"oflang/internal/source"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/source"
 )
 
 // Options says where to look for packages named in pkg: imports.

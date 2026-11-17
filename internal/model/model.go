@@ -8,7 +8,7 @@ package model
 import (
 	"math/big"
 
-	"oflang/internal/diag"
+	"github.com/openfjord/of-lang/internal/diag"
 )
 
 // QName names a definition by its package and its name, so names from

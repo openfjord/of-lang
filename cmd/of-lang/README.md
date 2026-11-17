@@ -4,7 +4,7 @@ title: of-lang — The OpenFjord modeling language
 
 # `of-lang`
 
-A command-line tool for [the OpenFjord modeling language](../language/README.md):
+A command-line tool for [the OpenFjord modeling language](../../language/README.md):
 it checks packages, runs their derivatives over facts, explains what it derived,
 compares two sets of facts, and runs a package's tests.
 
@@ -13,13 +13,13 @@ compares two sets of facts, and runs a package's tests.
 > named in `says`, kinds given on a variable's first mention instead of in kind items, `Rule`
 > instead of `Derivative`, `require` instead of `unless`, `definitions/` instead of `defs/`, and `.yaml`
 > instead of `.of.yaml`. It does not run the
-> [example package](../examples/restaurant/) as it stands. It will be brought
+> [example package](../../examples/restaurant/) as it stands. It will be brought
 > up to date once the draft settles.
 
 ## Build
 
 ```bash
-cd cli && go build -o of-lang ./cmd/of-lang
+go build -o of-lang ./cmd/of-lang
 ```
 
 ## Commands
@@ -231,7 +231,7 @@ it produces.
 
 ### The change report
 
-The [pending change](../language/reference/pending.md) of a package returns
+The [pending change](../../language/reference/pending.md) of a package returns
 one report, for the facts in its tests and examples. The report compares the
 package without the change and with the change, so git is not necessary. It joins `diff` and `explain`: what was stated,
 what newly follows and why, what no longer follows, and what is rejected.
@@ -310,10 +310,10 @@ Each IRI (Internationalized Resource Identifier) is built from the package's
 
 `of-lang export <package-dir> [--tags a,b]` writes the export. `--tags`
 exports only the definitions carrying at least one of the named
-[tags](../language/reference/tag.md); without it, the whole package is
+[tags](../../language/reference/tag.md); without it, the whole package is
 exported. A tagged subset is always complete, because each definition that
 a tagged definition refers to has the same tag
-([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
+([TG5](../../language/reference/tag.md#rules)). `of-lang check` rejects a
 package that breaks this rule. For example, if `Dish` had the tag
 `allergens` and `Recipe` did not:
 
@@ -344,7 +344,7 @@ other language server, including the YAML one.
   loader and checker as `of-lang check`.
 
 ```
-cli/internal/schema/
+internal/schema/
   package.schema.json
   kind.schema.json
   link.schema.json

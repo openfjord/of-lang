@@ -7,9 +7,9 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/model"
-	"oflang/internal/value"
-	"oflang/internal/world"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/value"
+	"github.com/openfjord/of-lang/internal/world"
 )
 
 // Match is one way a pattern fits the facts: what each variable stands for,

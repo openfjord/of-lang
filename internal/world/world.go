@@ -8,7 +8,7 @@ package world
 import (
 	"slices"
 
-	"oflang/internal/model"
+	"github.com/openfjord/of-lang/internal/model"
 )
 
 // Ancestors returns a kind and every kind it extends, nearest first. A cycle

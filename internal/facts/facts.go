@@ -8,13 +8,13 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"oflang/internal/diag"
-	"oflang/internal/engine"
-	"oflang/internal/load"
-	"oflang/internal/model"
-	"oflang/internal/source"
-	"oflang/internal/value"
-	"oflang/internal/world"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/engine"
+	"github.com/openfjord/of-lang/internal/load"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/source"
+	"github.com/openfjord/of-lang/internal/value"
+	"github.com/openfjord/of-lang/internal/world"
 )
 
 // File is one test file once read.

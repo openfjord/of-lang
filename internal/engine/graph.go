@@ -9,9 +9,9 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/diag"
-	"oflang/internal/model"
-	"oflang/internal/value"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/value"
 )
 
 // Edge is one link between two things, always stored in the link's declared

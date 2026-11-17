@@ -13,7 +13,7 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"oflang/internal/model"
+	"github.com/openfjord/of-lang/internal/model"
 )
 
 // Text makes a string value, which is how a thing's id is compared.

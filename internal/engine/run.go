@@ -8,10 +8,10 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/diag"
-	"oflang/internal/model"
-	"oflang/internal/value"
-	"oflang/internal/world"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/value"
+	"github.com/openfjord/of-lang/internal/world"
 )
 
 var messageVar = regexp.MustCompile(`\{(\$[a-z][A-Za-z0-9]*)\}`)

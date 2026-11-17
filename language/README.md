@@ -28,7 +28,7 @@ statements, derives what follows, and rejects what breaks a rule.
 |---|---|
 | find exactly how something works | [the reference](#reference), one page for each part of the language |
 | see all of the language on one page | [the cheat sheet](cheatsheet.md) |
-| run it | [the `of-lang` tool](../cli/README.md) |
+| run it | [the `of-lang` tool](../cmd/of-lang/README.md) |
 
 Every example uses one small, fictional restaurant. Stations in the kitchen
 make recipes, dishes use recipes and ingredients, and ingredients contain

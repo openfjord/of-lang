@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/diag"
-	"oflang/internal/model"
-	"oflang/internal/world"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/world"
 )
 
 type read struct {

@@ -9,11 +9,11 @@ import (
 	"slices"
 	"strings"
 
-	"oflang/internal/diag"
-	"oflang/internal/engine"
-	"oflang/internal/model"
-	"oflang/internal/suite"
-	"oflang/internal/value"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/engine"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/suite"
+	"github.com/openfjord/of-lang/internal/value"
 )
 
 // reporter writes results as text for people or JSON for tools.

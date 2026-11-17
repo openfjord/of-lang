@@ -13,12 +13,12 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"oflang/internal/diag"
-	"oflang/internal/engine"
-	"oflang/internal/facts"
-	"oflang/internal/load"
-	"oflang/internal/model"
-	"oflang/internal/source"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/engine"
+	"github.com/openfjord/of-lang/internal/facts"
+	"github.com/openfjord/of-lang/internal/load"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/source"
 )
 
 // Outcome is the result of one test or question.

@@ -14,7 +14,7 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"oflang/internal/diag"
+	"github.com/openfjord/of-lang/internal/diag"
 )
 
 // Use is one name an import block brings in, possibly renamed.

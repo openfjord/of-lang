@@ -9,9 +9,9 @@ import (
 
 	"go.yaml.in/yaml/v3"
 
-	"oflang/internal/diag"
-	"oflang/internal/model"
-	"oflang/internal/source"
+	"github.com/openfjord/of-lang/internal/diag"
+	"github.com/openfjord/of-lang/internal/model"
+	"github.com/openfjord/of-lang/internal/source"
 )
 
 var (

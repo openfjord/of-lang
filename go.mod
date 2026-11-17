@@ -1,4 +1,4 @@
-module oflang
+module github.com/openfjord/of-lang
 
 go 1.27
 
