@@ -67,7 +67,7 @@ A [derivative](derivative.md) adds a derived fact. The `under` or `chains`
 key of a link can also add one ([what links imply](link.md#what-links-imply)).
 No file declares a derived fact, because then it is not derived. A derived
 fact exists only after the derivatives run, and the tool shows it in its
-output ([how the tool shows derived facts](../../of-lang-cli/README.md#derived-facts)).
+output ([how the tool shows derived facts](../../cli/README.md#derived-facts)).
 A test can expect a derived fact, or expect that it is absent, under `expect`
 ([tests](test.md#examples)). Constraints and questions see stated facts and
 derived facts in the same way.
