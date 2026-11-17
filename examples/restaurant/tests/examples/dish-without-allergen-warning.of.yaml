@@ -47,6 +47,7 @@ recipe/pesto:
   kind: Recipe
   fields:
     name: pesto
+    steps: https://recipes.example.com/pesto
   links:
     madeAtStation: station/sauce
     usesIngredient: ingredient/pine_nuts
@@ -56,6 +57,7 @@ dish/margherita:
   kind: Dish
   fields:
     name: margherita
+    steps: https://recipes.example.com/margherita
     price: 12
   links:
     madeAtStation: station/pizza

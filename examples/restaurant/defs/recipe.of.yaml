@@ -1,6 +1,6 @@
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price]
+    use: [Name, Minutes, Price, URL]
   - from: file:station.of.yaml
     use: [Station]
   - from: file:ingredient.of.yaml
@@ -18,6 +18,8 @@ Recipe:
   fields:
     name:
       type: Name
+    steps:
+      type: URL
     prepMinutes:
       type: Minutes
       optional: true

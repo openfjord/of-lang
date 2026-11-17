@@ -23,6 +23,8 @@ Recipe:
   fields:
     name:
       type: Name
+    steps:
+      type: URL
     prepMinutes:
       type: Minutes
       optional: true
@@ -219,7 +221,7 @@ fields:
 |---|---|
 | `type`: `string`, `integer`, `number`, `boolean`, `array`, `object`, or a value type's name | the type of the value |
 | `enum`, `const`, `default` | fixed values |
-| `pattern`, `minLength`, `maxLength`, `format` (`date`, `date-time`, `duration`) | text |
+| `pattern`, `minLength`, `maxLength`, `format` (`date`, `date-time`, `duration`, `uri`) | text |
 | `minimum`, `maximum` | numbers |
 | `items` | the values of an `array` |
 | `properties` | the parts of an `object` |
@@ -262,7 +264,8 @@ field. It is a [union of kinds](#unions).
   `default`. A field SHOULD NOT have both, because a default already makes
   the field optional.
 - **FD4.** `pattern` MUST be a valid regular expression. `format` MUST be
-  `date`, `date-time` or `duration` (ISO 8601).
+  `date`, `date-time` or `duration` (ISO 8601), or `uri`: an absolute URI
+  (Uniform Resource Identifier, RFC 3986), with a scheme such as `https:`.
 - **FD5.** The rest of the field's schema MUST allow each value in `enum`,
   the `default` and the `const`.
 - **FD6.** There is no null. A field with no value is omitted, and never has
@@ -296,6 +299,12 @@ Minutes:
   type: integer
   minimum: 1
   maximum: 1440
+
+URL:
+  is: ValueType
+  definition: The address of a page on the web.
+  type: string
+  format: uri
 
 Price:
   is: ValueType

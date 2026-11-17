@@ -72,6 +72,7 @@ Recipe:                                  # UpperCamelCase
   notExamples: [a new dish that a cook tries one time and does not keep]
   fields:
     name:        { type: Name }                       # required by default
+    steps:       { type: URL }                        # where the steps are written
     prepMinutes: { type: Minutes, optional: true }
 
 Dish:
@@ -116,6 +117,12 @@ Minutes:
   type: integer                          # a type and its keywords
   minimum: 1
   maximum: 1440
+
+URL:
+  is: ValueType
+  definition: The address of a page on the web.
+  type: string
+  format: uri                            # an absolute URI, such as https://…
 ```
 
 By default, the RDF export holds everything. An optional list of tags limits it. Tags do not pass through
@@ -125,7 +132,7 @@ untagged.
 
 Field keywords: `type` (`string` `integer` `number` `boolean` `array` `object`
 or a value type), `enum` `const` `default` `pattern` `minLength` `maxLength`
-`format` (`date` `date-time` `duration`) `minimum` `maximum` `items`
+`format` (`date` `date-time` `duration` `uri`) `minimum` `maximum` `items`
 `properties` `optional` `oneOf` (variants: exactly one choice matches; object
 choices carry a `const` part such as `variant`). The language does not have
 `null`, `$ref`, `required`, `anyOf`, `allOf`, `not` or `if`.

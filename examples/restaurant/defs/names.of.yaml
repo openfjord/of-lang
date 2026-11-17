@@ -12,6 +12,12 @@ Minutes:
   minimum: 1
   maximum: 1440
 
+URL:
+  is: ValueType
+  definition: The address of a page on the web.
+  type: string
+  format: uri
+
 Price:
   is: ValueType
   definition: An amount of money in euros.

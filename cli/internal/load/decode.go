@@ -247,8 +247,8 @@ func decodeSchema(path string, m source.Map, scope map[string]model.Ref, extra [
 	s.Minimum = optionalNumber(path, m, "minimum", ds)
 	s.Maximum = optionalNumber(path, m, "maximum", ds)
 	s.Format, _ = source.GetScalar(m, "format", ds)
-	if s.Format != "" && !slices.Contains([]string{"date", "date-time", "duration"}, s.Format) {
-		*ds = append(*ds, diag.New(m.Pos, "format %q is not one of date, date-time, duration (FD4)", s.Format))
+	if s.Format != "" && !slices.Contains([]string{"date", "date-time", "duration", "uri"}, s.Format) {
+		*ds = append(*ds, diag.New(m.Pos, "format %q is not one of date, date-time, duration, uri (FD4)", s.Format))
 	}
 	if n, ok := source.Get(m, "items"); ok {
 		if im, ok := source.AsMap(path, n, ds); ok {

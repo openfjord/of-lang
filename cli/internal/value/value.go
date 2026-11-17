@@ -7,6 +7,7 @@ package value
 import (
 	"fmt"
 	"math/big"
+	"net/url"
 	"regexp"
 	"slices"
 	"strings"
@@ -276,6 +277,9 @@ func hasFormat(format, text string) bool {
 		return err == nil
 	case "duration":
 		return text != "P" && !strings.HasSuffix(text, "T") && durationPattern.MatchString(text)
+	case "uri":
+		u, err := url.Parse(text)
+		return err == nil && u.Scheme != "" && (u.Host != "" || u.Opaque != "")
 	default:
 		return true
 	}

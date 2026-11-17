@@ -82,7 +82,7 @@ Each problem is one line, with the file, line and column:
 
 ```
 $ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:49:3: the reads of madeAtStation must use both {from} and {to} (LK2)
+restaurant/defs/recipe.of.yaml:51:3: the reads of madeAtStation must use both {from} and {to} (LK2)
 ```
 
 Each problem names the rule it breaks, such as `(LK2)`. A package with a
@@ -130,12 +130,12 @@ dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
   A recipe contains each allergen that one of its recipes contains.
   with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
   because:
-    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:114:5)
+    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:117:5)
     recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
       A recipe contains each allergen that one of its ingredients contains.
       with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
       because:
-        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:95:5)
+        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:96:5)
         ingredient/pine_nuts contains allergen/nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:72:5)
 ```
 
@@ -183,8 +183,9 @@ FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-
 pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.of.yaml)
 pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.of.yaml)
 pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (restaurant/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
 pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
-4 passed, 1 failed
+5 passed, 1 failed
 ```
 
 ### JSON

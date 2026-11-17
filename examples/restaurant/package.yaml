@@ -5,4 +5,4 @@ rdfNamespace: kitchen
 exports:
   kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
   links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
-  valueTypes: [Name, Minutes, Price]
+  valueTypes: [Name, Minutes, Price, URL]
