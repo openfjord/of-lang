@@ -226,6 +226,17 @@ someExample:
     notDerived: [ { node: recipe/pesto, becomes: BaseRecipe } ]
     rejected:   [dishListsItsAllergens]
 
+# tests/terms/garnish.of.yaml — no facts: what the definitions derive about kinds and links
+garnishIsAnIngredient:
+  is: Test
+  says: A garnish is one of the ingredients that a recipe uses.
+  expect:
+    derived:
+      - { kind: Dish, is a: Recipe }                  # also: never is, can have
+      - { link: usesGarnish, implies: usesIngredient } # also: chains, inverse of
+    notDerived:
+      - { link: usesIngredient, implies: usesGarnish }
+
 # tests/questions/which-dishes-contain-nuts.of.yaml
 whichDishesContainNuts:
   is: Question

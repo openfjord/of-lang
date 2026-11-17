@@ -27,6 +27,7 @@ restaurant/
   tests/                           # examples and questions
     examples/
     questions/
+    terms/                            # examples with no facts: derived terms
 ```
 
 - **PK1.** The top level of a package MUST hold the manifest and `defs/`, MAY

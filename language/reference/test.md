@@ -11,7 +11,8 @@ A package uses tests in its `tests/` folder to prove that it is correct
 question:
 
 - An **example** tells what a set of facts must derive, and which constraints
-  the facts must break.
+  the facts must break. An example with no facts tells what the definitions
+  derive about kinds and links ([derived terms](#derived-terms)).
 - A **question** asks something about a set of facts, and tells what the
   answer must be.
 
@@ -151,8 +152,8 @@ dish/marinara:
 
 | Key under `expect` | Value |
 |---|---|
-| `derived` | facts that must hold after the derivatives run |
-| `notDerived` | facts that must not hold |
+| `derived` | facts and terms that must hold after the derivatives run |
+| `notDerived` | facts and terms that must not hold |
 | `rejected` | all constraints that the facts must break |
 
 A fact under `derived` or `notDerived` has the same form as a derivation,
@@ -167,8 +168,8 @@ with ids in place of variables:
 - **TS1.** An example file MUST hold exactly one `Test` statement, which MUST
   have `says` and `expect`.
 - **TS2.** The test passes only if all of these are true:
-  - every fact under `derived` holds
-  - no fact under `notDerived` holds
+  - every fact and term under `derived` holds
+  - no fact or term under `notDerived` holds
   - the facts break exactly the constraints under `rejected`
   - every fact obeys its kind ([FC3](fact.md#rules)).
 
@@ -176,6 +177,53 @@ with ids in place of variables:
   constraints.
 - **TS3.** The file MUST import each link, kind and constraint that the test
   names.
+- **TS15.** A term under `derived` or `notDerived` MUST have one of the
+  forms in [derived terms](#derived-terms). A file with no facts MAY have
+  only terms under `expect`.
+
+## Derived terms
+
+The definitions derive information that is not a fact: what follows for
+kinds and links before there are any facts. A test can expect this
+information under `derived` and `notDerived`, next to facts or alone:
+
+```yaml
+# tests/terms/garnish.of.yaml
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
+
+garnishIsAnIngredient:
+  is: Test
+  says: >
+    A garnish is one of the ingredients that a recipe uses. A dish is a
+    recipe, so a dish has a station. A recipe can use a recipe that uses
+    another recipe.
+  expect:
+    derived:
+      - kind: Dish
+        is a: Recipe
+      - kind: Dish
+        can have: madeAtStation
+      - link: usesGarnish
+        implies: usesIngredient
+      - link: usesRecipe
+        chains: true
+    notDerived:
+      - link: usesIngredient
+        implies: usesGarnish
+```
+
+| Term | Written | Derived from |
+|---|---|---|
+| a kind is another kind | `kind`, `is a` | `extends`, in one or more steps, and the kinds that a [union](kind.md#unions) lists |
+| two kinds never share a thing | `kind`, `never is` | a union |
+| a kind can have a link | `kind`, `can have` | the `from` of the link, `extends` and unions |
+| a link implies another link | `link`, `implies` | `under`, in one or more steps |
+| a link chains | `link`, `chains: true` | `chains` |
+| a link is another link in the opposite direction | `link`, `inverse of` | the inverse name |
+
+A term names kinds and links only, never ids of facts.
 
 ## Questions
 
