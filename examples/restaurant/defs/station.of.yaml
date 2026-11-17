@@ -27,15 +27,19 @@ stationDependsOnStation:
     A station depends on each different station that makes a recipe that one
     of its own recipes uses.
   match:
+    - kind: { name: Station, as: $station }
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Station, as: $other }
     - link: makesRecipe
-      from: {$station: Station}
-      to:   {$recipe: Recipe}
+      from: $station
+      to:   $recipe
     - link: usesRecipe
-      from: {$recipe: Recipe}
-      to:   {$part: Recipe}
+      from: $recipe
+      to:   $part
     - link: madeAtStation
-      from: {$part: Recipe}
-      to:   {$other: Station}
+      from: $part
+      to:   $other
   filter:
     - node: $other
       does not equal:

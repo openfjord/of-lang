@@ -80,12 +80,12 @@ recipeAtOneStation:
   is: Constraint
   says: Cooks make each recipe at exactly one station.
   match:
-    - {$recipe: Recipe}
+    - kind: { name: Recipe, as: $recipe }
   filter:
     - count:
         match:
           - link: madeAtStation
-            from: {$recipe: Recipe}
+            from: $recipe
             to:   Station
       does not equal:
         value: 1

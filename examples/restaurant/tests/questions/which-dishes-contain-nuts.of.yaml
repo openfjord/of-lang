@@ -11,9 +11,11 @@ whichDishesContainNuts:
   asks: Which dishes contain nuts?
   given: file:../examples/allergen-through-a-sauce.of.yaml
   match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
     - link: hasAllergen
-      from: {$dish: Dish}
-      to:   {$allergen: Allergen}
+      from: $dish
+      to:   $allergen
   filter:
     - node: $allergen
       equals:

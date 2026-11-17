@@ -138,27 +138,28 @@ others.
 
 ```yaml
 match:                                   # things and links that must exist
+  - kind: { name: Dish, as: $dish }      # each variable has exactly one kind item
+  - kind: { name: Recipe, as: $part }
   - link: makesRecipe                    # a link or an inverse name
     from: Station                        # a kind alone: nothing else refers to this end
-    to:   {$dish: Dish}                  # every mention gives the variable's kind
+    to:   $dish
   - link: usesRecipe
-    from: {$dish: Dish}
-    to:   {$part: Recipe}
+    from: $dish
+    to:   $part
     repeated: true                       # one or more steps
 filter:                                  # conditions; all must hold
-  - node: $part                          # bare variable outside match
+  - node: $part
     does not equal: { same as: $dish }
   - node: $dish
     field: status
     equals: { value: active }
 ```
 
-A thing item gives a variable each thing of a kind, with no link. Use it
-only for a variable that no link item names:
+A kind item with no link item gives a variable each thing of its kind:
 
 ```yaml
 match:
-  - {$dish: Dish}                        # each dish in turn
+  - kind: { name: Dish, as: $dish }      # each dish in turn
 filter:
   - node: $dish
     field: price

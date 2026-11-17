@@ -22,12 +22,15 @@ allergenFromIngredient:
   is: Derivative
   says: A recipe contains each allergen that one of its ingredients contains.
   match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
     - link: usesIngredient
-      from: {$recipe: Recipe}
-      to:   {$ingredient: Ingredient}
+      from: $recipe
+      to:   $ingredient
     - link: containsAllergen
-      from: {$ingredient: Ingredient}
-      to:   {$allergen: Allergen}
+      from: $ingredient
+      to:   $allergen
   derive:
     - link: hasAllergen
       from: $recipe
@@ -37,12 +40,15 @@ allergenFromRecipe:
   is: Derivative
   says: A recipe contains each allergen that one of its recipes contains.
   match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
     - link: usesRecipe
-      from: {$recipe: Recipe}
-      to:   {$part: Recipe}
+      from: $recipe
+      to:   $part
     - link: hasAllergen
-      from: {$part: Recipe}
-      to:   {$allergen: Allergen}
+      from: $part
+      to:   $allergen
   derive:
     - link: hasAllergen
       from: $recipe
@@ -53,9 +59,11 @@ dishListsItsAllergens:
   says: >
     The menu must give a warning about each allergen in an active dish.
   match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
     - link: hasAllergen
-      from: {$dish: Dish}
-      to:   {$allergen: Allergen}
+      from: $dish
+      to:   $allergen
   filter:
     - node:  $dish
       field: status
@@ -65,6 +73,6 @@ dishListsItsAllergens:
     - at least one:
         match:
           - link: listsAllergen
-            from: {$dish: Dish}
-            to:   {$allergen: Allergen}
+            from: $dish
+            to:   $allergen
   message: "The menu must warn that {$dish} contains {$allergen}."

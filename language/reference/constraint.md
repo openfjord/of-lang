@@ -19,9 +19,11 @@ dishListsItsAllergens:
   says: >
     The menu must give a warning about each allergen in an active dish.
   match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
     - link: hasAllergen
-      from: {$dish: Dish}
-      to:   {$allergen: Allergen}
+      from: $dish
+      to:   $allergen
   filter:
     - node:  $dish
       field: status
@@ -31,8 +33,8 @@ dishListsItsAllergens:
     - at least one:
         match:
           - link: listsAllergen
-            from: {$dish: Dish}
-            to:   {$allergen: Allergen}
+            from: $dish
+            to:   $allergen
   message: "The menu must warn that {$dish} contains {$allergen}."
 ```
 
@@ -47,9 +49,10 @@ noRecipeLoop:
   is: Constraint
   says: A recipe must not use itself, directly or through other recipes.
   match:
+    - kind: { name: Recipe, as: $recipe }
     - link: usesRecipe
-      from: {$recipe: Recipe}
-      to:   {$recipe: Recipe}
+      from: $recipe
+      to:   $recipe
   message: "{$recipe} must not use itself."
 ```
 
@@ -81,32 +84,32 @@ Four principles apply to constraints:
 
 `match` lists the things and the links to find. It has two sorts of item.
 
+A kind item names a kind, and gives a variable to the things of that kind:
+
+```yaml
+match:
+  - kind: { name: Dish, as: $dish }
+```
+
+The variable represents each thing of that kind in turn. A variable is `$`,
+then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
+variable has exactly one kind item, so its kind is written in one place.
+Every other mention of the variable is the variable alone.
+
 A link item is one link that must exist between two things:
 
 ```yaml
 match:
+  - kind: { name: Recipe, as: $recipe }
+  - kind: { name: Ingredient, as: $ingredient }
   - link: usesIngredient
-    from: {$recipe: Recipe}
-    to:   {$ingredient: Ingredient}
+    from: $recipe
+    to:   $ingredient
 ```
 
-`from` and `to` each give the kind of the thing at that end. When the
-constraint refers to that thing again, the end also gives it a variable, as
-`{$recipe: Recipe}`. When nothing else refers to it, the end gives only the
-kind, as `from: Recipe`. A constraint has no unused variables. A variable is `$`, then a lowercase letter, then letters and digits:
-`$recipe`, `$part`.
-
-A thing item is one variable and its kind, with no link:
-
-```yaml
-match:
-  - {$dish: Dish}
-```
-
-The variable represents each thing of that kind in turn. Use a thing item
-for a variable that no link item names, for example when only the fields of
-the thing matter. A link item already gives each of its variables a kind,
-so a thing item for such a variable adds nothing.
+`from` and `to` are each a variable or a kind. A variable is for a thing
+that the constraint refers to again. A kind alone is for a thing that nothing
+else refers to, as in `from: Recipe`. A constraint has no unused variables.
 
 `match` finds each combination of things for which all its items hold. Each
 combination is one match: a row that gives one thing to each end. Two
@@ -115,16 +118,24 @@ variables can represent the same thing, unless a condition prevents it. One
 variable that occurs two times, as in `noRecipeLoop`, is the same thing at
 each occurrence.
 
-The inverse name of a link reads the link in the opposite direction: `link: makesRecipe, from:
-{$station: Station}, to: {$recipe: Recipe}` matches exactly the same things as `link: madeAtStation,
-from: {$recipe: Recipe}, to: {$station: Station}`.
+The inverse name of a link reads the link in the opposite direction:
+`link: makesRecipe, from: $station, to: $recipe` matches exactly the same
+things as `link: madeAtStation, from: $recipe, to: $station`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
-A narrower kind limits the matches. For example, `{$part: BaseRecipe}`
-on `usesRecipe` matches only recipes that use base recipes.
+```yaml
+- link: usesRecipe
+  from: $recipe
+  to:   $part
+  repeated: true
+```
+
+A narrower kind limits the matches. For example, with
+`kind: { name: BaseRecipe, as: $part }`, the link item above matches only
+recipes that use base recipes.
 
 ## Filter and unless
 
@@ -200,20 +211,19 @@ field.
 
 - **CN1.** A constraint MUST have a `says` sentence, and the sentence MUST
   NOT contain a `$` word.
-- **CN2.** Every item in `match` MUST be a link item or a thing item. A link
-  item MUST have `link`, `from` and `to`, and MAY have `repeated: true`.
-  `link` MUST be a link, or an inverse name, that the file defines or
-  imports. A thing item MUST have one key only, in the form
-  `{$variable: Kind}`, and the kind MUST be a kind that the file defines or
-  imports.
-- **CN3.** Each `from` and each `to` MUST be a kind, or a variable and its
-  kind in the form `{$variable: Kind}`. Each thing item MUST use the form
-  `{$variable: Kind}`. This applies also in nested blocks. Every mention of a
-  variable MUST give the same kind.
-- **CN4.** The kind MUST be the kind that the link joins at that end, or a
-  kind that extends it.
-- **CN5.** Conditions and messages MUST write a variable without its kind
-  (`$recipe`), and every variable that they use MUST appear in a `match` item.
+- **CN2.** Every item in `match` MUST be a kind item or a link item. A kind
+  item MUST have `kind` with `name` and `as`. `name` MUST be a kind that the
+  file defines or imports, and `as` MUST be a variable. A link item MUST have
+  `link`, `from` and `to`, and MAY have `repeated: true`. `link` MUST be a
+  link, or an inverse name, that the file defines or imports.
+- **CN3.** Each `from` and each `to` MUST be a variable or a kind. A
+  variable there MUST have a kind item, in the same `match` or in the
+  `match` around its nested block.
+- **CN4.** The kind at each end of a link item MUST be the kind that the
+  link joins at that end, or a kind that extends it. For a variable, this is
+  the kind in its kind item.
+- **CN5.** Conditions and messages MUST write a variable alone (`$recipe`), and
+  every variable that they use MUST have a kind item.
 - **CN6.** A variable that appears only in a nested block belongs to that
   block. The constraint MUST NOT use it outside that block, and this includes
   the message.
@@ -238,12 +248,12 @@ field.
   that part.
 - **CN16.** A constraint MUST have `match`, with at least one item. Each
   nested block MUST also have `match`, with at least one item.
-- **CN17.** A thing item MUST name a variable that no other item names, in
-  the same `match` or in the `match` around its nested block. The tool
-  rejects such an item, because it adds nothing.
+- **CN17.** Each variable MUST have exactly one kind item. A kind item
+  MUST NOT give a variable that another kind item gives, in the same `match`
+  or in the `match` around its nested block.
 - **CN18.** Each variable MUST occur two or more times in the constraint:
-  in ends, thing items, conditions and the message. A variable that occurs one
-  time refers to nothing, so the end gives only the kind.
+  in ends, kind items, conditions and the message. A variable that occurs one
+  time refers to nothing, so a link end gives only the kind instead.
 
 ## How constraints run
 

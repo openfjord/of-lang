@@ -199,9 +199,11 @@ whichDishesContainNuts:
   asks: Which dishes contain nuts?
   given: file:../examples/allergen-through-a-sauce.of.yaml
   match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
     - link: hasAllergen
-      from: {$dish: Dish}
-      to:   {$allergen: Allergen}
+      from: $dish
+      to:   $allergen
   filter:
     - node: $allergen
       equals:
@@ -219,14 +221,13 @@ whichDishesContainNuts:
 | `filter` | no | conditions that narrow the matches |
 | `expect` | yes | for each listed variable, the ids that it must represent |
 
-Each item in `match` is a link item or a thing item. A link item is one
-link that must exist, with `link`, `from` and `to`. `from` and `to` each give
-the kind of the thing at that end, as `from: Recipe`. When the question
-refers to that thing again, the end also gives it a variable, as
-`{$variable: Kind}`. `repeated: true` on a link
-item follows the link for one or more steps. A thing item, such as
-`- {$dish: Dish}`, is a variable and its kind with no link: the variable
-represents each thing of that kind in turn. `match` finds each combination
+Each item in `match` is a kind item or a link item. A kind item, such as
+`kind: { name: Dish, as: $dish }`, gives a variable to the things of a kind:
+the variable represents each thing of that kind in turn. Each variable has
+exactly one kind item. A link item is one link that must exist, with
+`link`, `from` and `to`. `from` and `to` are each a variable, or a kind
+alone for a thing that nothing else refers to. `repeated: true` on a link
+item follows the link for one or more steps. `match` finds each combination
 of things for which all its items hold. Each combination is one match, which
 gives one thing to each end.
 
@@ -249,20 +250,20 @@ A condition can also name a `part` of an `object` field, as in
 
 - **TS4.** A question MUST have an `asks` sentence, and the sentence MUST NOT
   contain a `$` word.
-- **TS5.** Every item in `match` MUST be a link item or a thing item. A link
-  item MUST have `link`, `from` and `to`, and MAY have `repeated: true`.
-  `link` MUST be a link, or an inverse name, that the file imports. A thing
-  item MUST have one key only, in the form `{$variable: Kind}`, and the kind
-  MUST be a kind that the file imports.
-- **TS6.** Each `from` and each `to` MUST be a kind, or a variable and its
-  kind in the form `{$variable: Kind}`. Each thing item MUST use the form
-  `{$variable: Kind}`. This applies also in nested blocks. Every mention of a
-  variable MUST give the same kind. The kind MUST be the kind of the link at that end, or a kind
-  that extends it.
-- **TS7.** Conditions MUST write a variable without its kind (`$allergen`), and
-  every variable that they use MUST appear in a `match` item. A question
-  MUST NOT use a variable outside a nested block if the variable appears only
-  in that block.
+- **TS5.** Every item in `match` MUST be a kind item or a link item. A kind
+  item MUST have `kind` with `name` and `as`. `name` MUST be a kind that the
+  file imports, and `as` MUST be a variable. A link item MUST have `link`,
+  `from` and `to`, and MAY have `repeated: true`. `link` MUST be a link, or
+  an inverse name, that the file imports.
+- **TS6.** Each `from` and each `to` MUST be a variable or a kind. A
+  variable there MUST have a kind item, in the same `match` or in the
+  `match` around its nested block. The kind at each end MUST be the kind of
+  the link at that end, or a kind that extends it. For a variable, this is
+  the kind in its kind item.
+- **TS7.** Conditions MUST write a variable alone (`$allergen`), and every
+  variable that they use MUST have a kind item. A question MUST NOT use a
+  variable outside a nested block if the variable appears only in that
+  block.
 - **TS8.** A comparison MUST compare values of the same type: two fields that
   name the same value type, or two fields that name no value type and have
   the same built-in type. A literal MUST be a value that the field allows. A
@@ -278,11 +279,10 @@ A condition can also name a `part` of an `object` field, as in
   MUST be a part that the schema of the field defines. For a `oneOf`, one
   or more of the choices MUST define it. The comparison uses the type of
   that part.
-
 - **TS12.** Each nested block MUST have `match`, with at least one item.
-- **TS13.** A thing item MUST name a variable that no other item names, in
-  the same `match` or in the `match` around its nested block. The tool
-  rejects such an item, because it adds nothing.
+- **TS13.** Each variable MUST have exactly one kind item. A kind item
+  MUST NOT give a variable that another kind item gives, in the same `match`
+  or in the `match` around its nested block.
 - **TS14.** Each variable MUST occur two or more times in the question: in
-  ends, thing items, conditions and `expect`. A variable that occurs one time
-  refers to nothing, so the end gives only the kind.
+  ends, kind items, conditions and `expect`. A variable that occurs one time
+  refers to nothing, so a link end gives only the kind instead.

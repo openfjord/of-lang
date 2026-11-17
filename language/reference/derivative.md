@@ -15,12 +15,15 @@ allergenFromIngredient:
   is: Derivative
   says: A recipe contains each allergen that one of its ingredients contains.
   match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
     - link: usesIngredient
-      from: {$recipe: Recipe}
-      to:   {$ingredient: Ingredient}
+      from: $recipe
+      to:   $ingredient
     - link: containsAllergen
-      from: {$ingredient: Ingredient}
-      to:   {$allergen: Allergen}
+      from: $ingredient
+      to:   $allergen
   derive:
     - link: hasAllergen
       from: $recipe
@@ -55,41 +58,41 @@ Four principles apply to derivatives:
 
 `match` lists the things and the links to find. It has two sorts of item.
 
+A kind item names a kind, and gives a variable to the things of that kind:
+
+```yaml
+match:
+  - kind: { name: Dish, as: $dish }
+```
+
+The variable represents each thing of that kind in turn. A variable is `$`,
+then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
+variable has exactly one kind item, so its kind is written in one place.
+Every other mention of the variable is the variable alone.
+
 A link item is one link that must exist between two things:
 
 ```yaml
 match:
+  - kind: { name: Recipe, as: $recipe }
+  - kind: { name: Ingredient, as: $ingredient }
   - link: usesIngredient
-    from: {$recipe: Recipe}
-    to:   {$ingredient: Ingredient}
+    from: $recipe
+    to:   $ingredient
 ```
 
-`from` and `to` each give the kind of the thing at that end. When the
-derivative refers to that thing again, the end also gives it a variable, as
-`{$recipe: Recipe}`. When nothing else refers to it, the end gives only the
-kind, as `from: Recipe`. A derivative has no unused variables. A variable is `$`, then a lowercase letter, then letters and digits:
-`$recipe`, `$part`.
-
-A thing item is one variable and its kind, with no link:
-
-```yaml
-match:
-  - {$dish: Dish}
-```
-
-The variable represents each thing of that kind in turn. Use a thing item
-for a variable that no link item names, for example when only the fields of
-the thing matter. A link item already gives each of its variables a kind,
-so a thing item for such a variable adds nothing.
+`from` and `to` are each a variable or a kind. A variable is for a thing
+that the derivative refers to again. A kind alone is for a thing that nothing
+else refers to, as in `from: Recipe`. A derivative has no unused variables.
 
 `match` finds each combination of things for which all its items hold. Each
 combination is one match: a row that gives one thing to each end. Two
 matches that give the same things to the same ends are one match. Two
 variables can represent the same thing, unless a condition prevents it.
 
-The inverse name of a link reads the link in the opposite direction: `link: makesRecipe, from:
-{$station: Station}, to: {$recipe: Recipe}` matches exactly the same things as `link: madeAtStation,
-from: {$recipe: Recipe}, to: {$station: Station}`.
+The inverse name of a link reads the link in the opposite direction:
+`link: makesRecipe, from: $station, to: $recipe` matches exactly the same
+things as `link: madeAtStation, from: $recipe, to: $station`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
@@ -97,13 +100,14 @@ things is still one match. Explanations list the steps.
 
 ```yaml
 - link: usesRecipe
-  from: {$recipe: Recipe}
-  to:   {$part: Recipe}
+  from: $recipe
+  to:   $part
   repeated: true
 ```
 
-A narrower kind limits the matches. For example, `{$part: BaseRecipe}`
-on `usesRecipe` matches only recipes that use base recipes.
+A narrower kind limits the matches. For example, with
+`kind: { name: BaseRecipe, as: $part }`, the link item above matches only
+recipes that use base recipes.
 
 ## Filter
 
@@ -181,15 +185,19 @@ stationDependsOnStation:
     A station depends on each different station that makes a recipe that one
     of its own recipes uses.
   match:
+    - kind: { name: Station, as: $station }
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Station, as: $other }
     - link: makesRecipe
-      from: {$station: Station}
-      to:   {$recipe: Recipe}
+      from: $station
+      to:   $recipe
     - link: usesRecipe
-      from: {$recipe: Recipe}
-      to:   {$part: Recipe}
+      from: $recipe
+      to:   $part
     - link: madeAtStation
-      from: {$part: Recipe}
-      to:   {$other: Station}
+      from: $part
+      to:   $other
   filter:
     - node: $other
       does not equal:
@@ -207,13 +215,13 @@ baseRecipe:
     A recipe that more than two other recipes use, directly or through other
     recipes, is a base recipe.
   match:
-    - {$recipe: Recipe}
+    - kind: { name: Recipe, as: $recipe }
   filter:
     - count:
         match:
           - link: usesRecipe
             from: Recipe
-            to:   {$recipe: Recipe}
+            to:   $recipe
       is above:
         value: 2
   derive:
@@ -221,9 +229,9 @@ baseRecipe:
       becomes: BaseRecipe
 ```
 
-`baseRecipe` uses a thing item, because no link item names `$recipe`.
 `$recipe` represents each recipe in turn, and the nested block counts the
-recipes that use it.
+recipes that use it. The end `from: Recipe` has no variable, because nothing
+else refers to the recipe that uses `$recipe`.
 
 A derivative can match a link that a derivative adds. For example,
 `allergenFromRecipe` matches `hasAllergen`, and `allergenFromIngredient` adds
@@ -235,12 +243,15 @@ allergenFromRecipe:
   is: Derivative
   says: A recipe contains each allergen that one of its recipes contains.
   match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
     - link: usesRecipe
-      from: {$recipe: Recipe}
-      to:   {$part: Recipe}
+      from: $recipe
+      to:   $part
     - link: hasAllergen
-      from: {$part: Recipe}
-      to:   {$allergen: Allergen}
+      from: $part
+      to:   $allergen
   derive:
     - link: hasAllergen
       from: $recipe
@@ -251,20 +262,19 @@ allergenFromRecipe:
 
 - **DV1.** A derivative MUST have a `says` sentence, and the sentence MUST
   NOT contain a `$` word.
-- **DV2.** Every item in `match` MUST be a link item or a thing item. A link
-  item MUST have `link`, `from` and `to`, and MAY have `repeated: true`.
-  `link` MUST be a link, or an inverse name, that the file defines or
-  imports. A thing item MUST have one key only, in the form
-  `{$variable: Kind}`, and the kind MUST be a kind that the file defines or
-  imports.
-- **DV3.** Each `from` and each `to` MUST be a kind, or a variable and its
-  kind in the form `{$variable: Kind}`. Each thing item MUST use the form
-  `{$variable: Kind}`. This applies also in nested blocks. Every mention of a
-  variable MUST give the same kind.
-- **DV4.** The kind MUST be the kind that the link joins at that end, or a
-  kind that extends it.
-- **DV5.** Conditions and `derive` MUST write a variable without its kind
-  (`$recipe`), and every variable that they use MUST appear in a `match` item.
+- **DV2.** Every item in `match` MUST be a kind item or a link item. A kind
+  item MUST have `kind` with `name` and `as`. `name` MUST be a kind that the
+  file defines or imports, and `as` MUST be a variable. A link item MUST have
+  `link`, `from` and `to`, and MAY have `repeated: true`. `link` MUST be a
+  link, or an inverse name, that the file defines or imports.
+- **DV3.** Each `from` and each `to` MUST be a variable or a kind. A
+  variable there MUST have a kind item, in the same `match` or in the
+  `match` around its nested block.
+- **DV4.** The kind at each end of a link item MUST be the kind that the
+  link joins at that end, or a kind that extends it. For a variable, this is
+  the kind in its kind item.
+- **DV5.** Conditions and `derive` MUST write a variable alone (`$recipe`), and
+  every variable that they use MUST have a kind item.
 - **DV6.** A variable that appears only in a nested block belongs to that
   block. The derivative MUST NOT use it outside that block.
 - **DV7.** A condition MUST be one of the forms above. `is set` and `is not
@@ -298,12 +308,12 @@ allergenFromRecipe:
   that part.
 - **DV19.** A derivative MUST have `match`, with at least one item. Each
   nested block MUST also have `match`, with at least one item.
-- **DV20.** A thing item MUST name a variable that no other item names, in
-  the same `match` or in the `match` around its nested block. The tool
-  rejects such an item, because it adds nothing.
+- **DV20.** Each variable MUST have exactly one kind item. A kind item
+  MUST NOT give a variable that another kind item gives, in the same `match`
+  or in the `match` around its nested block.
 - **DV21.** Each variable MUST occur two or more times in the derivative:
-  in ends, thing items, conditions and `derive`. A variable that occurs one
-  time refers to nothing, so the end gives only the kind.
+  in ends, kind items, conditions and `derive`. A variable that occurs one
+  time refers to nothing, so a link end gives only the kind instead.
 
 ## How derivatives run
 

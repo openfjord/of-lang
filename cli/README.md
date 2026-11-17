@@ -359,7 +359,7 @@ needs them to.
 | Feature | What it does |
 |---|---|
 | Diagnostics | the check's errors as you type, each with its rule code, linked to that rule in the reference |
-| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `{$x: Kind}`, fact ids, docs links such as `recipe.of.yaml#Recipe`, and a `$variable` to its first mention |
+| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `kind: { name: … }`, fact ids, docs links such as `recipe.of.yaml#Recipe`, and a `$variable` to its kind item |
 | Find references | where a definition is used, including the docs that link to it or embed it |
 | Hover | a key's description from the schema; a definition's `definition`; a link's `reads`; a variable's kind; on a fact, what derivatives add to it |
 | Completion | the keys and words the schema allows at that place; after `link:`, the links the file imports; in `{$x: …}`, only kinds that fit that end of the link; after `field:`, only fields of that node's kind; a name not yet imported, with its import |

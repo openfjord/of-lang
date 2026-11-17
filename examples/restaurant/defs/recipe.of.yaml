@@ -80,13 +80,13 @@ baseRecipe:
     A recipe that more than two other recipes use, directly or through other
     recipes, is a base recipe.
   match:
-    - {$recipe: Recipe}
+    - kind: { name: Recipe, as: $recipe }
   filter:
     - count:
         match:
           - link: usesRecipe
             from: Recipe
-            to:   {$recipe: Recipe}
+            to:   $recipe
       is above:
         value: 2
   derive:
@@ -97,12 +97,12 @@ recipeAtOneStation:
   is: Constraint
   says: Cooks make each recipe at exactly one station.
   match:
-    - {$recipe: Recipe}
+    - kind: { name: Recipe, as: $recipe }
   filter:
     - count:
         match:
           - link: madeAtStation
-            from: {$recipe: Recipe}
+            from: $recipe
             to:   Station
       does not equal:
         value: 1
