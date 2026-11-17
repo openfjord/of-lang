@@ -59,7 +59,7 @@ that it uses.
 
 - **LK1.** A link's name, and its inverse name, MUST be lowerCamelCase, with
   two or more words that tell what the link connects and how: `usesRecipe`,
-  never `uses` (reason 2 in [the research](../../README.md#why-ontologies-are-hard-for-software-people)).
+  never `uses` (reason 2 in [the overview](../../README.md#why-ontologies-are-hard-for-software-people)).
 - **LK2.** A link MUST have a `definition` and a `reads` sentence. `reads`
   MUST contain both `{from}` and `{to}` (reason 7).
 - **LK3.** `from` and `to` MUST each name a kind that the file defines or

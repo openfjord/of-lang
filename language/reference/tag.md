@@ -87,7 +87,7 @@ export must drop the reference, which gives wrong answers, or export the
 untagged definition, which adds knowledge that nobody tagged. TG5 does not
 cover an untagged derivative that adds facts that a tagged definition uses.
 How the tool checks that a subset answers its questions as the full package
-does is still open (see [the research](../../README.md#open-questions)).
+does is still open (see [the overview](../../README.md#open-questions)).
 
 For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
 `Recipe` must also have it. Otherwise the tool rejects the package and names

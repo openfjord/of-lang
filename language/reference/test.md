@@ -7,7 +7,7 @@ title: Tests — The OpenFjord modeling language
 > Part of [the reference](../README.md#reference).
 
 A package uses tests in its `tests/` folder to prove that it is correct
-(reason 16 in [the research](../../README.md#why-ontologies-are-hard-for-software-people)). A test is an example or a
+(reason 16 in [the overview](../../README.md#why-ontologies-are-hard-for-software-people)). A test is an example or a
 question:
 
 - An **example** tells what a set of facts must derive, and which constraints
