@@ -73,7 +73,63 @@ func World(w model.World) []diag.Diagnostic {
 	for _, doc := range pkg.Docs {
 		ds = append(ds, checkDoc(doc)...)
 	}
+	ds = append(ds, checkDocDefinitions(w, pkg)...)
 	return diag.Sorted(ds)
+}
+
+// checkDocDefinitions reports a Doc with a name that is not UpperCamelCase,
+// two Docs with the same file, and a doc that no Doc names and no other doc
+// refers to.
+func checkDocDefinitions(w model.World, pkg model.Package) []diag.Diagnostic {
+	var ds []diag.Diagnostic
+	named := map[string]model.QName{}
+	for _, d := range sorted(w.Docs, func(d model.Doc) diag.Pos { return d.Pos }) {
+		if d.Q.Pkg != pkg.Name {
+			continue
+		}
+		if !upperCamel.MatchString(d.Q.Name) {
+			ds = append(ds, diag.New(d.Pos, "doc %s must be UpperCamelCase (FL7)", d.Q.Name))
+		}
+		if d.Path == "" {
+			continue
+		}
+		if other, ok := named[d.Path]; ok {
+			ds = append(ds, diag.New(d.Pos, "%s and %s name the same file (DC4)", other.Name, d.Q.Name))
+			continue
+		}
+		named[d.Path] = d.Q
+	}
+	referred := map[string]bool{}
+	for _, doc := range pkg.Docs {
+		for _, target := range docTargets(doc) {
+			if target != doc {
+				referred[target] = true
+			}
+		}
+	}
+	for _, doc := range pkg.Docs {
+		if _, ok := named[doc]; !ok && !referred[doc] {
+			ds = append(ds, diag.New(diag.Pos{File: doc, Line: 1, Column: 1}, "no Doc names this file, and no other doc refers to it (DC5)"))
+		}
+	}
+	return ds
+}
+
+// docTargets lists the files that a doc's links and embeds point at.
+func docTargets(path string) []string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var out []string
+	for _, m := range docLink.FindAllStringSubmatch(string(data), -1) {
+		file, _, _ := strings.Cut(m[1], "#")
+		if file == "" || strings.Contains(file, "://") || strings.HasPrefix(file, "mailto:") {
+			continue
+		}
+		out = append(out, filepath.Join(filepath.Dir(path), file))
+	}
+	return out
 }
 
 func sorted[V any](m map[model.QName]V, pos func(V) diag.Pos) []V {

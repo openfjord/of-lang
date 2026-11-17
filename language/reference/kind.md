@@ -55,6 +55,7 @@ Dish:
 | `notExamples` | no | a list of things that look like things of this kind, but are not |
 | `fields` | no | the [fields](#fields) of the kind, by name |
 | `tags` | no | the [tags](tag.md) that the kind belongs to |
+| `docs` | no | the [docs](package.md#docs) that tell more about the kind |
 
 ## Kind rules
 
@@ -72,6 +73,8 @@ Dish:
   kind that it extends, directly or through other kinds. A rule that is
   stricter for the narrower kind goes in a [constraint](constraint.md), for
   example "each dish must have a preparation time".
+- **KD14.** Each name in `docs` MUST be a `Doc` of the same package, which
+  the file defines or imports.
 
 ## Links of a thing
 

@@ -16,8 +16,8 @@ The name of every file in `defs/` and `tests/` ends in `.of.yaml` or `.of.yml`
 ```
 my-package/
   package.yaml       # required: the manifest
-  defs/              # required: Kind, Link, ValueType, Constraint, Derivative
-  docs/              # optional: Markdown that links to or embeds definitions
+  defs/              # required: Kind, Link, ValueType, Constraint, Derivative, Doc
+  docs/              # optional: Markdown that links to or embeds definitions; each file has a Doc, or other docs refer to it
   tests/             # optional: Fact, Test, Question
 ```
 
@@ -51,7 +51,7 @@ import:
     use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
 
 SomeStatement:
-  is: Kind        # or Link, ValueType, Constraint, Derivative — Fact, Test, Question in tests/
+  is: Kind        # or Link, ValueType, Constraint, Derivative, Doc — Fact, Test, Question in tests/
 ```
 
 The import schemes are `file:` and `pkg:`. A later version can add more.
@@ -67,13 +67,18 @@ All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 Recipe:                                  # UpperCamelCase
   is: Kind
   definition: The steps that make one food from ingredients and other recipes.   # required
-  tags: [allergens]                      # optional; names from package.yaml; on any definition
+  tags: [allergens]                      # optional; names from package.yaml; on any definition but a Doc
   examples:    [the tomato sauce]
   notExamples: [a new dish that a cook tries one time and does not keep]
   fields:
     name:        { type: Name }                       # required by default
     steps:       { type: URL }                        # where the steps are written
     prepMinutes: { type: Minutes, optional: true }
+  docs: [KitchenGuide]                   # optional; Docs of this package
+
+KitchenGuide:                            # UpperCamelCase
+  is: Doc
+  path: file:../docs/kitchen.md          # a Markdown file in docs/, relative to this file
 
 Dish:
   is: Kind

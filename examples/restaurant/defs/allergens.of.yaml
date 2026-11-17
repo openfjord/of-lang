@@ -4,6 +4,10 @@ import:
   - from: file:ingredient.of.yaml
     use: [Ingredient, Allergen, containsAllergen]
 
+AllergenSafety:
+  is: Doc
+  path: file:../docs/allergens.md
+
 hasAllergen:
   is: Link
   from: Recipe

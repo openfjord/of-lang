@@ -70,6 +70,7 @@ includes keys that a later version of the language adds.
 | `ValueType` | `defs/` | [Value types](kind.md#value-types) |
 | `Constraint` | `defs/` | [Constraints](constraint.md) |
 | `Derivative` | `defs/` | [Derivatives](derivative.md) |
+| `Doc` | `defs/` | [Docs](package.md#docs) |
 | `Fact` | `tests/` | [Facts](fact.md) |
 | `Test` | `tests/` | [Tests](test.md) |
 | `Question` | `tests/` | [Tests](test.md#questions) |
@@ -82,7 +83,7 @@ includes keys that a later version of the language adds.
   The tool does not ignore it.
 - **FL3.** A file MUST NOT repeat a key in the same mapping.
 - **FL4.** Statements in `defs/` MUST be `Kind`, `Link`, `ValueType`,
-  `Constraint` or `Derivative`. Statements in `tests/` MUST be `Fact`, `Test` or
+  `Constraint`, `Derivative` or `Doc`. Statements in `tests/` MUST be `Fact`, `Test` or
   `Question`.
 - **FL5.** A statement MUST NOT be named `import`.
 
@@ -90,14 +91,14 @@ includes keys that a later version of the language adds.
 
 | Statement | Written as | Examples |
 |---|---|---|
-| kind, value type | UpperCamelCase | `Recipe`, `BaseRecipe`, `Minutes` |
+| kind, value type, doc | UpperCamelCase | `Recipe`, `BaseRecipe`, `Minutes`, `AllergenSafety` |
 | link, link inverse | lowerCamelCase, two words or more | `madeAtStation`, `usesRecipe`, `makesRecipe` |
 | constraint, derivative, test, question | lowerCamelCase | `dishListsItsAllergens`, `whichDishesContainNuts` |
 | fact | an id: any text, usually a path | `dish/margherita` |
 
 - **FL6.** The name of a definition MUST be unique in its package. The
   inverse name that a link declares is also a name of that package.
-- **FL7.** Kind and value type names MUST be UpperCamelCase; constraint,
+- **FL7.** Kind, value type and doc names MUST be UpperCamelCase; constraint,
   derivative, test and question names MUST be lowerCamelCase.
   [LK1](link.md#rules) gives the rule for link names.
 - **FL8.** The name of a statement in a test file MUST NOT be the name of a

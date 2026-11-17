@@ -4,6 +4,8 @@ package load
 
 import (
 	"math/big"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -35,6 +37,8 @@ func decodeDefinition(w *model.World, pkg model.Package, path string, e source.E
 		w.Links[q] = decodeLink(q, path, m, scope, &ds)
 	case model.SortValueType:
 		w.ValueTypes[q] = decodeValueType(q, path, m, scope, &ds)
+	case model.SortDoc:
+		w.Docs[q] = decodeDoc(q, pkg, path, m, &ds)
 	case model.SortConstraint, model.SortDerivative:
 		w.Statements[q] = Statement(q, model.Sort(e.Is), path, m, scope, &ds)
 		w.Order = append(w.Order, q)
@@ -42,6 +46,42 @@ func decodeDefinition(w *model.World, pkg model.Package, path string, e source.E
 		// Reported when the package's files were collected.
 	}
 	return ds
+}
+
+// decodeDoc reads a Doc: the path of a Markdown file in the docs/ folder of
+// its package, relative to the file of the Doc.
+func decodeDoc(q model.QName, pkg model.Package, path string, m source.Map, ds *[]diag.Diagnostic) model.Doc {
+	allow(m, []string{"is", "path"}, "FL2", ds)
+	d := model.Doc{Q: q, Pos: m.Pos}
+	p, ok := pairOf(m, "path")
+	if !ok {
+		*ds = append(*ds, diag.New(m.Pos, "doc %s needs path: (DC3)", q.Name))
+		return d
+	}
+	text, ok := source.Scalar(path, p.Value, ds)
+	if !ok {
+		return d
+	}
+	rel, found := strings.CutPrefix(text, "file:")
+	if !found {
+		*ds = append(*ds, diag.New(p.Pos, "path of %s starts with file: (DC3)", q.Name))
+		return d
+	}
+	full := filepath.Join(filepath.Dir(path), rel)
+	inDocs, err := filepath.Rel(filepath.Join(pkg.Dir, "docs"), full)
+	switch {
+	case err != nil || inDocs == ".." || strings.HasPrefix(inDocs, ".."+string(filepath.Separator)):
+		*ds = append(*ds, diag.New(p.Pos, "%s is not in the docs/ folder of the package (DC3)", rel))
+	case filepath.Ext(full) != ".md":
+		*ds = append(*ds, diag.New(p.Pos, "%s is not a Markdown file (.md) (DC3)", rel))
+	default:
+		if _, err := os.Stat(full); err != nil {
+			*ds = append(*ds, diag.New(p.Pos, "%s does not exist (DC3)", rel))
+		} else {
+			d.Path = full
+		}
+	}
+	return d
 }
 
 // allow reports every key that is not in the allowed list, naming the rule.
@@ -54,7 +94,7 @@ func allow(m source.Map, allowed []string, rule string, ds *[]diag.Diagnostic) {
 }
 
 func decodeKind(q model.QName, path string, m source.Map, scope map[string]model.Ref, ds *[]diag.Diagnostic) model.Kind {
-	allow(m, []string{"is", "definition", "extends", "oneOf", "examples", "notExamples", "fields", "tags"}, "FL2", ds)
+	allow(m, []string{"is", "definition", "extends", "oneOf", "examples", "notExamples", "fields", "tags", "docs"}, "FL2", ds)
 	k := model.Kind{Q: q, Pos: m.Pos}
 	k.Definition = requiredText(path, m, "definition", q.Name, "KD1", ds)
 	if n, ok := source.Get(m, "extends"); ok {
@@ -78,6 +118,19 @@ func decodeKind(q model.QName, path string, m source.Map, scope map[string]model
 		k.Fields = decodeFields(path, n, scope, ds)
 	}
 	k.Tags = decodeTags(path, m, ds)
+	if n, ok := source.Get(m, "docs"); ok {
+		names, _ := source.Strings(path, n, ds)
+		for _, name := range names {
+			ref, ok := resolve(scope, name, model.SortDoc, source.PosOf(path, n), "KD14", ds)
+			switch {
+			case !ok:
+			case ref.Q.Pkg != q.Pkg:
+				*ds = append(*ds, diag.New(source.PosOf(path, n), "%s is a doc of package %s; a kind lists the docs of its own package (KD14)", name, ref.Q.Pkg))
+			default:
+				k.Docs = append(k.Docs, ref.Q)
+			}
+		}
+	}
 	return k
 }
 

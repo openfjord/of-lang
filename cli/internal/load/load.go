@@ -65,6 +65,7 @@ func Package(dir string, opts Options) (Loaded, []diag.Diagnostic, error) {
 		Kinds:      map[model.QName]model.Kind{},
 		Links:      map[model.QName]model.Link{},
 		ValueTypes: map[model.QName]model.ValueType{},
+		Docs:       map[model.QName]model.Doc{},
 		Statements: map[model.QName]model.Statement{},
 		Inverses:   map[model.QName]model.QName{},
 	}

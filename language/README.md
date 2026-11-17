@@ -92,12 +92,13 @@ Thus, an error from the tool can identify the rule that it enforces.
 |---|---|
 | **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm (the Node.js package manager) |
 | **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is |
-| **definition** | a statement in `defs/`: a kind, a link, a value type, a constraint or a derivative |
+| **definition** | a statement in `defs/`: a kind, a link, a value type, a constraint, a derivative or a doc |
 | **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
 | **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
 | **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
 | **[link](reference/link.md)** | a named, directed relationship between two things |
-| **[tag](reference/tag.md)** | a label for a purpose that any definition can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
+| **[doc](reference/package.md#doc-definitions)** | a definition that names a Markdown file in `docs/`; a kind lists the docs that tell more about it |
+| **[tag](reference/tag.md)** | a label for a purpose that any definition but a doc can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
 | **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |
 | **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
 | **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |

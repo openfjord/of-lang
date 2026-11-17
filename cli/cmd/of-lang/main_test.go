@@ -81,6 +81,16 @@ func TestBrokenPackages(t *testing.T) {
 			command: "test", want: "expected derived, but not: Recipe is a Dish",
 		},
 		{
+			name: "doc that does not exist", file: "defs/allergens.of.yaml",
+			old: "file:../docs/allergens.md", replacement: "file:../docs/nope.md",
+			command: "check", want: "allergens.of.yaml:9:3: ../docs/nope.md does not exist (DC3)",
+		},
+		{
+			name: "kind that lists a kind as a doc", file: "defs/ingredient.of.yaml",
+			old: "docs: [AllergenSafety]", replacement: "docs: [Allergen]",
+			command: "check", want: "Allergen is a Kind, not a Doc (KD14)",
+		},
+		{
 			name: "steps that are not a URL", file: "tests/examples/base-recipe.of.yaml",
 			old: "steps: https://recipes.example.com/pesto", replacement: "steps: pesto.md",
 			command: "test", want: `steps: "pesto.md" is not a uri (from URL) (FC4)`,

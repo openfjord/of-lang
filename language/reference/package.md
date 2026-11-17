@@ -191,6 +191,41 @@ name of a statement, not a line number. Thus, an embed always shows its
 definition, also when the definition moves in the file. The generated page of
 each definition lists the docs that have a Markdown link to it or embed it.
 
+### Doc definitions
+
+A `Doc` gives a doc a name among the definitions of the package. A kind
+lists the docs that tell more about it in `docs`. Thus, the generated page of
+the kind can show its docs, and a reader of the kind can find them:
+
+```yaml
+# defs/allergens.of.yaml
+AllergenSafety:
+  is: Doc
+  path: file:../docs/allergens.md
+
+# defs/ingredient.of.yaml
+Allergen:
+  is: Kind
+  definition: A substance in food that can cause a dangerous reaction in some persons.
+  docs: [AllergenSafety]
+```
+
+| Key | Required | Value |
+|---|---|---|
+| `is` | yes | `Doc` |
+| `path` | yes | `file:` and the path of a Markdown file in `docs/`, relative to this file |
+
+A doc that only other docs refer to is internal: it needs no `Doc`. For
+example, a long doc can move one of its parts to a file of its own, and link
+to it.
+
 - **DC1.** Paths MUST be relative to the doc.
 - **DC2.** A Markdown link or an embed MUST point to a file that exists. If
   there is a part after `#`, it MUST be the name of a statement in that file.
+- **DC3.** A `Doc` MUST have `path`, with `file:` and the path of a
+  Markdown file (`.md`) in the `docs/` folder of its package. The path is
+  relative to the file of the `Doc`, and the file MUST exist.
+- **DC4.** Two `Doc` definitions MUST NOT have the same file.
+- **DC5.** Each Markdown file in `docs/` MUST be the file of a `Doc`, or the
+  target of a Markdown link or an embed in a different doc in `docs/`.
+- **DC6.** A `Doc` is internal to its package. `exports` does not list it.

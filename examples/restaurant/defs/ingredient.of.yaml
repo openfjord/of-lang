@@ -1,6 +1,8 @@
 import:
   - from: file:names.of.yaml
     use: [Name]
+  - from: file:allergens.of.yaml
+    use: [AllergenSafety]
 
 Ingredient:
   is: Kind
@@ -23,6 +25,7 @@ Allergen:
   fields:
     name:
       type: Name
+  docs: [AllergenSafety]
 
 containsAllergen:
   is: Link

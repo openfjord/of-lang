@@ -31,13 +31,14 @@ const (
 	SortValueType  Sort = "ValueType"
 	SortConstraint Sort = "Constraint"
 	SortDerivative Sort = "Derivative"
+	SortDoc        Sort = "Doc"
 	SortFact       Sort = "Fact"
 	SortTest       Sort = "Test"
 	SortQuestion   Sort = "Question"
 )
 
 // DefinitionSorts are the sorts that may appear in defs/.
-var DefinitionSorts = []Sort{SortKind, SortLink, SortValueType, SortConstraint, SortDerivative}
+var DefinitionSorts = []Sort{SortKind, SortLink, SortValueType, SortConstraint, SortDerivative, SortDoc}
 
 // TestSorts are the sorts that may appear in tests/.
 var TestSorts = []Sort{SortFact, SortTest, SortQuestion}
@@ -115,6 +116,16 @@ type Kind struct {
 	NotExamples []string
 	Fields      []Field
 	Tags        []Tag
+	// Docs are the docs of the package that tell more about the kind.
+	Docs []QName
+}
+
+// Doc names a Markdown file in the docs/ folder of its package.
+type Doc struct {
+	Q   QName
+	Pos diag.Pos
+	// Path is the absolute path of the Markdown file.
+	Path string
 }
 
 // Link is a named, directed relationship between two kinds.
@@ -339,6 +350,7 @@ type World struct {
 	Kinds      map[QName]Kind
 	Links      map[QName]Link
 	ValueTypes map[QName]ValueType
+	Docs       map[QName]Doc
 	Statements map[QName]Statement
 	// Order is every constraint and derivative in the order it was read, for
 	// stable output.
