@@ -229,16 +229,12 @@ reasons table wait on them:
 
 ## Open questions
 
-1. **Limits on chains.** `repeated: true` follows a link any number of steps:
-   recipe to recipe to recipe. Sometimes only nearby things matter, such as
-   "recipes at most two steps away". Should chains take a limit
-   (`at most: 2`), or stay unlimited?
-2. **References out of a tagged subset.** A tagged definition that refers
+1. **References out of a tagged subset.** A tagged definition that refers
    to an untagged one, such as a tagged kind extending an untagged kind, has
    that reference left out of the export. The alternatives are to reject it
    as an error, or to export the untagged definition too. Is leaving it out
    right?
-3. **Tags and the knowledge in a subset.** An export must hold the same
+2. **Tags and the knowledge in a subset.** An export must hold the same
    knowledge as its package and answer the same questions. A tagged export
    must hold only the tagged knowledge: it must not answer a question that
    needs knowledge without the tag. Two parts are open. How do constraints
