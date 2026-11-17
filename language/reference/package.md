@@ -143,11 +143,20 @@ them.
 - **PK13.** Every name in `openFor` MUST be a definition of the package:
   `extend` identifies a kind, and `under` identifies a link. `extend` MUST
   NOT identify a kind with `oneOf` ([KD9](kind.md#unions)).
-- **PK14.** A new version MUST match the change:
-  - A change that removes or renames a definition, or makes a constraint
-    stricter, needs a new major version.
-  - A change that adds a definition or makes a constraint less strict does not
-    need a new major version.
+- **PK14.** A new version MUST be at least the step that the change needs.
+  The tool reads the [pending change](pending.md) and tells the smallest
+  step, by what the change can do to the facts of a package that depends on
+  this one:
+
+  | Step | The change can | Examples |
+  |---|---|---|
+  | major | reject facts that passed, change what follows, or remove a name that other packages use | remove, rename or stop exporting a definition; add a constraint; change the `match`, `filter` or `unless` of a constraint; add or change a derivative; add a required field; narrow a field, a value type, or the `from` or `to` of a link; add `under` or `chains` to a link |
+  | minor | add names, and nothing more | add a kind, a link, a value type or an optional field; add a tag; remove a constraint; export a definition |
+  | patch | change only text | `definition`, `reads`, `says`, `message`, `examples`, `notExamples`, docs, tests |
+
+  A derivative is major because the facts that it adds can make the
+  constraints of a different package reject. Removing a constraint is minor,
+  because then the package only rejects less.
 
 ## Docs
 
