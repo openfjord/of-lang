@@ -16,6 +16,7 @@ them.
 ```
 restaurant/
   package.yaml                     # the manifest
+  package.lock.yaml                # the exact versions of the dependencies; the tool writes it
   defs/                            # definitions
     names.of.yaml                     # value types
     station.of.yaml                   # Station, its links, the derivative about stations
@@ -31,7 +32,7 @@ restaurant/
 ```
 
 - **PK1.** The top level of a package MUST hold the manifest and `defs/`, MAY
-  hold `docs/` and `tests/`, and MUST NOT hold anything else. The manifest
+  hold the lock file, `docs/` and `tests/`, and MUST NOT hold anything else. The manifest
   is a YAML file named `package.yaml` or `package.yml`, in every form of the
   language. A package MUST NOT hold both.
 - **PK2.** In `defs/`, `docs/` and `tests/`, the author chooses the layout.
@@ -54,7 +55,7 @@ version: 0.1.0
 owner: kitchen                    # who must approve any change to the package
 rdfNamespace: kitchen             # used only in exported RDF, never in the files
 dependsOn:
-  "@bistro/suppliers": ^1.2       # semantic-version range, pinned in a lock file
+  "@bistro/suppliers": ^1.2       # semantic-version range; package.lock.yaml pins the exact version
 exports:                          # what other packages may use; the rest is internal
   kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
   links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
@@ -85,6 +86,13 @@ tags:                             # the labels that definitions of this package 
 - **PK5.** `version` MUST be `MAJOR.MINOR.PATCH`, three whole numbers.
 - **PK15.** Each item in `tags` MUST have a `name` and a `description`, and
   no other key. Two items MUST NOT have the same `name`.
+- **PK16.** The lock file is a YAML file named `package.lock.yaml` or
+  `package.lock.yml`. It gives the exact version of each package that the
+  package depends on, directly or through other packages. The tool writes
+  it, and a person MUST NOT edit it. The tool uses the lock file only when it
+  checks, tests or exports this package itself. When a different package
+  depends on this package, the lock file of that different package decides
+  the versions.
 
 ## Names and namespaces
 
