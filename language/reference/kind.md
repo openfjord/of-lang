@@ -66,6 +66,10 @@ Dish:
 
   For example, `Dish` extends `Recipe`. A dish has the fields and links of a
   recipe, and also a price. Each dish is also a recipe.
+- **KD13.** A kind MUST NOT declare a field with the name of a field of a
+  kind that it extends, directly or through other kinds. A rule that is
+  stricter for the narrower kind goes in a [constraint](constraint.md), for
+  example "each dish must have a preparation time".
 
 ## Links of a thing
 
