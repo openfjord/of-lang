@@ -1,8 +1,8 @@
 ---
-title: A modeling language for software people — Research
+title: A modeling language for software people
 ---
 
-# A modeling language for software people — Research
+# A modeling language for software people
 
 > **Status: a first draft, explored, not decided.** It lists why ontologies are
 > hard for software product and development people to read and write, and
