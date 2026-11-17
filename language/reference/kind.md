@@ -164,8 +164,9 @@ cannot come with a dish, because a dish is not a drink. A [constraint](constrain
 business lunch comes with exactly one drink
 ([links of a thing](#links-of-a-thing)).
 
-A union is closed. Only the statement itself lists its kinds. No other kind,
-and no other package, can add a kind to it.
+A union is closed and final. Only the statement itself lists its kinds. No
+other kind, and no other package, can add a kind to it. No kind extends a
+union, and a union extends no kind.
 
 - **KD7.** `oneOf` MUST list two or more kinds. A listed kind MUST NOT extend a
   different listed kind, directly or through other kinds, because then each
@@ -179,6 +180,7 @@ and no other package, can add a kind to it.
 - **KD11.** After the derivatives run, each thing of a union kind MUST be a
   thing of exactly one listed kind. The tool rejects a thing that a
   derivative makes a thing of two listed kinds.
+- **KD12.** A kind with `oneOf` MUST NOT have `extends`.
 
 ## Fields
 
