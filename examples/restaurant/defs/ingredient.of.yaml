@@ -6,6 +6,7 @@ import:
 
 Ingredient:
   is: Kind
+  tags: [allergens, spoilage]
   definition: A food that the restaurant buys and does not make.
   examples:
     - flour
@@ -18,6 +19,7 @@ Ingredient:
 
 Allergen:
   is: Kind
+  tags: [allergens]
   definition: A substance in food that can cause a dangerous reaction in some persons.
   examples:
     - nuts
@@ -29,6 +31,7 @@ Allergen:
 
 containsAllergen:
   is: Link
+  tags: [allergens]
   from: Ingredient
   to: Allergen
   reads: "{from} contains {to}"

@@ -10,6 +10,7 @@ AllergenSafety:
 
 hasAllergen:
   is: Link
+  tags: [allergens]
   from: Recipe
   to: Allergen
   reads: "{from} contains {to}"
@@ -17,6 +18,7 @@ hasAllergen:
 
 listsAllergen:
   is: Link
+  tags: [allergens]
   from: Dish
   to: Allergen
   reads: "the menu tells guests that {from} contains {to}"
@@ -24,6 +26,7 @@ listsAllergen:
 
 allergenFromIngredient:
   is: Derivative
+  tags: [allergens]
   says: A recipe contains each allergen that one of its ingredients contains.
   match:
     - kind: { name: Recipe, as: $recipe }
@@ -42,6 +45,7 @@ allergenFromIngredient:
 
 allergenFromRecipe:
   is: Derivative
+  tags: [allergens]
   says: A recipe contains each allergen that one of its recipes contains.
   match:
     - kind: { name: Recipe, as: $recipe }
@@ -60,6 +64,7 @@ allergenFromRecipe:
 
 dishListsItsAllergens:
   is: Constraint
+  tags: [allergens]
   says: >
     The menu must give a warning about each allergen in an active dish.
   match:

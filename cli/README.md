@@ -82,7 +82,7 @@ Each problem is one line, with the file, line and column:
 
 ```
 $ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:51:3: the reads of madeAtStation must use both {from} and {to} (LK2)
+restaurant/defs/recipe.of.yaml:53:3: the reads of madeAtStation must use both {from} and {to} (LK2)
 ```
 
 Each problem names the rule it breaks, such as `(LK2)`. A package with a
@@ -181,11 +181,12 @@ FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-
       expected derived, but not: dish/margherita contains allergen/milk
       expected derived, but not: dish/margherita uses ingredient/parmesan
 pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.of.yaml)
+pass  test batchKeptTooWarm  (restaurant/tests/examples/batch-kept-too-warm.of.yaml)
 pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.of.yaml)
 pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.of.yaml)
 pass  question whichStationsStopWithTheSauceStation  (restaurant/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
 pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
-5 passed, 1 failed
+6 passed, 1 failed
 ```
 
 ### JSON
@@ -335,13 +336,13 @@ exports only the definitions carrying at least one of the named
 exported. A tagged subset is always complete, because each definition that
 a tagged definition refers to has the same tag
 ([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
-package that breaks this rule. For example, if `Dish` had the tag
-`allergens` and `Recipe` and `Price` did not:
+package that breaks this rule. For example, in the example package, `Dish`
+has the tag `allergens`, so `Price`, the type of its `price` field, must
+have it too. If somebody removed the tag from `Price`:
 
 ```
 $ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:27:10: Dish has the tag allergens and refers to Price, which does not have it (TG5)
-restaurant/defs/recipe.of.yaml:27:10: Dish has the tag allergens and refers to Recipe, which does not have it (TG5)
+restaurant/defs/recipe.of.yaml:30:10: Dish has the tag allergens and refers to Price, which does not have it (TG5)
 ```
 
 ## Planned: a language server

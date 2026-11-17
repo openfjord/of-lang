@@ -6,3 +6,8 @@ exports:
   kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
   links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
   valueTypes: [Name, Minutes, Price, URL]
+tags:
+  - name: allergens
+    description: What an allergen app needs to tell guests which dishes contain which allergens.
+  - name: spoilage
+    description: What the kitchen needs to keep food safe until the cooks use it. Only the kitchen uses it, so the package does not export it.

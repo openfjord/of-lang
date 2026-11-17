@@ -63,7 +63,7 @@ func TestBrokenPackages(t *testing.T) {
 		{
 			name: "reads without to", file: "defs/recipe.of.yaml",
 			old: `reads: "{from} is made at {to}"`, replacement: `reads: "{from} is made"`,
-			command: "check", want: "recipe.of.yaml:51:3: the reads of madeAtStation must use both {from} and {to} (LK2)",
+			command: "check", want: "recipe.of.yaml:53:3: the reads of madeAtStation must use both {from} and {to} (LK2)",
 		},
 		{
 			name: "missing garnish", file: "tests/examples/allergen-through-a-sauce.of.yaml",

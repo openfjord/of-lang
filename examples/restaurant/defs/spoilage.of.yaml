@@ -1,0 +1,106 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name]
+  - from: file:ingredient.of.yaml
+    use: [Ingredient]
+
+Spoilage:
+  is: Doc
+  path: file:../docs/spoilage.md
+
+Celsius:
+  is: ValueType
+  tags: [spoilage]
+  definition: A temperature in degrees Celsius.
+  type: integer
+  minimum: -40
+  maximum: 40
+
+Day:
+  is: ValueType
+  tags: [spoilage]
+  definition: A day in the calendar, such as 2026-11-17.
+  type: string
+  format: date
+
+StorageZone:
+  is: Kind
+  tags: [spoilage]
+  definition: A place in the kitchen where cooks keep food at one temperature.
+  examples:
+    - the fridge
+    - the dry store
+  notExamples:
+    - a station, where cooks make food and do not keep it
+  fields:
+    name:
+      type: Name
+    maxCelsius:
+      type: Celsius
+
+Batch:
+  is: Kind
+  tags: [spoilage]
+  definition: An amount of one ingredient that the kitchen received on one day.
+  examples:
+    - the parmesan that arrived on Monday
+  notExamples:
+    - parmesan in general, which is an ingredient
+  fields:
+    receivedOn:
+      type: Day
+    useBy:
+      type: Day
+    keepAtMostCelsius:
+      type: Celsius
+  docs: [Spoilage]
+
+batchOf:
+  is: Link
+  tags: [spoilage]
+  from: Batch
+  to: Ingredient
+  reads: "{from} is a batch of {to}"
+  definition: The batch is an amount of the ingredient.
+
+keptIn:
+  is: Link
+  tags: [spoilage]
+  from: Batch
+  to: StorageZone
+  reads: "{from} is kept in {to}"
+  definition: The cooks keep the batch in the zone until they use it.
+
+batchKeptColdEnough:
+  is: Constraint
+  tags: [spoilage]
+  says: The cooks keep each batch in a zone that is cold enough for it.
+  match:
+    - kind: { name: Batch, as: $batch }
+    - kind: { name: StorageZone, as: $zone }
+    - link: keptIn
+      from: $batch
+      to:   $zone
+  filter:
+    - node:  $zone
+      field: maxCelsius
+      is above:
+        same as:
+          node:  $batch
+          field: keepAtMostCelsius
+  message: "{$batch} must be kept at {$batch: keepAtMostCelsius} °C or colder, but {$zone} is at {$zone: maxCelsius} °C."
+
+useByAfterArrival:
+  is: Constraint
+  tags: [spoilage]
+  says: The use-by day of a batch is on or after the day that it arrived.
+  match:
+    - kind: { name: Batch, as: $batch }
+  filter:
+    - node:  $batch
+      field: useBy
+      is below:
+        same as:
+          node:  $batch
+          field: receivedOn
+  message: "{$batch} must not have a use-by day before the day that it arrived."
