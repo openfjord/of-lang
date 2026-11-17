@@ -15,35 +15,32 @@ import (
 )
 
 var (
-	packageNamePattern = regexp.MustCompile(`^[a-z][a-z0-9-]*$`)
+	packageNamePattern = regexp.MustCompile(`^(@[a-z][a-z0-9-]*/)?[a-z][a-z0-9-]*$`)
 	versionPattern     = regexp.MustCompile(`^(\d+)\.(\d+)\.(\d+)$`)
+	tagNamePattern     = regexp.MustCompile(`^[a-z][A-Za-z0-9]*$`)
 )
 
 func parseManifest(path string, data []byte) (model.Manifest, []diag.Diagnostic) {
 	root, ds := source.Document(path, data)
 	if root == nil {
-		return model.Manifest{}, append(ds, diag.New(diag.Pos{File: path}, "package.yaml is empty"))
+		return model.Manifest{}, append(ds, diag.New(diag.Pos{File: path}, "the manifest is empty (PK4)"))
 	}
 	mm, ok := source.AsMap(path, root, &ds)
 	if !ok {
 		return model.Manifest{}, ds
 	}
-	source.Allow(mm, []string{"package", "version", "namespace", "dependsOn", "exports", "openFor"}, &ds)
+	keys := []string{"package", "version", "owner", "rdfNamespace", "dependsOn", "exports", "openFor", "tags"}
+	allow(mm, keys, "PK4", &ds)
 	m := model.Manifest{Pos: mm.Pos, DependsOn: map[string]string{}}
-	m.Package, _ = source.GetScalar(mm, "package", &ds)
-	m.Version, _ = source.GetScalar(mm, "version", &ds)
-	m.Namespace, _ = source.GetScalar(mm, "namespace", &ds)
-	switch {
-	case m.Package == "":
-		ds = append(ds, diag.New(mm.Pos, "package.yaml needs package:"))
-	case !packageNamePattern.MatchString(m.Package):
-		ds = append(ds, diag.New(mm.Pos, "package name %s must be lowercase letters, digits and hyphens", m.Package))
+	m.Package = manifestText(mm, "package", &ds)
+	m.Version = manifestText(mm, "version", &ds)
+	m.Owner = manifestText(mm, "owner", &ds)
+	m.RDFNamespace = manifestText(mm, "rdfNamespace", &ds)
+	if m.Package != "" && !packageNamePattern.MatchString(m.Package) {
+		ds = append(ds, diag.New(mm.Pos, "package name %s must be lowercase letters, digits and hyphens, with a letter first, and an optional @namespace/ before it (PK6)", m.Package))
 	}
-	if !versionPattern.MatchString(m.Version) {
-		ds = append(ds, diag.New(mm.Pos, "version must look like 1.2.3, not %q", m.Version))
-	}
-	if m.Namespace == "" {
-		ds = append(ds, diag.New(mm.Pos, "package.yaml needs namespace:, used when exporting to RDF"))
+	if m.Version != "" && !versionPattern.MatchString(m.Version) {
+		ds = append(ds, diag.New(mm.Pos, "version must be MAJOR.MINOR.PATCH, such as 1.2.3, not %q (PK5)", m.Version))
 	}
 	if n, ok := source.Get(mm, "dependsOn"); ok {
 		if dm, ok := source.AsMap(path, n, &ds); ok {
@@ -52,8 +49,11 @@ func parseManifest(path string, data []byte) (model.Manifest, []diag.Diagnostic)
 				if !ok {
 					continue
 				}
+				if !packageNamePattern.MatchString(p.Key) {
+					ds = append(ds, diag.New(p.Pos, "%s is not a full package name (PK7)", p.Key))
+				}
 				if !validRange(r) {
-					ds = append(ds, diag.New(p.Pos, "version range %q must be 1.2.3, ^1.2, ^1.2.3, ~1.2 or ~1.2.3", r))
+					ds = append(ds, diag.New(p.Pos, "version range %q must be 1.2.3, ^1.2, ^1.2.3, ~1.2 or ~1.2.3 (PK9)", r))
 				}
 				m.DependsOn[p.Key] = r
 			}
@@ -61,7 +61,7 @@ func parseManifest(path string, data []byte) (model.Manifest, []diag.Diagnostic)
 	}
 	if n, ok := source.Get(mm, "exports"); ok {
 		if em, ok := source.AsMap(path, n, &ds); ok {
-			source.Allow(em, []string{"kinds", "links", "valueTypes"}, &ds)
+			allow(em, []string{"kinds", "links", "valueTypes"}, "PK4", &ds)
 			m.Exports.Kinds = optionalStrings(path, em, "kinds", &ds)
 			m.Exports.Links = optionalStrings(path, em, "links", &ds)
 			m.Exports.ValueTypes = optionalStrings(path, em, "valueTypes", &ds)
@@ -70,7 +70,19 @@ func parseManifest(path string, data []byte) (model.Manifest, []diag.Diagnostic)
 	if n, ok := source.Get(mm, "openFor"); ok {
 		m.OpenFor = parseOpenFor(path, n, &ds)
 	}
+	if n, ok := source.Get(mm, "tags"); ok {
+		m.Tags = parseTags(path, n, &ds)
+	}
 	return m, ds
+}
+
+func manifestText(m source.Map, key string, ds *[]diag.Diagnostic) string {
+	s, ok := source.GetScalar(m, key, ds)
+	if !ok || s == "" {
+		*ds = append(*ds, diag.New(m.Pos, "the manifest needs %s: (PK4)", key))
+		return ""
+	}
+	return s
 }
 
 func parseOpenFor(path string, n *yaml.Node, ds *[]diag.Diagnostic) []model.OpenPoint {
@@ -84,15 +96,47 @@ func parseOpenFor(path string, n *yaml.Node, ds *[]diag.Diagnostic) []model.Open
 		if !ok {
 			continue
 		}
-		source.Allow(om, []string{"extend", "under"}, ds)
-		var p model.OpenPoint
+		allow(om, []string{"extend", "under"}, "PK13", ds)
+		p := model.OpenPoint{Pos: om.Pos}
 		p.Extend, _ = source.GetScalar(om, "extend", ds)
 		p.Under, _ = source.GetScalar(om, "under", ds)
 		if (p.Extend == "") == (p.Under == "") {
-			*ds = append(*ds, diag.New(om.Pos, "an extension point is either extend: a kind or under: a link"))
+			*ds = append(*ds, diag.New(om.Pos, "an extension point is either extend: a kind or under: a link (PK13)"))
 			continue
 		}
 		out = append(out, p)
+	}
+	return out
+}
+
+func parseTags(path string, n *yaml.Node, ds *[]diag.Diagnostic) []model.TagDecl {
+	items, ok := sequence(path, n, ds)
+	if !ok {
+		return nil
+	}
+	var out []model.TagDecl
+	seen := map[string]bool{}
+	for _, item := range items {
+		tm, ok := source.AsMap(path, item, ds)
+		if !ok {
+			continue
+		}
+		allow(tm, []string{"name", "description"}, "PK15", ds)
+		t := model.TagDecl{Pos: tm.Pos}
+		t.Name, _ = source.GetScalar(tm, "name", ds)
+		t.Description, _ = source.GetScalar(tm, "description", ds)
+		switch {
+		case t.Name == "" || t.Description == "":
+			*ds = append(*ds, diag.New(tm.Pos, "a tag needs a name and a description (PK15)"))
+			continue
+		case seen[t.Name]:
+			*ds = append(*ds, diag.New(tm.Pos, "the tag %s is declared twice (PK15)", t.Name))
+			continue
+		case !tagNamePattern.MatchString(t.Name):
+			*ds = append(*ds, diag.New(tm.Pos, "the tag %s must be lowerCamelCase (TG2)", t.Name))
+		}
+		seen[t.Name] = true
+		out = append(out, t)
 	}
 	return out
 }

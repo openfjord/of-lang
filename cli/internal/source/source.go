@@ -11,6 +11,7 @@ import (
 	"io"
 	"os"
 	"slices"
+	"strings"
 
 	"go.yaml.in/yaml/v3"
 
@@ -31,13 +32,35 @@ type Import struct {
 	Pos  diag.Pos
 }
 
-// Entry is one top-level entry of a file: a definition, a fact, a test or a
+// Entry is one statement of a file: a definition, a fact, a test or a
 // question, keyed by its name.
 type Entry struct {
 	Name string
 	Is   string
 	Pos  diag.Pos
 	Node *yaml.Node
+}
+
+// Form is the form of a file in the language: the syntax inside it.
+type Form string
+
+// The forms the tool reads.
+const (
+	FormYAML Form = "YAML"
+	FormJSON Form = "JSON"
+)
+
+// FormOf returns the form a file name says, from its ending: .of.yaml or
+// .of.yml for YAML, .of.json for JSON. ok is false for any other name.
+func FormOf(path string) (Form, bool) {
+	switch {
+	case strings.HasSuffix(path, ".of.yaml"), strings.HasSuffix(path, ".of.yml"):
+		return FormYAML, true
+	case strings.HasSuffix(path, ".of.json"):
+		return FormJSON, true
+	default:
+		return "", false
+	}
 }
 
 // File is a parsed YAML file of the language.
@@ -94,7 +117,7 @@ func Parse(path string, data []byte) (File, []diag.Diagnostic) {
 		}
 		is, ok := Get(em, "is")
 		if !ok {
-			ds = append(ds, diag.New(p.Pos, "%s does not say what it is: add an is: line", p.Key))
+			ds = append(ds, diag.New(p.Pos, "%s does not say what it is: add an is: line (FL1)", p.Key))
 			continue
 		}
 		isText, ok := Scalar(path, is, &ds)

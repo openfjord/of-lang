@@ -125,6 +125,12 @@ func Equal(a, b model.Value) bool {
 	}
 }
 
+// SameType says whether two values have the same type, so that a comparison
+// between them can hold. Integers and numbers are one type.
+func SameType(a, b model.Value) bool {
+	return isNumber(a) && isNumber(b) || a.Kind == b.Kind
+}
+
 // Compare orders two numbers, or two strings, which is how dates in ISO form
 // compare too. ok is false for values with no order.
 func Compare(a, b model.Value) (int, bool) {
@@ -183,6 +189,17 @@ func Validate(w model.World, s model.Schema, v model.Value) []string {
 	}
 	if v.Kind == model.ValueObject && len(s.Properties) > 0 {
 		errs = append(errs, validateObject(w, s.Properties, v)...)
+	}
+	if len(s.OneOf) > 0 {
+		n := 0
+		for _, c := range s.OneOf {
+			if len(Validate(w, c, v)) == 0 {
+				n++
+			}
+		}
+		if n != 1 {
+			errs = append(errs, fmt.Sprintf("%s matches %d choices of oneOf, not exactly one", Format(v), n))
+		}
 	}
 	return errs
 }

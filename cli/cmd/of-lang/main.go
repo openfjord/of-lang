@@ -20,6 +20,7 @@ import (
 	"github.com/openfjord/of-lang/cli/internal/facts"
 	"github.com/openfjord/of-lang/cli/internal/load"
 	"github.com/openfjord/of-lang/cli/internal/model"
+	"github.com/openfjord/of-lang/cli/internal/source"
 	"github.com/openfjord/of-lang/cli/internal/suite"
 )
 
@@ -140,27 +141,54 @@ type prepared struct {
 	strata [][]model.QName
 }
 
-// prepare loads and checks a package. Diagnostics mean it cannot be run.
+// prepare loads and checks a package, as the version with its pending
+// change. Diagnostics mean it cannot be run.
 func prepare(opts load.Options, dir string) (prepared, []diag.Diagnostic, error) {
+	opts.Version = source.WithChange
 	l, ds, err := load.Package(dir, opts)
-	if err != nil {
-		return prepared{}, nil, err
+	if err != nil || len(ds) > 0 {
+		return prepared{loaded: l}, ds, err
 	}
-	strata, sds := engine.Stratify(l.World)
-	ds = diag.Sorted(append(ds, sds...))
-	return prepared{loaded: l, strata: strata}, ds, nil
+	if ds := check.World(l.World); len(ds) > 0 {
+		return prepared{loaded: l}, ds, nil
+	}
+	strata, ds := engine.Stratify(l.World)
+	return prepared{loaded: l, strata: strata}, diag.Sorted(ds), nil
 }
 
+// checkVersion loads and checks one version of a package.
+func checkVersion(opts load.Options, dir string, v source.Version) (load.Loaded, []diag.Diagnostic, error) {
+	opts.Version = v
+	l, ds, err := load.Package(dir, opts)
+	if err != nil || len(ds) > 0 {
+		return l, ds, err
+	}
+	return l, check.World(l.World), nil
+}
+
+// cmdCheck checks each package. A package with a pending change is checked
+// twice, with the change and without it; a problem only the version without
+// the change has says so.
 func cmdCheck(r reporter, opts load.Options, dirs []string) (int, error) {
 	var all []diag.Diagnostic
 	for _, dir := range dirs {
-		l, ds, err := load.Package(dir, opts)
+		l, ds, err := checkVersion(opts, dir, source.WithChange)
 		if err != nil {
 			return exitBroken, err
 		}
 		all = append(all, ds...)
-		if len(ds) == 0 {
-			all = append(all, check.World(l.World)...)
+		if !l.HasChange {
+			continue
+		}
+		_, without, err := checkVersion(opts, dir, source.WithoutChange)
+		if err != nil {
+			return exitBroken, err
+		}
+		for _, d := range without {
+			if !slices.Contains(ds, d) {
+				d.Message = "without the pending change: " + d.Message
+				all = append(all, d)
+			}
 		}
 	}
 	all = relative(diag.Sorted(all))

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package world answers questions about loaded definitions that several
-// stages ask: which kinds a kind extends, which fields and link counts it
-// carries, and which links a link sits under.
+// stages ask: which kinds a kind is, which fields it has, which links a link
+// sits under, and how a field's schema reads.
 package world
 
 import (
+	"cmp"
 	"slices"
 
 	"github.com/openfjord/of-lang/cli/internal/model"
@@ -29,9 +30,55 @@ func Ancestors(w model.World, k model.QName) []model.QName {
 	return out
 }
 
-// IsA says whether a thing of kind k is also a thing of kind want.
+// Unions returns every union kind, in a stable order.
+func Unions(w model.World) []model.Kind {
+	var out []model.Kind
+	for _, k := range w.Kinds {
+		if len(k.OneOf) > 0 {
+			out = append(out, k)
+		}
+	}
+	slices.SortFunc(out, func(a, b model.Kind) int {
+		return cmp.Or(cmp.Compare(a.Q.Pkg, b.Q.Pkg), cmp.Compare(a.Q.Name, b.Q.Name))
+	})
+	return out
+}
+
+// Supers returns every kind that a thing of kind k is: k, the kinds it
+// extends, and the unions that list any of them.
+func Supers(w model.World, k model.QName) []model.QName {
+	out := Ancestors(w, k)
+	unions := Unions(w)
+	for grew := true; grew; {
+		grew = false
+		for _, u := range unions {
+			if slices.Contains(out, u.Q) {
+				continue
+			}
+			if slices.ContainsFunc(u.OneOf, func(l model.QName) bool { return slices.Contains(out, l) }) {
+				out = append(out, u.Q)
+				grew = true
+			}
+		}
+	}
+	return out
+}
+
+// IsA says whether a thing of kind k is also a thing of kind want: through
+// extends, or through a union that lists it.
 func IsA(w model.World, k, want model.QName) bool {
-	return slices.Contains(Ancestors(w, k), want)
+	return slices.Contains(Supers(w, k), want)
+}
+
+// Compatible says whether two kinds can name the same thing: one is the
+// other, or extends it.
+func Compatible(w model.World, a, b model.QName) bool {
+	return IsA(w, a, b) || IsA(w, b, a)
+}
+
+// IsUnion says whether a kind is a union.
+func IsUnion(w model.World, k model.QName) bool {
+	return len(w.Kinds[k].OneOf) > 0
 }
 
 // Fields returns a kind's fields with those it inherits, the furthest
@@ -45,23 +92,17 @@ func Fields(w model.World, k model.QName) []model.Field {
 	return out
 }
 
-// Field finds one field of a kind, inherited or its own.
-func Field(w model.World, k model.QName, name string) (model.Field, bool) {
-	for _, f := range Fields(w, k) {
-		if f.Name == name {
-			return f, true
+// Field finds one field of a kind, inherited or its own, and the kind that
+// declares it.
+func Field(w model.World, k model.QName, name string) (model.Field, model.QName, bool) {
+	for _, a := range Ancestors(w, k) {
+		for _, f := range w.Kinds[a].Fields {
+			if f.Name == name {
+				return f, a, true
+			}
 		}
 	}
-	return model.Field{}, false
-}
-
-// LinkCounts returns a kind's link counts with those it inherits.
-func LinkCounts(w model.World, k model.QName) []model.LinkCount {
-	var out []model.LinkCount
-	for _, a := range Ancestors(w, k) {
-		out = append(out, w.Kinds[a].Links...)
-	}
-	return out
+	return model.Field{}, model.QName{}, false
 }
 
 // SuperLinks returns the links a link sits under, nearest first, not
@@ -74,6 +115,138 @@ func SuperLinks(w model.World, l model.QName) []model.QName {
 		cur = w.Links[*cur].Under
 	}
 	return out
+}
+
+// LinkEnds returns the kinds a link item joins, read in the direction its name
+// goes: an inverse name swaps them.
+func LinkEnds(w model.World, l model.QName, inverted bool) (from, to model.QName) {
+	link := w.Links[l]
+	if inverted {
+		return link.To, link.From
+	}
+	return link.From, link.To
+}
+
+// Resolved returns a schema with the value type it names folded in: the value
+// type's keywords, then the field's own on top. A field only narrows its value
+// type, so the stricter field keywords win.
+func Resolved(w model.World, s model.Schema) model.Schema {
+	if !s.HasRef {
+		return s
+	}
+	vt, ok := w.ValueTypes[s.Ref]
+	if !ok {
+		return s
+	}
+	out := Resolved(w, vt.Schema)
+	out.Pos = s.Pos
+	if s.Enum != nil {
+		out.Enum = s.Enum
+	}
+	if s.Const != nil {
+		out.Const = s.Const
+	}
+	if s.Default != nil {
+		out.Default = s.Default
+	}
+	if s.Pattern != "" {
+		out.Pattern = s.Pattern
+	}
+	if s.MinLength != nil {
+		out.MinLength = s.MinLength
+	}
+	if s.MaxLength != nil {
+		out.MaxLength = s.MaxLength
+	}
+	if s.Minimum != nil {
+		out.Minimum = s.Minimum
+	}
+	if s.Maximum != nil {
+		out.Maximum = s.Maximum
+	}
+	if s.Format != "" {
+		out.Format = s.Format
+	}
+	if s.Items != nil {
+		out.Items = s.Items
+	}
+	if s.Properties != nil {
+		out.Properties = s.Properties
+	}
+	return out
+}
+
+// Type is a field's type in the sense of VT5: a value type, or a built-in
+// type for a field that names none. Two fields compare only when their types
+// are equal.
+type Type struct {
+	ValueType model.QName
+	Builtin   string
+}
+
+// TypeOf returns the type of a schema. A schema with only enum or const takes
+// the type of its values; integer and number compare with each other. ok is
+// false when nothing says the type.
+func TypeOf(s model.Schema) (Type, bool) {
+	if s.HasRef {
+		return Type{ValueType: s.Ref}, true
+	}
+	if s.Type != "" {
+		if s.Type == "integer" {
+			return Type{Builtin: "number"}, true
+		}
+		return Type{Builtin: s.Type}, true
+	}
+	vals := slices.Clone(s.Enum)
+	if s.Const != nil {
+		vals = append(vals, *s.Const)
+	}
+	if len(vals) == 0 {
+		return Type{}, false
+	}
+	k := vals[0].Kind
+	if k == model.ValueInteger {
+		k = model.ValueNumber
+	}
+	return Type{Builtin: string(k)}, true
+}
+
+// TypeText renders a type for messages.
+func TypeText(t Type) string {
+	if t.Builtin != "" {
+		return t.Builtin
+	}
+	return t.ValueType.Name
+}
+
+// Part finds the schema of a part of an object field, following a path of
+// part names from the outer part to the inner one. For a oneOf, a part that
+// one or more choices define counts. The schema it returns keeps the value
+// type it names, so its type can be compared.
+func Part(w model.World, s model.Schema, path []string) (model.Schema, bool) {
+	cur := s
+	for _, name := range path {
+		next, ok := partOf(w, Resolved(w, cur), name)
+		if !ok {
+			return model.Schema{}, false
+		}
+		cur = next
+	}
+	return cur, true
+}
+
+func partOf(w model.World, s model.Schema, name string) (model.Schema, bool) {
+	for _, p := range s.Properties {
+		if p.Name == name {
+			return p.Schema, true
+		}
+	}
+	for _, c := range s.OneOf {
+		if found, ok := partOf(w, Resolved(w, c), name); ok {
+			return found, true
+		}
+	}
+	return model.Schema{}, false
 }
 
 // Reads renders a link's reads sentence for two things.

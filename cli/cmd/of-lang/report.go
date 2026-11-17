@@ -84,23 +84,18 @@ func factJSON(w model.World, f engine.Fact) jsonFact {
 }
 
 func reasonText(r engine.Reason) string {
-	switch r.Type {
-	case engine.ReasonRule:
-		return "rule " + r.Rule.Name
-	case engine.ReasonUnder:
-		return "under"
-	case engine.ReasonChains:
-		return "chains"
-	default:
-		return "asserted"
+	if r.Type == engine.ReasonDerivative {
+		return "derivative " + r.Derivative.Name
 	}
+	return string(r.Type)
 }
 
 // derivedFacts lists the facts the run added, in the order it added them.
+// Defaults of a stated thing's fields count as stated.
 func derivedFacts(g engine.Graph) []engine.Fact {
 	var out []engine.Fact
 	for _, f := range g.Order {
-		if g.Reasons[engine.Key(f)].Type != engine.ReasonAsserted {
+		if !engine.Stated(g.Reasons[engine.Key(f)]) {
 			out = append(out, f)
 		}
 	}
@@ -168,24 +163,24 @@ func (r reporter) notHeld(w model.World, f engine.Fact) error {
 }
 
 type jsonExplanation struct {
-	Fact     jsonFact          `json:"fact"`
-	Reason   string            `json:"reason"`
-	At       string            `json:"at,omitzero"`
-	Rule     string            `json:"rule,omitzero"`
-	Says     string            `json:"says,omitzero"`
-	Bindings []engine.Binding  `json:"bindings,omitzero"`
-	Because  []jsonExplanation `json:"because,omitzero"`
+	Fact       jsonFact          `json:"fact"`
+	Reason     string            `json:"reason"`
+	At         string            `json:"at,omitzero"`
+	Derivative string            `json:"derivative,omitzero"`
+	Says       string            `json:"says,omitzero"`
+	Bindings   []engine.Binding  `json:"bindings,omitzero"`
+	Because    []jsonExplanation `json:"because,omitzero"`
 }
 
 func explain(w model.World, g engine.Graph, f engine.Fact, seen []string) jsonExplanation {
 	k := engine.Key(f)
 	r := g.Reasons[k]
 	j := jsonExplanation{Fact: factJSON(w, f), Reason: string(r.Type)}
-	if r.Type == engine.ReasonAsserted && r.Pos.File != "" {
+	if engine.Stated(r) && r.Pos.File != "" {
 		j.At = fmt.Sprintf("%s:%d:%d", relPath(r.Pos.File), r.Pos.Line, r.Pos.Column)
 	}
-	if r.Type == engine.ReasonRule {
-		j.Rule, j.Says, j.Bindings = r.Rule.Name, w.Statements[r.Rule].Says, r.Bindings
+	if r.Type == engine.ReasonDerivative {
+		j.Derivative, j.Says, j.Bindings = r.Derivative.Name, w.Statements[r.Derivative].Says, r.Bindings
 	}
 	if slices.Contains(seen, k) {
 		return j
@@ -208,15 +203,17 @@ func (r reporter) explanation(w model.World, g engine.Graph, f engine.Fact) erro
 		pad := strings.Repeat("  ", depth)
 		head := pad + e.Fact.Sentence
 		switch {
-		case e.Rule != "":
-			head += "  (rule " + e.Rule + ")"
+		case e.Derivative != "":
+			head += "  (derivative " + e.Derivative + ")"
+		case e.At != "" && e.Reason == string(engine.ReasonDefault):
+			head += "  (default at " + e.At + ")"
 		case e.At != "":
 			head += "  (written at " + e.At + ")"
 		default:
 			head += "  (" + e.Reason + ")"
 		}
 		lines = append(lines, head)
-		if e.Rule != "" {
+		if e.Derivative != "" {
 			lines = append(lines, pad+"  "+strings.TrimSpace(e.Says))
 			lines = append(lines, pad+"  with "+engine.BindingsText(e.Bindings))
 			if len(e.Because) > 0 {
@@ -240,13 +237,13 @@ func (r reporter) diff(w model.World, a, b engine.Result) error {
 		Added   []string `json:"added"`
 		Removed []string `json:"removed"`
 	}
-	factChanges := func(asserted bool) change {
+	factChanges := func(stated bool) change {
 		c := change{Added: []string{}, Removed: []string{}}
 		pick := func(res engine.Result) map[string]string {
 			out := map[string]string{}
 			for _, f := range res.Graph.Order {
 				k := engine.Key(f)
-				if (res.Graph.Reasons[k].Type == engine.ReasonAsserted) == asserted {
+				if engine.Stated(res.Graph.Reasons[k]) == stated {
 					// A field's key names the field, not its value; a changed
 					// value is a removal and an addition.
 					out[k+"\x00"+value.Format(f.Value)] = engine.Sentence(w, f)
@@ -291,7 +288,7 @@ func (r reporter) diff(w model.World, a, b engine.Result) error {
 	slices.Sort(rejected.Added)
 	slices.Sort(rejected.Removed)
 	out := struct {
-		Asserted change `json:"asserted"`
+		Stated   change `json:"stated"`
 		Derived  change `json:"derived"`
 		Rejected change `json:"rejected"`
 	}{factChanges(true), factChanges(false), rejected}
@@ -302,7 +299,7 @@ func (r reporter) diff(w model.World, a, b engine.Result) error {
 	for _, sec := range []struct {
 		name string
 		c    change
-	}{{"asserted", out.Asserted}, {"derived", out.Derived}, {"rejected", out.Rejected}} {
+	}{{"stated", out.Stated}, {"derived", out.Derived}, {"rejected", out.Rejected}} {
 		lines = append(lines, sec.name+":")
 		if len(sec.c.Added)+len(sec.c.Removed) == 0 {
 			lines = append(lines, "  no change")

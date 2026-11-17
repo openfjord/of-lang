@@ -8,14 +8,6 @@ A command-line tool for [the OpenFjord modeling language](../language/README.md)
 it checks packages, runs their derivatives over facts, explains what it derived,
 compares two sets of facts, and runs a package's tests.
 
-> **It lags the draft.** The tool implements an earlier version of the
-> language: `links` and `where` instead of `match` and `filter`, variables
-> named in `says`, kinds given on a variable's first mention instead of in kind items, `Rule`
-> instead of `Derivative`, `require` instead of `unless`, `definitions/` instead of `defs/`, and `.yaml`
-> instead of `.of.yaml`. It does not run the
-> [example package](../examples/restaurant/) as it stands. It will be brought
-> up to date once the draft settles.
-
 ## Install
 
 With [Homebrew](https://brew.sh), from the
@@ -93,8 +85,11 @@ $ of-lang check restaurant
 restaurant/defs/recipe.of.yaml:49:3: the reads of madeAtStation must use both {from} and {to} (LK2)
 ```
 
-The draft has each error name the rule it enforces, such as `(LK2)`; the tool
-does not yet.
+Each problem names the rule it breaks, such as `(LK2)`. A package with a
+[pending change](../language/reference/pending.md) is checked twice, with the
+change and without it; a problem that only the version without the change has
+starts with `without the pending change:`. `run`, `explain`, `diff` and `test`
+use the version with the change.
 
 ### `run`
 
@@ -105,10 +100,10 @@ Every derived fact as its `reads` sentence, with what derived it: a derivative, 
 $ of-lang run restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml
 derived:
   dish/margherita uses ingredient/parmesan  (under)
-  station/pizza depends on station/sauce  (derivative stationDependsOnStation)
   recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
   dish/margherita contains allergen/milk  (derivative allergenFromIngredient)
   dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
+  station/pizza depends on station/sauce  (derivative stationDependsOnStation)
 rejected:
   nothing
 ```
@@ -184,10 +179,11 @@ garnish from the margherita in `allergen-through-a-sauce.of.yaml`:
 $ of-lang test restaurant
 FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-sauce.of.yaml)
       expected derived, but not: dish/margherita contains allergen/milk
+      expected derived, but not: dish/margherita uses ingredient/parmesan
 pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.of.yaml)
 pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
 pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
 4 passed, 1 failed
 ```
 
@@ -214,8 +210,8 @@ stood for:
   "constraint": "dishListsItsAllergens",
   "message": "The menu must warn that dish/margherita contains allergen/nuts.",
   "bindings": [
-    { "var": "$dish", "id": "dish/margherita" },
-    { "var": "$allergen", "id": "allergen/nuts" }
+    { "var": "$allergen", "id": "allergen/nuts" },
+    { "var": "$dish", "id": "dish/margherita" }
   ]
 }
 ```
@@ -339,11 +335,12 @@ exported. A tagged subset is always complete, because each definition that
 a tagged definition refers to has the same tag
 ([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
 package that breaks this rule. For example, if `Dish` had the tag
-`allergens` and `Recipe` did not:
+`allergens` and `Recipe` and `Price` did not:
 
 ```
 $ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:25:3: Dish has the tag allergens and extends Recipe, which does not have it (TG5)
+restaurant/defs/recipe.of.yaml:27:10: Dish has the tag allergens and refers to Price, which does not have it (TG5)
+restaurant/defs/recipe.of.yaml:27:10: Dish has the tag allergens and refers to Recipe, which does not have it (TG5)
 ```
 
 ## Planned: a language server

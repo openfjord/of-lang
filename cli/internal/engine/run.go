@@ -3,7 +3,6 @@
 package engine
 
 import (
-	"fmt"
 	"regexp"
 	"slices"
 	"strings"
@@ -14,9 +13,10 @@ import (
 	"github.com/openfjord/of-lang/cli/internal/world"
 )
 
-var messageVar = regexp.MustCompile(`\{(\$[a-z][A-Za-z0-9]*)\}`)
+// MessageVar finds the variables a message quotes: {$var}, or {$var: field}.
+var MessageVar = regexp.MustCompile(`\{(\$[a-z][A-Za-z0-9]*)(?:\s*:\s*([^}\s]+)\s*)?\}`)
 
-// Violation is one match that breaks a constraint.
+// Violation is one row that breaks a constraint.
 type Violation struct {
 	Constraint model.QName
 	Pos        diag.Pos
@@ -29,13 +29,15 @@ type Violation struct {
 type Result struct {
 	Graph      Graph
 	Violations []Violation
-	// Problems are facts that break what the kinds declare: link counts, the
-	// kinds a link joins, and field values a rule set.
+	// Problems are facts that break what the kinds declare: the kinds a link
+	// joins, the fields a kind requires or does not list, a union, and a
+	// field that derivatives give two values.
 	Problems []diag.Diagnostic
 }
 
-// Run applies the built-in inference and the rules, stratum by stratum, until
-// nothing new appears; then it checks constraints and link counts.
+// Run adds what links imply and what the derivatives derive, stratum by
+// stratum, until nothing new appears; then it checks the constraints and
+// what the kinds require.
 func Run(w model.World, strata [][]model.QName, g Graph) Result {
 	var problems []diag.Diagnostic
 	builtins(w, &g)
@@ -43,7 +45,7 @@ func Run(w model.World, strata [][]model.QName, g Graph) Result {
 		for {
 			changed := false
 			for _, q := range stratum {
-				added, ps := applyRule(w, &g, w.Statements[q])
+				added, ps := applyDerivative(w, &g, w.Statements[q])
 				problems = append(problems, ps...)
 				changed = changed || added
 			}
@@ -55,41 +57,48 @@ func Run(w model.World, strata [][]model.QName, g Graph) Result {
 			}
 		}
 	}
-	res := Result{Graph: g, Problems: problems}
+	res := Result{Graph: g}
 	for _, q := range w.Order {
 		st := w.Statements[q]
 		if st.Sort == model.SortConstraint {
 			res.Violations = append(res.Violations, violations(w, g, st)...)
 		}
 	}
-	res.Problems = diag.Sorted(append(res.Problems, kindProblems(w, g)...))
+	problems = append(problems, linkProblems(w, g)...)
+	problems = append(problems, fieldProblems(w, g)...)
+	problems = append(problems, unionProblems(w, g)...)
+	res.Problems = diag.Sorted(problems)
 	return res
 }
 
-// builtins adds what links' under and chains declarations imply, until
-// nothing new appears.
+// builtins adds what under and chains imply, and the defaults of fields
+// that a derived kind brings, until nothing new appears.
 func builtins(w model.World, g *Graph) bool {
 	grew := false
 	for {
 		changed := false
-		edges := slices.Clone(g.Order)
-		for _, f := range edges {
-			if f.Type != FactLink {
-				continue
-			}
-			e := f.Edge
-			link := w.Links[e.Link]
-			if link.Under != nil {
-				if Add(g, LinkFact(e.From, *link.Under, e.To), Reason{Type: ReasonUnder, Premises: []Fact{f}}) {
+		for _, f := range slices.Clone(g.Order) {
+			switch f.Type {
+			case FactLink:
+				e := f.Edge
+				link := w.Links[e.Link]
+				if link.Under != nil && Add(g, LinkFact(e.From, *link.Under, e.To), Reason{Type: ReasonUnder, Premises: []Fact{f}}) {
 					changed = true
 				}
-			}
-			if link.Chains {
+				if !link.Chains {
+					continue
+				}
 				for _, next := range slices.Clone(g.out[e.To][e.Link]) {
 					if Add(g, LinkFact(e.From, e.Link, next), Reason{Type: ReasonChains, Premises: []Fact{f, LinkFact(e.To, e.Link, next)}}) {
 						changed = true
 					}
 				}
+			case FactKind:
+				if AddDefaults(w, g, f.Node, f.Kind, Reason{Type: ReasonDefault, Premises: []Fact{f}}) {
+					changed = true
+				}
+			default:
+				// A field value implies nothing.
 			}
 		}
 		if !changed {
@@ -99,12 +108,30 @@ func builtins(w model.World, g *Graph) bool {
 	}
 }
 
-func applyRule(w model.World, g *Graph, st model.Statement) (bool, []diag.Diagnostic) {
+// AddDefaults gives a thing the default of each field of a kind that it has
+// no value for.
+func AddDefaults(w model.World, g *Graph, id string, kind model.QName, r Reason) bool {
+	added := false
+	for _, f := range world.Fields(w, kind) {
+		if f.Schema.Default == nil {
+			continue
+		}
+		if _, ok := g.Fields[id][f.Name]; ok {
+			continue
+		}
+		if Add(g, FieldFact(id, f.Name, *f.Schema.Default), Reason{Type: r.Type, Pos: f.Pos, Premises: r.Premises}) {
+			added = true
+		}
+	}
+	return added
+}
+
+func applyDerivative(w model.World, g *Graph, st model.Statement) (bool, []diag.Diagnostic) {
 	added := false
 	var problems []diag.Diagnostic
-	vars := OuterVars(st)
-	for _, m := range Find(w, *g, st.Links, st.Where, vars, nil) {
-		reason := Reason{Type: ReasonRule, Rule: st.Q, Bindings: sortedBindings(m.Env, vars), Premises: m.Premises}
+	vars := BlockVars(st.Match)
+	for _, m := range Find(w, *g, st.Match, nil, false) {
+		reason := Reason{Type: ReasonDerivative, Derivative: st.Q, Bindings: sortedBindings(m.Env, vars), Premises: m.Premises}
 		for _, d := range st.Derive {
 			f, ok := derived(*g, d, m.Env)
 			if !ok {
@@ -112,8 +139,13 @@ func applyRule(w model.World, g *Graph, st model.Statement) (bool, []diag.Diagno
 			}
 			if f.Type == FactField {
 				if cur, set := g.Fields[f.Node][f.Field]; set {
-					if !value.Equal(cur, f.Value) {
-						problems = append(problems, diag.New(d.Pos, "rule %s sets %s of %s to %s, but it is already %s", st.Q.Name, f.Field, f.Node, value.Format(f.Value), value.Format(cur)))
+					switch {
+					case value.Equal(cur, f.Value):
+						// The derivative agrees with the value the field has.
+					case SetDefault(g, f, reason):
+						added = true
+					default:
+						problems = append(problems, diag.New(d.Pos, "derivative %s sets %s of %s to %s, but it is already %s; a field has one value (DV15)", st.Q.Name, f.Field, f.Node, value.Format(f.Value), value.Format(cur)))
 					}
 					continue
 				}
@@ -149,56 +181,48 @@ func derived(g Graph, d model.Derivation, env map[string]string) (Fact, bool) {
 
 func violations(w model.World, g Graph, st model.Statement) []Violation {
 	var out []Violation
-	vars := OuterVars(st)
-	for _, m := range Find(w, g, st.Links, st.Where, vars, nil) {
-		if _, ok := allHold(w, g, st.Require, m); ok {
-			continue
+	vars := BlockVars(st.Match)
+	for _, m := range Find(w, g, st.Match, nil, false) {
+		if len(st.Unless) > 0 {
+			if _, ok := allHold(w, g, st.Unless, m); ok {
+				continue
+			}
 		}
 		out = append(out, Violation{
 			Constraint: st.Q,
 			Pos:        st.Pos,
 			Bindings:   sortedBindings(m.Env, vars),
-			Message:    Render(st.Message, m.Env),
+			Message:    Render(g, st.Message, m.Env),
 			Premises:   m.Premises,
 		})
 	}
 	return out
 }
 
-// Render fills a message's {$var} placeholders with what the variables stand
-// for.
-func Render(msg string, env map[string]string) string {
-	return messageVar.ReplaceAllStringFunc(msg, func(s string) string {
-		v := messageVar.FindStringSubmatch(s)[1]
-		if id, ok := env[v]; ok {
+// Render fills a message's {$var} and {$var: field} with what the row gives:
+// the id of the thing, or the value of the field, or "not set".
+func Render(g Graph, msg string, env map[string]string) string {
+	return MessageVar.ReplaceAllStringFunc(msg, func(s string) string {
+		sub := MessageVar.FindStringSubmatch(s)
+		id, ok := env[sub[1]]
+		switch {
+		case !ok:
+			return s
+		case sub[2] == "":
 			return id
 		}
-		return s
+		v, ok := g.Fields[id][sub[2]]
+		if !ok {
+			return "not set"
+		}
+		return value.Format(v)
 	})
 }
 
-// kindProblems checks every thing against its kinds: how many of each link it
-// has, and that each link joins the kinds it declares.
-func kindProblems(w model.World, g Graph) []diag.Diagnostic {
+// linkProblems reports links whose ends are not things of the kinds the link
+// joins.
+func linkProblems(w model.World, g Graph) []diag.Diagnostic {
 	var out []diag.Diagnostic
-	for _, id := range g.Nodes {
-		seen := map[diag.Pos]bool{}
-		for _, k := range g.Kinds[id] {
-			for _, lc := range world.LinkCounts(w, k) {
-				if seen[lc.Pos] {
-					continue
-				}
-				seen[lc.Pos] = true
-				n := len(g.out[id][lc.Ref.Q])
-				if lc.Ref.Inverted {
-					n = len(g.in[id][lc.Ref.Q])
-				}
-				if n < lc.Count.Min || lc.Count.Max >= 0 && n > lc.Count.Max {
-					out = append(out, diag.New(g.Pos[id], "%s has %d %s, but a %s has %s", id, n, lc.Name, k.Name, countText(lc.Count)))
-				}
-			}
-		}
-	}
 	for _, f := range g.Order {
 		if f.Type != FactLink {
 			continue
@@ -206,32 +230,61 @@ func kindProblems(w model.World, g Graph) []diag.Diagnostic {
 		e := f.Edge
 		link := w.Links[e.Link]
 		for _, end := range []struct {
-			id, role string
-			want     model.QName
-		}{{e.From, "from", link.From}, {e.To, "to", link.To}} {
-			if !isA(w, g, end.id, end.want) {
-				out = append(out, diag.New(g.Pos[end.id], "%s links %s to %s, but %s is not a %s", e.Link.Name, e.From, e.To, end.id, end.want.Name))
+			id   string
+			want model.QName
+		}{{e.From, link.From}, {e.To, link.To}} {
+			if !thingIsA(w, g, end.id, end.want) {
+				out = append(out, diag.New(g.Pos[end.id], "%s links %s to %s, but %s is not a %s (FC5)", e.Link.Name, e.From, e.To, end.id, end.want.Name))
 			}
 		}
 	}
 	return out
 }
 
-func isA(w model.World, g Graph, id string, want model.QName) bool {
-	return slices.ContainsFunc(g.Kinds[id], func(k model.QName) bool { return world.IsA(w, k, want) })
+// fieldProblems reports, for each thing, a field that one of its kinds
+// requires and it has no value for, and a value of a field that none of its
+// kinds lists.
+func fieldProblems(w model.World, g Graph) []diag.Diagnostic {
+	var out []diag.Diagnostic
+	for _, id := range g.Nodes {
+		listed := map[string]bool{}
+		for _, k := range g.Kinds[id] {
+			for _, f := range world.Fields(w, k) {
+				listed[f.Name] = true
+				if f.Optional || f.Schema.Default != nil {
+					continue
+				}
+				if _, ok := g.Fields[id][f.Name]; !ok {
+					out = append(out, diag.New(g.Pos[id], "%s needs %s, which every %s has (FC3)", id, f.Name, k.Name))
+				}
+			}
+		}
+		for name := range g.Fields[id] {
+			if !listed[name] {
+				out = append(out, diag.New(g.Pos[id], "%s has %s, which none of its kinds lists (FC3)", id, name))
+			}
+		}
+	}
+	return out
 }
 
-func countText(c model.Count) string {
-	switch {
-	case c.Max < 0 && c.Min == 0:
-		return "any number"
-	case c.Max < 0:
-		return fmt.Sprintf("at least %d", c.Min)
-	case c.Min == c.Max:
-		return fmt.Sprintf("exactly %d", c.Min)
-	default:
-		return fmt.Sprintf("at most %d", c.Max)
+// unionProblems reports a thing that is two kinds that one union lists.
+func unionProblems(w model.World, g Graph) []diag.Diagnostic {
+	var out []diag.Diagnostic
+	for _, u := range world.Unions(w) {
+		for _, id := range g.Nodes {
+			var is []string
+			for _, l := range u.OneOf {
+				if thingIsA(w, g, id, l) {
+					is = append(is, l.Name)
+				}
+			}
+			if len(is) > 1 {
+				out = append(out, diag.New(g.Pos[id], "%s is a %s, so it must be exactly one of its kinds, but it is %s (KD11)", id, u.Q.Name, strings.Join(is, " and ")))
+			}
+		}
 	}
+	return out
 }
 
 // Sentence renders a fact in plain words, using links' reads sentences.

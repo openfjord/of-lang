@@ -4,7 +4,6 @@ package engine
 
 import (
 	"slices"
-	"strings"
 
 	"github.com/openfjord/of-lang/cli/internal/diag"
 	"github.com/openfjord/of-lang/cli/internal/model"
@@ -16,40 +15,37 @@ type read struct {
 	negative bool
 }
 
-// Stratify orders rules so a rule that asks whether something is absent, or
-// counts it, runs only after every rule that could add it. Rules that depend
-// on their own absence cannot be ordered and are reported.
+// Stratify orders derivatives so that one that uses none, count or is not
+// set on what others add runs only after them. Derivatives that depend on
+// each other in a circle through those words can never settle, and are
+// reported.
 func Stratify(w model.World) ([][]model.QName, []diag.Diagnostic) {
-	var rules []model.QName
+	var derivs []model.QName
 	for _, q := range w.Order {
-		if w.Statements[q].Sort == model.SortRule {
-			rules = append(rules, q)
+		if w.Statements[q].Sort == model.SortDerivative {
+			derivs = append(derivs, q)
 		}
 	}
 	writers := map[string][]model.QName{}
 	reads := map[model.QName][]read{}
-	for _, q := range rules {
+	for _, q := range derivs {
 		st := w.Statements[q]
 		for _, p := range writes(w, st) {
 			writers[p] = append(writers[p], q)
 		}
-		var rs []read
-		for _, pl := range st.Links {
-			rs = append(rs, read{pred: linkPred(pl.Link)})
-		}
-		rs = append(rs, conditionReads(st.Where, false)...)
+		rs := blockReads(st.Match, false)
 		for _, d := range st.Derive {
-			if d.Type == model.DeriveField && d.SetTo.Node != "" && d.SetTo.Field != "" {
-				rs = append(rs, read{pred: "field:" + d.SetTo.Field})
+			if d.Type == model.DeriveField && d.SetTo.Field != "" {
+				rs = append(rs, read{pred: fieldPred(d.SetTo.Field)})
 			}
 		}
 		reads[q] = rs
 	}
 	level := map[model.QName]int{}
-	limit := len(rules)
+	limit := len(derivs)
 	for range limit + 1 {
 		changed := false
-		for _, q := range rules {
+		for _, q := range derivs {
 			for _, r := range reads[q] {
 				for _, src := range writers[r.pred] {
 					want := level[src]
@@ -69,9 +65,9 @@ func Stratify(w model.World) ([][]model.QName, []diag.Diagnostic) {
 	}
 	var ds []diag.Diagnostic
 	var strata [][]model.QName
-	for _, q := range rules {
+	for _, q := range derivs {
 		if level[q] > limit {
-			ds = append(ds, diag.New(w.Statements[q].Pos, "rule %s depends, through none:, count: or is not set:, on what it adds itself; it can never settle", q.Name))
+			ds = append(ds, diag.New(w.Statements[q].Pos, "derivative %s depends, through none, count or is not set, on what it adds itself; it can never settle (DV17)", q.Name))
 			continue
 		}
 		for len(strata) <= level[q] {
@@ -84,9 +80,10 @@ func Stratify(w model.World) ([][]model.QName, []diag.Diagnostic) {
 
 func linkPred(q model.QName) string { return "link:" + q.Pkg + "." + q.Name }
 func kindPred(q model.QName) string { return "kind:" + q.Pkg + "." + q.Name }
+func fieldPred(f string) string     { return "field:" + f }
 
-// writes lists what a rule can add, including the links its links sit under
-// and the kinds its kinds extend, since built-in inference adds those too.
+// writes lists what a derivative can add, including what links and kinds
+// imply: the links a derived link sits under, and every kind a derived kind is.
 func writes(w model.World, st model.Statement) []string {
 	var out []string
 	for _, d := range st.Derive {
@@ -97,15 +94,41 @@ func writes(w model.World, st model.Statement) []string {
 				out = append(out, linkPred(s))
 			}
 		case model.DeriveKind:
-			for _, a := range world.Ancestors(w, d.Kind) {
-				out = append(out, kindPred(a))
+			// The node already is the kind of its kind item, and every kind
+			// that one extends; only the other kinds are new.
+			var has model.QName
+			for _, ki := range st.Match.Kinds {
+				if ki.Var == d.Node {
+					has = ki.Kind
+				}
+			}
+			for _, k := range world.Supers(w, d.Kind) {
+				if has == (model.QName{}) || !world.IsA(w, has, k) {
+					out = append(out, kindPred(k))
+				}
 			}
 		case model.DeriveField:
-			out = append(out, "field:"+d.Field)
+			out = append(out, fieldPred(d.Field))
 		}
 	}
 	slices.Sort(out)
 	return slices.Compact(out)
+}
+
+func blockReads(b model.Block, negative bool) []read {
+	var out []read
+	for _, ki := range b.Kinds {
+		out = append(out, read{pred: kindPred(ki.Kind), negative: negative})
+	}
+	for _, li := range b.Links {
+		out = append(out, read{pred: linkPred(li.Link), negative: negative})
+		for _, e := range []model.End{li.From, li.To} {
+			if e.Var == "" {
+				out = append(out, read{pred: kindPred(e.Kind), negative: negative})
+			}
+		}
+	}
+	return append(out, conditionReads(b.Filter, negative)...)
 }
 
 func conditionReads(conds []model.Condition, negative bool) []read {
@@ -114,35 +137,22 @@ func conditionReads(conds []model.Condition, negative bool) []read {
 		switch c.Type {
 		case model.CondCompare:
 			if c.Field != "" {
-				out = append(out, read{pred: "field:" + c.Field, negative: negative})
+				out = append(out, read{pred: fieldPred(c.Field), negative: negative})
 			}
 			if c.Than.Field != "" {
-				out = append(out, read{pred: "field:" + c.Than.Field, negative: negative})
+				out = append(out, read{pred: fieldPred(c.Than.Field), negative: negative})
 			}
 		case model.CondIsA:
 			out = append(out, read{pred: kindPred(c.Kind), negative: negative})
 		case model.CondIsSet:
-			out = append(out, read{pred: "field:" + c.Field, negative: negative})
+			out = append(out, read{pred: fieldPred(c.Field), negative: negative})
 		case model.CondIsNotSet:
-			out = append(out, read{pred: "field:" + c.Field, negative: true})
+			out = append(out, read{pred: fieldPred(c.Field), negative: true})
 		case model.CondAtLeastOne, model.CondNone, model.CondCount:
-			neg := negative || c.Type != model.CondAtLeastOne
-			for _, pl := range c.Links {
-				out = append(out, read{pred: linkPred(pl.Link), negative: neg})
-			}
-			out = append(out, conditionReads(c.Where, neg)...)
+			out = append(out, blockReads(*c.Block, negative || c.Type != model.CondAtLeastOne)...)
 		case model.CondAnyOf:
 			out = append(out, conditionReads(c.Any, negative)...)
 		}
 	}
 	return out
-}
-
-// RuleNames renders rule names for messages.
-func RuleNames(qs []model.QName) string {
-	names := make([]string, 0, len(qs))
-	for _, q := range qs {
-		names = append(names, q.Name)
-	}
-	return strings.Join(names, ", ")
 }

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package model holds what the language's files mean once their names are
-// resolved: kinds, links, value types, statements and facts. It is inert data;
-// loading, checking and running live in other packages.
+// resolved: kinds, links, value types, constraints, derivatives and questions.
+// It is inert data; loading, checking and running live in other packages.
 package model
 
 import (
@@ -21,26 +21,25 @@ type QName struct {
 // String renders a QName for messages.
 func (q QName) String() string { return q.Name }
 
-// Sort says what kind of entry a definition is: the value of its is: line.
+// Sort says what a statement is: the value of its is: key.
 type Sort string
 
-// The sorts of entry.
+// The sorts of statement.
 const (
 	SortKind       Sort = "Kind"
 	SortLink       Sort = "Link"
 	SortValueType  Sort = "ValueType"
 	SortConstraint Sort = "Constraint"
-	SortRule       Sort = "Rule"
-	SortMapping    Sort = "Mapping"
+	SortDerivative Sort = "Derivative"
 	SortFact       Sort = "Fact"
 	SortTest       Sort = "Test"
 	SortQuestion   Sort = "Question"
 )
 
-// DefinitionSorts are the sorts that may appear outside tests.
-var DefinitionSorts = []Sort{SortKind, SortLink, SortValueType, SortConstraint, SortRule, SortMapping}
+// DefinitionSorts are the sorts that may appear in defs/.
+var DefinitionSorts = []Sort{SortKind, SortLink, SortValueType, SortConstraint, SortDerivative}
 
-// TestSorts are the sorts that may appear in a package's tests.
+// TestSorts are the sorts that may appear in tests/.
 var TestSorts = []Sort{SortFact, SortTest, SortQuestion}
 
 // Ref is what a name in a file's scope stands for. A link's inverse name is a
@@ -78,7 +77,7 @@ type Value struct {
 type Schema struct {
 	Pos        diag.Pos
 	Type       string // a built-in type, or "" when Ref names a value type
-	Ref        QName  // a value type, when set
+	Ref        QName  // a value type, when HasRef is set
 	HasRef     bool
 	Enum       []Value
 	Const      *Value
@@ -91,6 +90,10 @@ type Schema struct {
 	Format     string
 	Items      *Schema
 	Properties []Field
+	OneOf      []Schema
+	// Keywords lists every keyword the schema wrote, so a check can tell
+	// what a field adds to the value type it names.
+	Keywords []string
 }
 
 // Field is one field of a kind, or one part of an object value.
@@ -101,30 +104,17 @@ type Field struct {
 	Optional bool
 }
 
-// Count says how many of a link a thing must have.
-type Count struct {
-	Min int
-	Max int // -1 when there is no upper limit
-}
-
-// LinkCount is one entry of a kind's links block.
-type LinkCount struct {
-	Ref   Ref
-	Name  string
-	Pos   diag.Pos
-	Count Count
-}
-
-// Kind is a kind of thing.
+// Kind is a kind of thing. A kind with OneOf is a union of the listed kinds.
 type Kind struct {
 	Q           QName
 	Pos         diag.Pos
 	Definition  string
 	Extends     *QName
+	OneOf       []QName
 	Examples    []string
 	NotExamples []string
 	Fields      []Field
-	Links       []LinkCount
+	Tags        []Tag
 }
 
 // Link is a named, directed relationship between two kinds.
@@ -138,6 +128,7 @@ type Link struct {
 	Under      *QName
 	Inverse    string
 	Chains     bool
+	Tags       []Tag
 }
 
 // ValueType is a named, reusable schema.
@@ -146,23 +137,54 @@ type ValueType struct {
 	Pos        diag.Pos
 	Definition string
 	Schema     Schema
+	Tags       []Tag
 }
 
-// PatternLink is one link a pattern must find. Link is always the declared
-// link; Inverted is set when the pattern names it by its inverse.
-type PatternLink struct {
+// Tag is one tag a definition carries, where it is written.
+type Tag struct {
+	Name string
+	Pos  diag.Pos
+}
+
+// KindItem gives a variable to the things of a kind.
+type KindItem struct {
+	Pos  diag.Pos
+	Var  string
+	Kind QName
+}
+
+// End is one end of a link item: a variable, or a kind alone for a thing that
+// nothing else refers to.
+type End struct {
+	Pos  diag.Pos
+	Var  string
+	Kind QName // set when Var is empty
+}
+
+// LinkItem is one link a match must find. Link is always the declared link;
+// Inverted is set when the item names it by its inverse.
+type LinkItem struct {
 	Pos      diag.Pos
-	From     string
-	To       string
+	From     End
+	To       End
 	Name     string
 	Link     QName
 	Inverted bool
 	Repeated bool
 }
 
-// Operand is what a comparison compares against: a literal value, or a
-// variable and possibly one of its fields.
+// Block is a match and its filter: the statement's own, or a nested block's.
+type Block struct {
+	Pos    diag.Pos
+	Kinds  []KindItem
+	Links  []LinkItem
+	Filter []Condition
+}
+
+// Operand is what a comparison compares with: a literal value, a list of
+// them, or a variable and possibly one of its fields.
 type Operand struct {
+	Pos    diag.Pos
 	Value  *Value
 	Values []Value
 	Node   string
@@ -201,33 +223,33 @@ const (
 // Ops lists every comparison word, in the order messages list them.
 var Ops = []Op{OpEquals, OpDoesNotEqual, OpIsAbove, OpIsBelow, OpIsAtLeast, OpIsAtMost, OpIsOneOf}
 
-// Condition is one entry of a where or require list.
+// Condition is one entry of a filter or an unless list.
 type Condition struct {
 	Type  CondType
 	Pos   diag.Pos
 	Node  string
 	Field string
+	Part  []string
 	Op    Op
 	Than  Operand
 	Kind  QName
-	// For at least one, none and count.
-	Links []PatternLink
-	Where []Condition
-	// For any of.
+	// Block is the nested block of at least one, none and count.
+	Block *Block
+	// Any holds the conditions of any of.
 	Any []Condition
 }
 
-// DeriveType says what a derivation adds.
+// DeriveType says what a derive item adds.
 type DeriveType string
 
-// The kinds of derivation.
+// The kinds of derive item.
 const (
 	DeriveLink  DeriveType = "link"
 	DeriveKind  DeriveType = "kind"
 	DeriveField DeriveType = "field"
 )
 
-// Derivation is one entry of a rule's derive list.
+// Derivation is one item of a derivative's derive list.
 type Derivation struct {
 	Type  DeriveType
 	Pos   diag.Pos
@@ -242,27 +264,18 @@ type Derivation struct {
 	SetTo Operand
 }
 
-// Statement is a constraint, a rule or a question: a pattern with what to do
-// with each match.
+// Statement is a constraint, a derivative or a question: a match with what to
+// do with each row.
 type Statement struct {
 	Q       QName
 	Sort    Sort
 	Pos     diag.Pos
 	Says    string
-	Vars    []string
-	Links   []PatternLink
-	Where   []Condition
-	Require []Condition
+	Tags    []Tag
+	Match   Block
+	Unless  []Condition
 	Message string
 	Derive  []Derivation
-}
-
-// Mapping relates a definition to a term in an outside vocabulary.
-type Mapping struct {
-	Q          QName
-	Pos        diag.Pos
-	Term       Ref
-	Equivalent string
 }
 
 // Exports lists what a package lets others import.
@@ -272,21 +285,31 @@ type Exports struct {
 	ValueTypes []string
 }
 
-// Manifest is a package's package.yaml.
-type Manifest struct {
-	Pos       diag.Pos
-	Package   string
-	Version   string
-	Namespace string
-	DependsOn map[string]string
-	Exports   Exports
-	OpenFor   []OpenPoint
-}
-
 // OpenPoint is an extension point a package opens to others.
 type OpenPoint struct {
+	Pos    diag.Pos
 	Extend string
 	Under  string
+}
+
+// TagDecl is one tag a manifest declares.
+type TagDecl struct {
+	Pos         diag.Pos
+	Name        string
+	Description string
+}
+
+// Manifest is a package's package.yaml.
+type Manifest struct {
+	Pos          diag.Pos
+	Package      string
+	Version      string
+	Owner        string
+	RDFNamespace string
+	DependsOn    map[string]string
+	Exports      Exports
+	OpenFor      []OpenPoint
+	Tags         []TagDecl
 }
 
 // Definition records where a name is defined in a package.
@@ -304,6 +327,7 @@ type Package struct {
 	Dir      string
 	Manifest Manifest
 	Files    []string
+	Tests    []string
 	Docs     []string
 	Defs     map[string]Definition
 }
@@ -316,8 +340,8 @@ type World struct {
 	Links      map[QName]Link
 	ValueTypes map[QName]ValueType
 	Statements map[QName]Statement
-	Mappings   map[QName]Mapping
-	// Order is every statement in the order it was read, for stable output.
+	// Order is every constraint and derivative in the order it was read, for
+	// stable output.
 	Order []QName
 	// Inverses maps a link's inverse name to the link.
 	Inverses map[QName]QName

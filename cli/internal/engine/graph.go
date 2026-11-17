@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
-// Package engine runs a package's rules over facts until nothing new appears,
-// then checks its constraints and link counts. Every fact it adds keeps the
-// reason it was added, so any result can be explained.
+// Package engine runs a package's derivatives over facts until nothing new
+// appears, then checks its constraints and what the kinds require. Every fact
+// it adds keeps the reason it was added, so any result can be explained.
 package engine
 
 import (
@@ -48,26 +48,33 @@ type ReasonType string
 
 // The reasons a fact can hold.
 const (
-	ReasonAsserted ReasonType = "asserted"
-	ReasonRule     ReasonType = "rule"
-	ReasonUnder    ReasonType = "under"
-	ReasonChains   ReasonType = "chains"
+	ReasonStated     ReasonType = "stated"
+	ReasonDefault    ReasonType = "default"
+	ReasonDerivative ReasonType = "derivative"
+	ReasonUnder      ReasonType = "under"
+	ReasonChains     ReasonType = "chains"
 )
 
-// Binding is the thing a variable stood for when a rule fired.
+// Stated says whether a reason is a file's own: written in it, or the
+// default of a field it left out.
+func Stated(r Reason) bool {
+	return r.Type == ReasonStated || r.Type == ReasonDefault
+}
+
+// Binding is the thing a variable stood for when a derivative matched.
 type Binding struct {
 	Var string `json:"var"`
 	ID  string `json:"id"`
 }
 
-// Reason records why a fact holds: written in a file, or added by a rule or a
-// built-in inference from other facts.
+// Reason records why a fact holds: written in a file, or added by a
+// derivative or by what a link declares.
 type Reason struct {
-	Type     ReasonType
-	Pos      diag.Pos
-	Rule     model.QName
-	Bindings []Binding
-	Premises []Fact
+	Type       ReasonType
+	Pos        diag.Pos
+	Derivative model.QName
+	Bindings   []Binding
+	Premises   []Fact
 }
 
 // Graph is a set of facts with the reason each one holds.
@@ -155,6 +162,24 @@ func Add(g *Graph, f Fact, r Reason) bool {
 	}
 	g.Reasons[k] = r
 	g.Order = append(g.Order, f)
+	return true
+}
+
+// SetDefault replaces a field value that only a default gave, so a
+// derivative can set the field. It returns false when the value has another
+// reason.
+func SetDefault(g *Graph, f Fact, r Reason) bool {
+	k := Key(f)
+	if cur, ok := g.Reasons[k]; !ok || cur.Type != ReasonDefault {
+		return false
+	}
+	g.Fields[f.Node][f.Field] = f.Value
+	g.Reasons[k] = r
+	for i, o := range g.Order {
+		if Key(o) == k {
+			g.Order[i] = f
+		}
+	}
 	return true
 }
 

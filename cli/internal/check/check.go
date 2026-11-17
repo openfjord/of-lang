@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package check finds problems in definitions that loading alone does not:
-// names, cycles, links that cannot fit their kinds, variables missing from a
-// sentence, rules that can never settle, values that break their own schema,
-// and docs that point at nothing.
+// names, cycles, unions, links that cannot fit their kinds, values that break
+// their own schema, variables and comparisons in constraints and derivatives,
+// derivatives that can never settle, tags, exports, and docs that point at
+// nothing. Each message ends with the rule of the specification it enforces.
 package check
 
 import (
+	"cmp"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,146 +20,183 @@ import (
 	"github.com/openfjord/of-lang/cli/internal/diag"
 	"github.com/openfjord/of-lang/cli/internal/engine"
 	"github.com/openfjord/of-lang/cli/internal/model"
+	"github.com/openfjord/of-lang/cli/internal/source"
 	"github.com/openfjord/of-lang/cli/internal/value"
 	"github.com/openfjord/of-lang/cli/internal/world"
 )
 
 var (
-	kindName      = regexp.MustCompile(`^[A-Z][A-Za-z0-9]*$`)
-	linkName      = regexp.MustCompile(`^[a-z][a-z0-9]*([A-Z][a-z0-9]*)+$`)
-	statementName = regexp.MustCompile(`^[a-z][A-Za-z0-9]*$`)
-	docLink       = regexp.MustCompile(`!?\[[^\]]*\]\(([^)\s]+)\)`)
-	varInText     = regexp.MustCompile(`\$[a-z][A-Za-z0-9]*`)
+	upperCamel = regexp.MustCompile(`^[A-Z][A-Za-z0-9]*$`)
+	lowerCamel = regexp.MustCompile(`^[a-z][A-Za-z0-9]*$`)
+	linkName   = regexp.MustCompile(`^[a-z][a-z0-9]*([A-Z][a-z0-9]*)+$`)
+	docLink    = regexp.MustCompile(`!?\[[^\]]*\]\(([^)\s]+)\)`)
 )
+
+// LowerCamel says whether a name is lowerCamelCase, as constraint,
+// derivative, test and question names are.
+func LowerCamel(s string) bool { return lowerCamel.MatchString(s) }
 
 // World checks every definition of the root package.
 func World(w model.World) []diag.Diagnostic {
 	var ds []diag.Diagnostic
 	root := w.Root
-	for _, k := range sortedByPos(w.Kinds, func(k model.Kind) (model.QName, diag.Pos) { return k.Q, k.Pos }) {
+	pkg := w.Packages[root]
+	for _, k := range sorted(w.Kinds, func(k model.Kind) diag.Pos { return k.Pos }) {
 		if k.Q.Pkg == root {
 			ds = append(ds, checkKind(w, k)...)
 		}
 	}
-	for _, l := range sortedByPos(w.Links, func(l model.Link) (model.QName, diag.Pos) { return l.Q, l.Pos }) {
+	for _, l := range sorted(w.Links, func(l model.Link) diag.Pos { return l.Pos }) {
 		if l.Q.Pkg == root {
 			ds = append(ds, checkLink(w, l)...)
 		}
 	}
-	for _, vt := range sortedByPos(w.ValueTypes, func(v model.ValueType) (model.QName, diag.Pos) { return v.Q, v.Pos }) {
+	for _, vt := range sorted(w.ValueTypes, func(v model.ValueType) diag.Pos { return v.Pos }) {
 		if vt.Q.Pkg != root {
 			continue
 		}
-		if !kindName.MatchString(vt.Q.Name) {
-			ds = append(ds, diag.New(vt.Pos, "value type %s should be written in UpperCamelCase", vt.Q.Name))
+		if !upperCamel.MatchString(vt.Q.Name) {
+			ds = append(ds, diag.New(vt.Pos, "value type %s must be UpperCamelCase (FL7)", vt.Q.Name))
 		}
 		ds = append(ds, checkSchema(w, vt.Schema, vt.Q.Name)...)
 	}
 	for _, q := range w.Order {
 		if q.Pkg == root {
-			ds = append(ds, checkStatement(w.Statements[q])...)
+			ds = append(ds, Statement(w, w.Statements[q], nil)...)
 		}
 	}
+	ds = append(ds, checkFieldWriters(w)...)
 	_, sds := engine.Stratify(w)
 	ds = append(ds, sds...)
-	pkg := w.Packages[root]
-	ds = append(ds, checkExports(pkg)...)
+	ds = append(ds, checkTags(w)...)
+	ds = append(ds, checkExports(w, pkg)...)
 	for _, doc := range pkg.Docs {
 		ds = append(ds, checkDoc(doc)...)
 	}
 	return diag.Sorted(ds)
 }
 
-func sortedByPos[V any](m map[model.QName]V, key func(V) (model.QName, diag.Pos)) []V {
+func sorted[V any](m map[model.QName]V, pos func(V) diag.Pos) []V {
 	out := make([]V, 0, len(m))
 	for _, v := range m {
 		out = append(out, v)
 	}
 	slices.SortFunc(out, func(a, b V) int {
-		_, pa := key(a)
-		_, pb := key(b)
-		if c := strings.Compare(pa.File, pb.File); c != 0 {
-			return c
-		}
-		return pa.Line - pb.Line
+		pa, pb := pos(a), pos(b)
+		return cmp.Or(cmp.Compare(pa.File, pb.File), cmp.Compare(pa.Line, pb.Line))
 	})
 	return out
 }
 
 func checkKind(w model.World, k model.Kind) []diag.Diagnostic {
 	var ds []diag.Diagnostic
-	if !kindName.MatchString(k.Q.Name) {
-		ds = append(ds, diag.New(k.Pos, "kind %s should be written in UpperCamelCase", k.Q.Name))
+	add := func(format string, args ...any) { ds = append(ds, diag.New(k.Pos, format, args...)) }
+	if !upperCamel.MatchString(k.Q.Name) {
+		add("kind %s must be UpperCamelCase (FL7)", k.Q.Name)
 	}
-	if k.Extends != nil && slices.Contains(world.Ancestors(w, *k.Extends), k.Q) {
-		ds = append(ds, diag.New(k.Pos, "%s extends itself through %s", k.Q.Name, k.Extends.Name))
+	if k.Extends != nil {
+		switch {
+		case slices.Contains(world.Ancestors(w, *k.Extends), k.Q):
+			add("%s extends itself through %s (KD2)", k.Q.Name, k.Extends.Name)
+		case world.IsUnion(w, *k.Extends):
+			add("%s extends %s, which is a union; no kind extends a union (KD9)", k.Q.Name, k.Extends.Name)
+		}
+		if k.Extends.Pkg != k.Q.Pkg && !opens(w, k.Extends.Pkg, func(p model.OpenPoint) bool { return p.Extend == k.Extends.Name }) {
+			add("%s extends %s, which package %s does not open with openFor: extend (PK12)", k.Q.Name, k.Extends.Name, k.Extends.Pkg)
+		}
+	}
+	if len(k.OneOf) > 0 {
+		if len(k.OneOf) < 2 {
+			add("oneOf of %s lists one kind; a union lists two or more (KD7)", k.Q.Name)
+		}
+		for _, a := range k.OneOf {
+			for _, b := range k.OneOf {
+				if a != b && slices.Contains(world.Ancestors(w, a), b) {
+					add("%s lists %s and %s, but %s extends %s, so a thing would be two listed kinds (KD7)", k.Q.Name, a.Name, b.Name, a.Name, b.Name)
+				}
+			}
+		}
+		if len(k.Fields) > 0 {
+			add("%s is a union, so it has no fields; its listed kinds keep their own (KD8)", k.Q.Name)
+		}
+		if k.Extends != nil {
+			add("%s is a union, so it extends no kind (KD12)", k.Q.Name)
+		}
+	}
+	var inherited []model.Field
+	if k.Extends != nil {
+		inherited = world.Fields(w, *k.Extends)
 	}
 	for _, f := range k.Fields {
+		if slices.ContainsFunc(inherited, func(i model.Field) bool { return i.Name == f.Name }) {
+			ds = append(ds, diag.New(f.Pos, "%s declares %s, which it already has from a kind it extends; put a stricter rule in a constraint (KD13)", k.Q.Name, f.Name))
+		}
 		ds = append(ds, checkSchema(w, f.Schema, k.Q.Name+"."+f.Name)...)
-		if f.Optional && f.Schema.Default != nil {
-			ds = append(ds, diag.New(f.Pos, "%s has a default, so optional: true says nothing", f.Name))
-		}
-	}
-	for _, lc := range k.Links {
-		link, ok := w.Links[lc.Ref.Q]
-		if !ok {
-			continue
-		}
-		end := link.From
-		if lc.Ref.Inverted {
-			end = link.To
-		}
-		if !world.IsA(w, k.Q, end) {
-			ds = append(ds, diag.New(lc.Pos, "%s starts at a %s, so a %s cannot have it", lc.Name, end.Name, k.Q.Name))
-		}
 	}
 	return ds
 }
 
+// opens says whether a package opens an extension point.
+func opens(w model.World, pkg string, match func(model.OpenPoint) bool) bool {
+	return slices.ContainsFunc(w.Packages[pkg].Manifest.OpenFor, match)
+}
+
 func checkLink(w model.World, l model.Link) []diag.Diagnostic {
 	var ds []diag.Diagnostic
+	add := func(format string, args ...any) { ds = append(ds, diag.New(l.Pos, format, args...)) }
 	if !linkName.MatchString(l.Q.Name) {
-		ds = append(ds, diag.New(l.Pos, "link %s needs two or more words in lowerCamelCase, such as ownedByTeam", l.Q.Name))
+		add("link %s needs two or more words in lowerCamelCase, such as usesRecipe (LK1)", l.Q.Name)
 	}
 	if l.Inverse != "" && !linkName.MatchString(l.Inverse) {
-		ds = append(ds, diag.New(l.Pos, "inverse %s needs two or more words in lowerCamelCase", l.Inverse))
-	}
-	if !strings.Contains(l.Reads, "{from}") || !strings.Contains(l.Reads, "{to}") {
-		ds = append(ds, diag.New(l.Pos, "reads: of %s must use both {from} and {to}", l.Q.Name))
+		add("inverse %s needs two or more words in lowerCamelCase (LK1)", l.Inverse)
 	}
 	if l.Under != nil {
-		if slices.Contains(world.SuperLinks(w, *l.Under), l.Q) || *l.Under == l.Q {
-			ds = append(ds, diag.New(l.Pos, "%s sits under itself through %s", l.Q.Name, l.Under.Name))
+		if *l.Under == l.Q || slices.Contains(world.SuperLinks(w, *l.Under), l.Q) {
+			add("%s is under itself through %s (LK4)", l.Q.Name, l.Under.Name)
 		} else if super, ok := w.Links[*l.Under]; ok {
 			if !world.IsA(w, l.From, super.From) || !world.IsA(w, l.To, super.To) {
-				ds = append(ds, diag.New(l.Pos, "%s joins %s to %s, which does not fit under %s, which joins %s to %s", l.Q.Name, l.From.Name, l.To.Name, super.Q.Name, super.From.Name, super.To.Name))
+				add("%s joins %s to %s, which does not fit under %s, which joins %s to %s (LK4)", l.Q.Name, l.From.Name, l.To.Name, super.Q.Name, super.From.Name, super.To.Name)
 			}
 		}
+		if l.Under.Pkg != l.Q.Pkg && !opens(w, l.Under.Pkg, func(p model.OpenPoint) bool { return p.Under == l.Under.Name }) {
+			add("%s is under %s, which package %s does not open with openFor: under (PK12)", l.Q.Name, l.Under.Name, l.Under.Pkg)
+		}
 	}
-	if l.Chains && !world.IsA(w, l.To, l.From) && !world.IsA(w, l.From, l.To) {
-		ds = append(ds, diag.New(l.Pos, "%s chains, so it must join a kind to the same kind; it joins %s to %s", l.Q.Name, l.From.Name, l.To.Name))
+	if l.Chains && !world.IsA(w, l.To, l.From) {
+		add("%s chains, so its to must be its from or a kind that extends it; it joins %s to %s (LK5)", l.Q.Name, l.From.Name, l.To.Name)
 	}
 	return ds
 }
 
 func checkSchema(w model.World, s model.Schema, owner string) []diag.Diagnostic {
 	var ds []diag.Diagnostic
-	base := model.Schema{Type: s.Type, Ref: s.Ref, HasRef: s.HasRef}
+	full := world.Resolved(w, s)
+	base := model.Schema{Type: full.Type, Ref: s.Ref, HasRef: s.HasRef}
 	for _, e := range s.Enum {
 		for _, msg := range value.Validate(w, base, e) {
-			ds = append(ds, diag.New(s.Pos, "%s: enum value %s", owner, msg))
+			ds = append(ds, diag.New(s.Pos, "%s: enum value %s (FD5)", owner, msg))
 		}
 	}
-	for name, v := range map[string]*model.Value{"default": s.Default, "const": s.Const} {
-		if v == nil {
+	for _, kv := range []struct {
+		name string
+		v    *model.Value
+	}{{"default", s.Default}, {"const", s.Const}} {
+		if kv.v == nil {
 			continue
 		}
-		for _, msg := range value.Validate(w, s, *v) {
-			ds = append(ds, diag.New(s.Pos, "%s: %s %s", owner, name, msg))
+		for _, msg := range value.Validate(w, s, *kv.v) {
+			ds = append(ds, diag.New(s.Pos, "%s: %s %s (FD5)", owner, kv.name, msg))
 		}
 	}
 	if s.HasRef {
 		ds = append(ds, checkNarrowing(w, s, owner)...)
+		if vt, ok := w.ValueTypes[s.Ref]; ok && len(vt.Schema.OneOf) > 0 {
+			for _, k := range s.Keywords {
+				if !slices.Contains([]string{"type", "optional", "default"}, k) {
+					ds = append(ds, diag.New(s.Pos, "%s names %s, which has oneOf, so it adds only optional or default, not %s (VT6)", owner, vt.Q.Name, k))
+				}
+			}
+		}
 	}
 	if s.Items != nil {
 		ds = append(ds, checkSchema(w, *s.Items, owner+" items")...)
@@ -165,19 +204,22 @@ func checkSchema(w model.World, s model.Schema, owner string) []diag.Diagnostic 
 	for _, p := range s.Properties {
 		ds = append(ds, checkSchema(w, p.Schema, owner+"."+p.Name)...)
 	}
+	for _, c := range s.OneOf {
+		ds = append(ds, checkSchema(w, c, owner+" choice")...)
+	}
 	return ds
 }
 
-// checkNarrowing reports a field that loosens the value type it names.
+// checkNarrowing reports a field that widens the value type it names.
 func checkNarrowing(w model.World, s model.Schema, owner string) []diag.Diagnostic {
 	vt, ok := w.ValueTypes[s.Ref]
 	if !ok {
 		return nil
 	}
-	base := vt.Schema
+	base := world.Resolved(w, vt.Schema)
 	var ds []diag.Diagnostic
 	widen := func(what string) {
-		ds = append(ds, diag.New(s.Pos, "%s widens %s's %s; a field may only narrow a value type", owner, vt.Q.Name, what))
+		ds = append(ds, diag.New(s.Pos, "%s widens the %s of %s; a field may only narrow a value type (VT3)", owner, what, vt.Q.Name))
 	}
 	if s.MinLength != nil && base.MinLength != nil && *s.MinLength < *base.MinLength {
 		widen("minLength")
@@ -197,87 +239,47 @@ func checkNarrowing(w model.World, s model.Schema, owner string) []diag.Diagnost
 	return ds
 }
 
-func checkStatement(st model.Statement) []diag.Diagnostic {
-	var ds []diag.Diagnostic
-	if !statementName.MatchString(st.Q.Name) {
-		ds = append(ds, diag.New(st.Pos, "%s should be written in lowerCamelCase", st.Q.Name))
-	}
-	used := usedVars(st)
-	for _, v := range used {
-		if !slices.Contains(st.Vars, v) {
-			ds = append(ds, diag.New(st.Pos, "%s uses %s, which its sentence does not mention; every variable appears in the sentence", st.Q.Name, v))
-		}
-	}
-	for _, v := range varInText.FindAllString(st.Message, -1) {
-		if !slices.Contains(engine.OuterVars(st), v) {
-			ds = append(ds, diag.New(st.Pos, "the message of %s uses %s, which no match binds", st.Q.Name, v))
-		}
-	}
-	return ds
-}
-
-func usedVars(st model.Statement) []string {
-	var out []string
-	add := func(v string) {
-		if v != "" && !slices.Contains(out, v) {
-			out = append(out, v)
-		}
-	}
-	addLinks := func(pls []model.PatternLink) {
-		for _, pl := range pls {
-			add(pl.From)
-			add(pl.To)
-		}
-	}
-	var addConds func([]model.Condition)
-	addConds = func(cs []model.Condition) {
-		for _, c := range cs {
-			add(c.Node)
-			add(c.Than.Node)
-			addLinks(c.Links)
-			addConds(c.Where)
-			addConds(c.Any)
-		}
-	}
-	addLinks(st.Links)
-	addConds(st.Where)
-	addConds(st.Require)
-	for _, d := range st.Derive {
-		add(d.From)
-		add(d.To)
-		add(d.Node)
-		add(d.SetTo.Node)
-	}
-	return out
-}
-
-func checkExports(pkg model.Package) []diag.Diagnostic {
+func checkExports(w model.World, pkg model.Package) []diag.Diagnostic {
 	var ds []diag.Diagnostic
 	ex := pkg.Manifest.Exports
-	for sort, names := range map[model.Sort][]string{model.SortKind: ex.Kinds, model.SortLink: ex.Links, model.SortValueType: ex.ValueTypes} {
-		for _, n := range names {
+	for _, list := range []struct {
+		sort  model.Sort
+		names []string
+	}{{model.SortKind, ex.Kinds}, {model.SortLink, ex.Links}, {model.SortValueType, ex.ValueTypes}} {
+		for _, n := range list.names {
 			d, ok := pkg.Defs[n]
 			switch {
 			case !ok:
-				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s, which the package does not define", n))
+				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s, which the package does not define (PK11)", n))
 			case d.InverseOf != "":
-				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s, an inverse name; export its link %s instead", n, d.InverseOf))
-			case d.Sort != sort:
-				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s as a %s, but it is a %s", n, sort, d.Sort))
+				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s, an inverse name; export its link %s, which exports both (PK11)", n, d.InverseOf))
+			case d.Sort != list.sort:
+				ds = append(ds, diag.New(pkg.Manifest.Pos, "exports %s as a %s, but it is a %s (PK11)", n, list.sort, d.Sort))
 			}
 		}
 	}
 	for _, p := range pkg.Manifest.OpenFor {
-		name := p.Extend + p.Under
-		if _, ok := pkg.Defs[name]; !ok {
-			ds = append(ds, diag.New(pkg.Manifest.Pos, "openFor names %s, which the package does not define", name))
+		switch {
+		case p.Extend != "":
+			d, ok := pkg.Defs[p.Extend]
+			switch {
+			case !ok || d.Sort != model.SortKind:
+				ds = append(ds, diag.New(p.Pos, "openFor: extend names %s, which is not a kind of the package (PK13)", p.Extend))
+			case world.IsUnion(w, model.QName{Pkg: pkg.Name, Name: p.Extend}):
+				ds = append(ds, diag.New(p.Pos, "openFor: extend names %s, which is a union; no kind extends a union (PK13)", p.Extend))
+			}
+		default:
+			d, ok := pkg.Defs[p.Under]
+			if !ok || d.Sort != model.SortLink || d.InverseOf != "" {
+				ds = append(ds, diag.New(p.Pos, "openFor: under names %s, which is not a link of the package (PK13)", p.Under))
+			}
 		}
 	}
 	return ds
 }
 
-// checkDoc reports links and embeds in a doc that point at a missing file, or
-// at a name its YAML file does not define.
+// checkDoc reports links and embeds in a doc that point at a missing file,
+// or at a name its file does not define.
 func checkDoc(path string) []diag.Diagnostic {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -294,14 +296,14 @@ func checkDoc(path string) []diag.Diagnostic {
 			file, name, _ := strings.Cut(target, "#")
 			full := filepath.Join(filepath.Dir(path), file)
 			if _, err := os.Stat(full); err != nil {
-				ds = append(ds, diag.New(pos, "%s does not exist", file))
+				ds = append(ds, diag.New(pos, "%s does not exist (DC2)", file))
 				continue
 			}
-			if name == "" || !strings.HasSuffix(file, ".yaml") {
+			if _, ok := source.FormOf(file); !ok || name == "" {
 				continue
 			}
 			if !definesName(full, name) {
-				ds = append(ds, diag.New(pos, "%s does not define %s", file, name))
+				ds = append(ds, diag.New(pos, "%s has no statement %s (DC2)", file, name))
 			}
 		}
 	}
