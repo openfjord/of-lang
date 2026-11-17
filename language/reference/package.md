@@ -22,7 +22,7 @@ restaurant/
     station.of.yaml                   # Station, its links, the derivative about stations
     recipe.of.yaml                    # Recipe and its kinds, their links, the derivative about recipes
     ingredient.of.yaml                # Ingredient, Allergen, and the link between them
-    allergens.of.yaml                 # a constraint and derivatives that concern several kinds
+    allergens.of.yaml                 # the allergen topic: its links, derivatives and constraint
   docs/                            # Markdown that explains the definitions
     allergens.md
   tests/                           # examples and questions
@@ -40,12 +40,10 @@ restaurant/
   name of the form of the package, such as `.of.yaml`
   ([FL15](files.md#files-and-statements)). A file in `defs/` MAY hold
   definitions of any sort, in any combination.
-- **PK3.** In `defs/`, a definition SHOULD be next to the item that it is
-  about:
-  - a link with the kind where the link starts
-  - a constraint or derivative with the kind that it concerns
-  - a constraint or derivative that concerns several kinds one level higher,
-    next to all of those kinds.
+- **PK3.** In `defs/`, a definition SHOULD be in the file of its topic:
+  - a link, constraint or derivative that concerns one kind, with that kind
+  - definitions that serve one topic across several kinds, such as
+    allergens, together in one file for that topic.
 
 ## The manifest
 
