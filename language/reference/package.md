@@ -135,9 +135,12 @@ them.
 - **PK11.** Every name in `exports` MUST be a definition of the package, and
   of the sort that its list shows. The inverse name of a link MUST NOT be in
   `exports`. The package exports it with its link.
-- **PK12.** A package MUST state things only about its own definitions,
-  except through the extension points that its dependencies open in
-  `openFor`.
+- **PK12.** A package MAY use the definitions of its dependencies: as the
+  ends of its own links, in its own unions, and in the `match` and
+  conditions of its own constraints and derivatives. It MAY extend a kind,
+  or declare a link `under` a link, only where the dependency opens it in
+  `openFor`. A derivative MUST NOT add a link, a kind or a field value of a
+  different package.
 - **PK13.** Every name in `openFor` MUST be a definition of the package:
   `extend` identifies a kind, and `under` identifies a link. `extend` MUST
   NOT identify a kind with `oneOf` ([KD9](kind.md#unions)).
