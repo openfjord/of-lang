@@ -244,6 +244,10 @@ This is an early list, not a decision. The tool may need to:
   `of-lang ui` starts a server that serves it. The interface always changes
   the files of a package, in whichever form those files are. The rest of its design is not yet discussed.
 
+## Changelog
+
+What each version changed is in the [changelog](CHANGELOG.md).
+
 ## License
 
 Licensed under the [Apache License 2.0](LICENSE).
