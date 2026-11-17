@@ -107,7 +107,7 @@ is the package `kitchen` in the namespace `@bistro`.
 
 A package has one owner. That owner owns everything in the package:
 definitions, docs and tests. The owner must approve each change to the package
-(reasons 7 and 8 in [the overview](../../README.md#why-ontologies-are-hard-for-software-people)). The users choose which
+(reasons 7 and 8 in [the design notes](../../docs/design.md#why-ontologies-are-hard-for-software-people)). The users choose which
 packages hold which terms.
 
 - **PK8.** No item in a package has its own owner. Thus, terms with different

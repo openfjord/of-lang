@@ -10,7 +10,7 @@ A fact tells what a thing is: its kind, its fields and its links. Facts that
 files contain are stated facts. They occur only in the tests of a package,
 where they are the data for examples and questions. Facts that derivatives add
 are [derived](#derived-facts). Facts that running systems write are deferred
-(see [the overview](../../README.md#deferred-facts-at-runtime)).
+(see [the design notes](../../docs/design.md#deferred-facts-at-runtime)).
 
 ```yaml
 import:
