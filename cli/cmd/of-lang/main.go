@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Command of-lang checks packages written in the modeling language, runs their
 // rules over facts, explains what it derived, compares two sets of facts, and
 // runs a package's tests.

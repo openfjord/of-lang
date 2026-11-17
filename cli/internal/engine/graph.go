@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package engine runs a package's rules over facts until nothing new appears,
 // then checks its constraints and link counts. Every fact it adds keeps the
 // reason it was added, so any result can be explained.

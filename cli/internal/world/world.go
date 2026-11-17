@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package world answers questions about loaded definitions that several
 // stages ask: which kinds a kind extends, which fields and link counts it
 // carries, and which links a link sits under.

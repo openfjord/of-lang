@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package source reads the language's YAML files into entries and import
 // blocks, keeping positions so later stages can point at what they reject.
 package source

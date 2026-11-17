@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package value compares literal values, renders them, and checks them
 // against the language's subset of JSON Schema.
 package value

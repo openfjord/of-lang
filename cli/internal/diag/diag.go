@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package diag holds the problems the tool reports about a user's files, so
 // every stage can report several at once instead of stopping at the first.
 package diag

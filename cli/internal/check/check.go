@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package check finds problems in definitions that loading alone does not:
 // names, cycles, links that cannot fit their kinds, variables missing from a
 // sentence, rules that can never settle, values that break their own schema,

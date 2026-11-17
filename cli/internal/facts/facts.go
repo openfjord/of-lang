@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package facts reads a test file: its facts, checked against their kinds,
 // and the tests and questions written beside them.
 package facts

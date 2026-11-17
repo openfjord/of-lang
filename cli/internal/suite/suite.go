@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package suite runs a package's tests: examples that expect some facts to be
 // derived and some constraints to reject, and questions that expect answers.
 package suite

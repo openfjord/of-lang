@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package model holds what the language's files mean once their names are
 // resolved: kinds, links, value types, statements and facts. It is inert data;
 // loading, checking and running live in other packages.

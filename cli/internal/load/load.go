@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // Package load reads a package and its dependencies from disk, resolves every
 // import block, and turns each entry into the model's definitions.
 package load
