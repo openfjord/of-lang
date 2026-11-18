@@ -11,6 +11,7 @@
 </head>
 <body>
 <header>
+<button id="menu" type="button" aria-expanded="false" aria-controls="pages">Menu</button>
 <a class="site" href="{{home}}"><img src="{{logo}}" alt="" width="28" height="28">{{site}}</a>
 <span class="tools">
 <a href="{{source}}">Source</a>
@@ -18,7 +19,7 @@
 </span>
 </header>
 <div class="layout">
-<nav aria-label="Pages">
+<nav id="pages" aria-label="Pages">
 {{nav}}
 </nav>
 <main>

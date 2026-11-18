@@ -7,6 +7,12 @@
     // No storage: the page stays dark.
   }
   document.addEventListener("DOMContentLoaded", function () {
+    // On a small screen, the Menu button opens and closes the navigation.
+    var menu = document.getElementById("menu");
+    menu.addEventListener("click", function () {
+      var open = root.classList.toggle("nav-open");
+      menu.setAttribute("aria-expanded", open ? "true" : "false");
+    });
     document.getElementById("theme").addEventListener("click", function () {
       var light = root.dataset.theme !== "light";
       if (light) root.dataset.theme = "light";
