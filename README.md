@@ -13,6 +13,14 @@ down, explains each one, and runs the model's tests.
   <img src="docs/images/openfjord.png" alt="The OpenFjord logo: a fjord between mountains, above circuit lines" width="220">
 </p>
 
+<p align="center">
+  <img src="docs/images/of-lang-flow.svg" alt="Packages go into the OpenFjord modeling language, which checks, derives, explains and tests. An agent, an MCP server, a coding factory, a knowledge base and a semantic layer use what it knows." width="100%">
+</p>
+
+Packages go into the language. An agent, an MCP (Model Context Protocol)
+server, a coding factory, a knowledge base and a semantic layer use what it
+knows.
+
 > **Version 0.1.0.** Before version 1.0, the language can change in ways
 > that break a package.
 
