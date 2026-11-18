@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/station.of.yaml
+    use: [Station, dependsOnStation]
+
+whichStationsStopWithTheSauceStation:
+  is: Question
+  asks: Which stations cannot make all of their recipes when the sauce station stops work?
+  given: file:../examples/allergen-through-a-sauce.of.yaml
+  match:
+    - kind: { name: Station, as: $station }
+    - kind: { name: Station, as: $other }
+    - link: dependsOnStation
+      from: $station
+      to:   $other
+  filter:
+    - node: $other
+      equals:
+        value: station/sauce
+  expect:
+    $station: [station/pizza]

@@ -1,0 +1,111 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name, Minutes, Price, URL]
+  - from: file:station.of.yaml
+    use: [Station]
+  - from: file:ingredient.of.yaml
+    use: [Ingredient]
+
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients and other recipes.
+  examples:
+    - the tomato sauce
+    - the pizza dough
+  notExamples:
+    - a food that the restaurant buys and does not make, such as flour
+    - a new dish that a cook tries one time and does not keep
+  fields:
+    name:
+      type: Name
+    steps:
+      type: URL
+    prepMinutes:
+      type: Minutes
+      optional: true
+
+Dish:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.
+  examples:
+    - the pizza margherita
+  notExamples:
+    - the tomato sauce, which is only a part of a dish
+  fields:
+    price:
+      type: Price
+    status:
+      enum: [active, retired]
+      default: active
+
+BaseRecipe:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that many other recipes use, so a change to it needs extra care.
+
+madeAtStation:
+  is: Link
+  from: Recipe
+  to: Station
+  reads: "{from} is made at {to}"
+  definition: The station where cooks make the recipe.
+  inverse: makesRecipe
+
+usesRecipe:
+  is: Link
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"
+  definition: The first recipe needs the second recipe, directly or through other recipes.
+  chains: true
+  inverse: usedByRecipe
+
+usesIngredient:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The recipe needs the ingredient.
+
+usesGarnish:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} is garnished with {to}"
+  definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
+  under: usesIngredient
+
+baseRecipeFromUses:
+  is: Derivative
+  says: >
+    A recipe that more than two recipes use, directly or through other
+    recipes, is a base recipe.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+  filter:
+    - count:
+        match:
+          - link: usesRecipe
+            from: Recipe
+            to:   $recipe
+      is above:
+        value: 2
+  derive:
+    - node: $recipe
+      becomes: BaseRecipe
+
+recipeAtOneStation:
+  is: Constraint
+  says: Cooks make each recipe at exactly one station.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+  filter:
+    - count:
+        match:
+          - link: madeAtStation
+            from: $recipe
+            to:   Station
+      does not equal:
+        value: 1
+  message: "{$recipe} must be made at exactly one station."

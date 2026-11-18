@@ -1,0 +1,12 @@
+import:
+  - from: file:recipe.of.yaml
+    use: [Dish]
+  - from: file:ingredient.of.yaml
+    use: [Allergen]
+
+listsAllergen:
+  is: Link
+  from: Dish
+  to: Allergen
+  reads: "the menu tells guests that {from} contains {to}"
+  definition: The menu gives a warning about the allergen next to the dish.

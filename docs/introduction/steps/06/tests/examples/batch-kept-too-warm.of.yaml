@@ -1,0 +1,57 @@
+import:
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Ingredient]
+  - from: file:../../defs/spoilage.of.yaml
+    use: [StorageZone, Batch, batchOf, keptIn, batchKeptColdEnough, useByAfterArrival]
+
+batchKeptTooWarm:
+  is: Test
+  says: >
+    Parmesan must stay at 8 °C or colder. One batch is in the fridge, which
+    is cold enough. A second batch is in the dry store, which is too warm,
+    so the constraint rejects it. The use-by days are after the days that
+    the batches arrived.
+  expect:
+    rejected: [batchKeptColdEnough]
+
+ingredient/parmesan:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: parmesan
+
+zone/fridge:
+  is: Fact
+  kind: StorageZone
+  fields:
+    name: fridge
+    maxCelsius: 4
+
+zone/dry_store:
+  is: Fact
+  kind: StorageZone
+  fields:
+    name: dry_store
+    maxCelsius: 20
+
+batch/parmesan_monday:
+  is: Fact
+  kind: Batch
+  fields:
+    receivedOn: 2026-11-16
+    useBy: 2026-12-14
+    keepAtMostCelsius: 8
+  links:
+    batchOf: ingredient/parmesan
+    keptIn: zone/fridge
+
+batch/parmesan_tuesday:
+  is: Fact
+  kind: Batch
+  fields:
+    receivedOn: 2026-11-17
+    useBy: 2026-12-15
+    keepAtMostCelsius: 8
+  links:
+    batchOf: ingredient/parmesan
+    keptIn: zone/dry_store

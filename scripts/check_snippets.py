@@ -3,7 +3,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["pyyaml==6.0.2"]
 # ///
-"""Check that every YAML snippet in the reference and the by-example pages is valid.
+"""Check that every YAML snippet in the reference, the by-example pages and the introduction is valid.
 
 Each snippet starts with a comment that names its file in the restaurant
 example, such as ``# defs/recipe.of.yaml`` or ``# package.yaml``. A snippet can
@@ -20,6 +20,17 @@ the same name shows it. The YAML blocks of the page, joined in page order,
 must be exactly the files of the package, and ``of-lang check`` and ``of-lang
 test`` must pass on it. There, only the first block of a file starts with the
 comment that names it. A page can leave out the manifest.
+
+Each folder in ``docs/introduction/steps`` is the restaurant package as it is
+after the chapter of the introduction with the same number. ``of-lang check``
+and ``of-lang test`` must pass on each one, with ``examples/`` as the place of
+its dependencies, and the last one must have exactly the files of
+``examples/restaurant``. Each snippet of a chapter starts with a comment that
+names its file, and each statement, import block and manifest key that it shows
+must be exactly the one of the chapter's package. A statement with a pending
+change is the exception: the version without the change must be the real one,
+and an added statement must be absent. Such a chapter's snippets are merged
+into a fresh copy of its package, which must then pass the two commands.
 
 Usage: uv run scripts/check_snippets.py
 """
@@ -41,6 +52,9 @@ EXAMPLES = REPO / "examples"
 PACKAGE = "restaurant"
 PAGES = (REPO / "language" / "reference",)
 BY_EXAMPLE = REPO / "docs" / "by-example"
+INTRODUCTION = REPO / "docs" / "introduction"
+STEPS = INTRODUCTION / "steps"
+CHAPTERS = "[0-9][0-9]-*.md"
 PACKAGE_FILES = ("package.y*ml", "defs/**/*.of.*", "tests/**/*.of.*")
 MANIFESTS = frozenset({"package.yaml", "package.yml"})
 HEADER = re.compile(r"^# ((?:defs|tests)/\S+\.of\.ya?ml|package\.ya?ml)\s*$")
@@ -196,26 +210,69 @@ def as_before_change(value: Yaml) -> Yaml:
             return value
 
 
-def differences(file: SnippetFile) -> tuple[str, ...]:
-    """Name each statement or manifest key of a snippet file that differs from the real one."""
-    target = EXAMPLES / PACKAGE / file.path
-    if not target.exists():
-        return ()
-    old = load_mapping(target.read_text())
-    new = load_mapping(file.text)
-    return tuple(
-        f"{file.path}: {key} is not the same as in examples/{PACKAGE}"
-        for key, value in new.items()
-        if key != "import" and key in old and old[key] != as_before_change(value)
+def has_pending(value: Yaml) -> bool:
+    """Tell if a value is a statement that carries a pending change."""
+    return isinstance(value, dict) and "pending" in value
+
+
+def is_added(value: Yaml) -> bool:
+    """Tell if a value is a statement that a pending change adds."""
+    return (
+        isinstance(value, dict)
+        and cast("Mapping[str, Yaml]", value).get("pending") == "added"
     )
 
 
+def differences(
+    file: SnippetFile, package: Path = EXAMPLES / PACKAGE, *, whole: bool = False
+) -> tuple[str, ...]:
+    """Name each statement or manifest key of a snippet file that differs from the one in a package.
+
+    By default, the import block and anything that the package does not have
+    are not compared. With ``whole``, the import block must also be the same,
+    and the package must have everything that the file shows. Only a statement
+    that a pending change adds, and the import block of a file that the
+    change adds, can be absent.
+    """
+    target = package / file.path
+    where = package.relative_to(REPO).as_posix()
+    if not target.exists() and not whole:
+        return ()
+    old = load_mapping(target.read_text()) if target.exists() else {}
+    new = load_mapping(file.text)
+    changed = tuple(
+        f"{file.path}: {key} is not the same as in {where}"
+        for key, value in new.items()
+        if (whole or key != "import")
+        and key in old
+        and old[key] != as_before_change(value)
+    )
+    absent = tuple(
+        f"{file.path}: {key} is not in {where}"
+        for key, value in new.items()
+        if whole
+        and key not in old
+        and not is_added(value)
+        and not (key == "import" and not target.exists())
+    )
+    return changed + absent
+
+
 def run_tool(
-    tool: Path, workdir: Path, command: str, package: str = PACKAGE
+    tool: Path,
+    workdir: Path,
+    command: str,
+    package: str = PACKAGE,
+    packages: Path | None = None,
 ) -> tuple[bool, str]:
-    """Run one of-lang command on a package in a workdir."""
+    """Run one of-lang command on a package in a workdir.
+
+    ``packages`` is where the tool looks for the dependencies of the package.
+    By default, that is the folder that holds the package.
+    """
+    flags = [] if packages is None else ["--packages", str(packages)]
     done = subprocess.run(  # noqa: S603 — runs the tool this script just built
-        [str(tool), command, package],
+        [str(tool), command, *flags, package],
         cwd=workdir,
         capture_output=True,
         text=True,
@@ -224,21 +281,32 @@ def run_tool(
     return done.returncode == 0, (done.stdout + done.stderr).strip()
 
 
+def check_package(tool: Path, package: Path) -> str:
+    """Check and test a package that depends on the examples. Return what the first failure prints."""
+    for command in ("check", "test"):
+        ok, output = run_tool(tool, package.parent, command, package.name, EXAMPLES)
+        if not ok:
+            return f"of-lang {command}:\n{output}"
+    return ""
+
+
+def check_merged(tool: Path, package: Path, files: Sequence[SnippetFile]) -> str:
+    """Merge snippet files into a fresh copy of a package, then check and test the copy."""
+    with tempfile.TemporaryDirectory() as tmp:
+        work = Path(tmp) / package.name
+        shutil.copytree(package, work)
+        for file in files:
+            apply(work, file)
+        return check_package(tool, work)
+
+
 def check_snippet(tool: Path, snippet: Snippet) -> Problem | None:
     """Compare a snippet with the real package, then merge it into a fresh copy and check and test it."""
     diffs = [d for file in snippet.files for d in differences(file)]
     if diffs:
         return Problem(snippet, "\n".join(diffs))
-    with tempfile.TemporaryDirectory() as tmp:
-        work = Path(tmp) / "examples"
-        shutil.copytree(EXAMPLES, work)
-        for file in snippet.files:
-            apply(work / PACKAGE, file)
-        for command in ("check", "test"):
-            ok, output = run_tool(tool, work, command)
-            if not ok:
-                return Problem(snippet, f"of-lang {command}:\n{output}")
-    return None
+    failure = check_merged(tool, EXAMPLES / PACKAGE, snippet.files)
+    return Problem(snippet, failure) if failure else None
 
 
 def shown_files(page: Path) -> dict[str, list[str]]:
@@ -298,6 +366,83 @@ def check_example(tool: Path, package: Path) -> tuple[str, ...]:
     return tuple(problems)
 
 
+def all_files(package: Path) -> dict[str, bytes]:
+    """Return the content of every file of a package, by its path in the package."""
+    return {
+        file.relative_to(package).as_posix(): file.read_bytes()
+        for file in package.rglob("*")
+        if file.is_file()
+    }
+
+
+def check_finished(step: Path) -> tuple[str, ...]:
+    """Compare the last package of the introduction with the restaurant example."""
+    where = step.relative_to(REPO).as_posix()
+    shown, real = all_files(step), all_files(EXAMPLES / PACKAGE)
+    return (
+        *(
+            f"{where}: {path} is not the same as in examples/{PACKAGE}"
+            for path in sorted(shown.keys() & real.keys())
+            if shown[path] != real[path]
+        ),
+        *(
+            f"{where}: {path} is not in examples/{PACKAGE}"
+            for path in sorted(shown.keys() - real.keys())
+        ),
+        *(
+            f"{where}: the package does not have {path} of examples/{PACKAGE}"
+            for path in sorted(real.keys() - shown.keys())
+        ),
+    )
+
+
+def check_step(tool: Path, step: Path) -> tuple[str, ...]:
+    """Check and test one package of the introduction, and find its chapter."""
+    where = step.relative_to(REPO).as_posix()
+    failure = check_package(tool, step)
+    chapters = tuple(INTRODUCTION.glob(f"{step.name}-*.md"))
+    return (
+        *((f"{where}: {failure}",) if failure else ()),
+        *(() if chapters else (f"{where}: the package has no chapter",)),
+    )
+
+
+def check_chapter(tool: Path, page: Path) -> tuple[int, tuple[str, ...]]:
+    """Compare the snippets of a chapter of the introduction with its package.
+
+    Return the number of snippets and the problems. When a snippet shows a
+    pending change, the snippets of the chapter together are that change: they
+    are merged into a fresh copy of the package, which is then checked and
+    tested.
+    """
+    where = page.relative_to(REPO).as_posix()
+    step = STEPS / page.name[:2]
+    if not (step / "package.yaml").exists():
+        return 0, (f"{where}: the chapter has no package steps/{step.name}",)
+    snippets, unnamed = find_snippets(page)
+    problems = [
+        *unnamed,
+        *(
+            f"{where}:{snippet.line}: {difference}"
+            for snippet in snippets
+            for file in snippet.files
+            for difference in differences(file, step, whole=True)
+        ),
+    ]
+    files = tuple(file for snippet in snippets for file in snippet.files)
+    changes = any(
+        has_pending(value)
+        for file in files
+        for value in load_mapping(file.text).values()
+    )
+    if changes and not problems:
+        failure = check_merged(tool, step, files)
+        problems.extend(
+            (f"{where}: with its pending change: {failure}",) if failure else ()
+        )
+    return len(snippets), tuple(problems)
+
+
 def build_tool(into: Path) -> Path:
     """Build the of-lang tool from this repository."""
     tool = into / "of-lang"
@@ -316,6 +461,9 @@ def main() -> int:
             snippets.extend(found)
             problems.extend(unnamed)
     examples = sorted(p.parent for p in BY_EXAMPLE.glob("*/package.y*ml"))
+    steps = sorted(p.parent for p in STEPS.glob("*/package.y*ml"))
+    chapters = sorted(INTRODUCTION.glob(CHAPTERS))
+    shown = len(snippets)
     with tempfile.TemporaryDirectory() as tmp:
         tool = build_tool(Path(tmp))
         for example in examples:
@@ -327,10 +475,17 @@ def main() -> int:
                     f"{problem.snippet.page.relative_to(REPO)}:{problem.snippet.line}"
                 )
                 problems.append(f"{where}: {problem.text}")
+        for step in steps:
+            problems.extend(check_step(tool, step))
+        problems.extend(check_finished(steps[-1]) if steps else ())
+        for chapter in chapters:
+            count, wrong = check_chapter(tool, chapter)
+            shown += count
+            problems.extend(wrong)
     for p in problems:
         print(p, file=sys.stderr)
     print(
-        f"{len(snippets)} snippets and {len(examples)} by-example pages checked, {len(problems)} problems"
+        f"{shown} snippets, {len(examples)} by-example pages and {len(chapters)} chapters of the introduction checked, {len(problems)} problems"
     )
     return 1 if problems else 0
 

@@ -39,6 +39,10 @@ of-lang test examples/restaurant
 
 ## Learn more
 
+- [The introduction](docs/introduction/README.md): seven chapters that build
+  the example package, a restaurant's kitchen, one idea at a time.
+- [The language by example](docs/by-example/README.md): short pages that
+  each show one thing, with the text next to the code.
 - [The language specification](language/README.md): what the language is,
   its principles and its vocabulary.
   - [The cheat sheet](language/cheatsheet.md): the whole language on one page.

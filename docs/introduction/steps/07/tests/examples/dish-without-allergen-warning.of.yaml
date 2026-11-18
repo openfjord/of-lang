@@ -1,0 +1,64 @@
+import:
+  - from: file:../../defs/station.of.yaml
+    use: [Station]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [dishListsItsAllergens]
+
+dishWithoutAllergenWarning:
+  is: Test
+  says: >
+    The margherita uses the pesto, and the pesto contains nuts. The menu does
+    not give a warning about nuts, so the constraint rejects the dish.
+  expect:
+    rejected: [dishListsItsAllergens]
+
+station/pizza:
+  is: Fact
+  kind: Station
+  fields:
+    name: pizza
+
+station/sauce:
+  is: Fact
+  kind: Station
+  fields:
+    name: sauce
+
+allergen/nuts:
+  is: Fact
+  kind: Allergen
+  fields:
+    name: nuts
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: pine_nuts
+  links:
+    containsAllergen: allergen/nuts
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: pesto
+    steps: https://recipes.example.com/pesto
+  links:
+    madeAtStation: station/sauce
+    usesIngredient: ingredient/pine_nuts
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    steps: https://recipes.example.com/margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/pesto

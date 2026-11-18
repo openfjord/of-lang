@@ -1,0 +1,29 @@
+Name:
+  is: ValueType
+  tags: [allergens, spoilage]
+  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
+  type: string
+  pattern: "^[a-z][a-z0-9_]*$"
+  maxLength: 63
+
+Minutes:
+  is: ValueType
+  tags: [allergens]
+  definition: A number of minutes of work.
+  type: integer
+  minimum: 1
+  maximum: 1440
+
+URL:
+  is: ValueType
+  tags: [allergens]
+  definition: The address of a page on the web.
+  type: string
+  format: uri
+
+Price:
+  is: ValueType
+  tags: [allergens]
+  definition: An amount of money in euros.
+  type: number
+  minimum: 0

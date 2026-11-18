@@ -1,0 +1,25 @@
+Name:
+  is: ValueType
+  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
+  type: string
+  pattern: "^[a-z][a-z0-9_]*$"
+  maxLength: 63
+
+Minutes:
+  is: ValueType
+  definition: A number of minutes of work.
+  type: integer
+  minimum: 1
+  maximum: 1440
+
+URL:
+  is: ValueType
+  definition: The address of a page on the web.
+  type: string
+  format: uri
+
+Price:
+  is: ValueType
+  definition: An amount of money in euros.
+  type: number
+  minimum: 0

@@ -1,0 +1,19 @@
+import:
+  - from: file:ingredient.of.yaml
+    use: [Ingredient]
+  - from: pkg:@bistro/suppliers
+    use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
+
+boughtFrom:
+  is: Link
+  from: Ingredient
+  to: Supplier
+  reads: "the kitchen buys {from} from {to}"
+  definition: The supplier that sells the ingredient to the kitchen.
+
+boughtAs:
+  is: Link
+  from: Ingredient
+  to: SupplierIngredient
+  reads: "the kitchen buys {from} as {to}"
+  definition: The product of a supplier that the kitchen buys to have the ingredient.

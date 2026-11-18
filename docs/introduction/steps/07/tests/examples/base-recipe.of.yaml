@@ -1,0 +1,81 @@
+import:
+  - from: file:../../defs/station.of.yaml
+    use: [Station]
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, BaseRecipe, madeAtStation, usesRecipe]
+
+tomatoSauceInThreeDishes:
+  is: Test
+  says: >
+    A recipe that three dishes use is a base recipe. A recipe that only one
+    dish uses is not a base recipe.
+  expect:
+    derived:
+      - node:    recipe/tomato_sauce
+        becomes: BaseRecipe
+    notDerived:
+      - node:    recipe/pesto
+        becomes: BaseRecipe
+
+station/pizza:
+  is: Fact
+  kind: Station
+  fields:
+    name: pizza
+
+station/sauce:
+  is: Fact
+  kind: Station
+  fields:
+    name: sauce
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: tomato_sauce
+    steps: https://recipes.example.com/tomato_sauce
+  links:
+    madeAtStation: station/sauce
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: pesto
+    steps: https://recipes.example.com/pesto
+  links:
+    madeAtStation: station/sauce
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    steps: https://recipes.example.com/margherita
+    price: 12
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  fields:
+    name: marinara
+    steps: https://recipes.example.com/marinara
+    price: 10
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/tomato_sauce
+
+dish/lasagne:
+  is: Fact
+  kind: Dish
+  fields:
+    name: lasagne
+    steps: https://recipes.example.com/lasagne
+    price: 14
+  links:
+    madeAtStation: station/pizza
+    usesRecipe: recipe/tomato_sauce

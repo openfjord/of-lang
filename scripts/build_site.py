@@ -66,6 +66,12 @@ SECTIONS = (
     Section("Language", pages=("language/README.md", "language/cheatsheet.md")),
     Section("Reference", index="language/README.md", folder="language/reference/"),
     Section(
+        "Introduction",
+        pages=("docs/introduction/README.md",),
+        index="docs/introduction/README.md",
+        folder="docs/introduction/",
+    ),
+    Section(
         "By example",
         pages=("docs/by-example/README.md",),
         index="docs/by-example/README.md",

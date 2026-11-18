@@ -75,6 +75,29 @@ file. A page can leave out the manifest. The snippets check also runs
 Add each new page to the list in `docs/by-example/README.md`, which also
 sets its place in the navigation of the site.
 
+## The introduction
+
+The chapters in `docs/introduction/` grow the restaurant package one idea at
+a time. `steps/NN` holds the package as it is after chapter `NN`, and the
+last one has exactly the files of `examples/restaurant`. An earlier package
+is that package with less in it: a chapter adds files and statements, and a
+reader never meets a statement before the chapter that explains it.
+
+A chapter is prose with snippets between the paragraphs. Each YAML snippet
+starts with a comment that names its file, such as `# defs/recipe.of.yaml`,
+and shows whole statements. Each statement, import block and manifest key
+that a snippet shows must be the same as in the package of its chapter. A
+statement with a pending change follows the rule for the reference: the
+version without the change must be the same. Tool output goes in a `console`
+block, with the command and what it prints.
+
+The snippets check compares each chapter with its package, compares the last
+package with `examples/restaurant`, and runs `of-lang check` and `of-lang
+test` on each package. The packages find `@bistro/suppliers` in `examples/`.
+
+Add each new chapter to the list in `docs/introduction/README.md`, which
+also sets its place in the navigation of the site.
+
 ## The site
 
 The documentation site holds each Markdown file that starts with a block

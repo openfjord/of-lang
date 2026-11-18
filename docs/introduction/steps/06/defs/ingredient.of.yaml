@@ -1,0 +1,38 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name]
+  - from: file:allergens.of.yaml
+    use: [AllergenSafety]
+
+Ingredient:
+  is: Kind
+  tags: [allergens, spoilage]
+  definition: A food that the restaurant buys and does not make.
+  examples:
+    - flour
+    - pine nuts
+  notExamples:
+    - the tomato sauce, which the kitchen makes
+  fields:
+    name:
+      type: Name
+
+Allergen:
+  is: Kind
+  tags: [allergens]
+  definition: A substance in food that can cause a dangerous reaction in some persons.
+  examples:
+    - nuts
+    - milk
+  fields:
+    name:
+      type: Name
+  docs: [AllergenSafety]
+
+containsAllergen:
+  is: Link
+  tags: [allergens]
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.
