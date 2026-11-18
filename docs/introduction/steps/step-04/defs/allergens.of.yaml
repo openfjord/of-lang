@@ -53,3 +53,26 @@ allergenFromRecipe:
     - link: hasAllergen
       from: $recipe
       to:   $allergen
+
+dishListsItsAllergens:
+  is: Constraint
+  says: >
+    The menu must give a warning about each allergen in an active dish.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
+    - link: hasAllergen
+      from: $dish
+      to:   $allergen
+  filter:
+    - node:  $dish
+      field: status
+      equals:
+        value: active
+  unless:
+    - at least one:
+        match:
+          - link: listsAllergen
+            from: $dish
+            to:   $allergen
+  message: "The menu must warn that {$dish} contains {$allergen}."

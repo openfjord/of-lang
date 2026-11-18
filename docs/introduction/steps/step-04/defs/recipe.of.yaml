@@ -1,6 +1,6 @@
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price, URL]
+    use: [Name, Price]
   - from: file:station.of.yaml
     use: [Station]
   - from: file:ingredient.of.yaml
@@ -18,11 +18,6 @@ Recipe:
   fields:
     name:
       type: Name
-    steps:
-      type: URL
-    prepMinutes:
-      type: Minutes
-      optional: true
 
 Dish:
   is: Kind
@@ -38,11 +33,6 @@ Dish:
     status:
       enum: [active, retired]
       default: active
-
-BaseRecipe:
-  is: Kind
-  extends: Recipe
-  definition: A recipe that many other recipes use, so a change to it needs extra care.
 
 madeAtStation:
   is: Link
@@ -76,21 +66,17 @@ usesGarnish:
   definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
   under: usesIngredient
 
-baseRecipeFromUses:
-  is: Derivative
-  says: >
-    A recipe that more than two recipes use, directly or through other
-    recipes, is a base recipe.
+recipeAtOneStation:
+  is: Constraint
+  says: Cooks make each recipe at exactly one station.
   match:
     - kind: { name: Recipe, as: $recipe }
   filter:
     - count:
         match:
-          - link: usesRecipe
-            from: Recipe
-            to:   $recipe
-      is above:
-        value: 2
-  derive:
-    - node: $recipe
-      becomes: BaseRecipe
+          - link: madeAtStation
+            from: $recipe
+            to:   Station
+      does not equal:
+        value: 1
+  message: "{$recipe} must be made at exactly one station."

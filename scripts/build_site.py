@@ -89,13 +89,6 @@ PAGE_WORDS: Mapping[str, str] = {
     "language/reference/fact.md": "fact",
     "language/reference/test.md": "test",
     "language/reference/pending.md": "pending change",
-    "docs/introduction/01-kinds.md": "kind",
-    "docs/introduction/02-links.md": "link",
-    "docs/introduction/03-facts-and-tests.md": "fact",
-    "docs/introduction/04-derivatives.md": "derivative",
-    "docs/introduction/05-constraints.md": "constraint",
-    "docs/introduction/06-packages.md": "package",
-    "docs/introduction/07-pending-changes.md": "pending change",
 }
 
 

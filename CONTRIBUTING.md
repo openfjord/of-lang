@@ -81,11 +81,19 @@ navigation of the site, and each heading is a group there.
 
 ## The introduction
 
-The chapters in `docs/introduction/` grow the restaurant package one idea at
-a time. `steps/step-NN` holds the package as it is after chapter `NN`, and the
-last one has exactly the files of `examples/restaurant`. An earlier package
-is that package with less in it: a chapter adds files and statements, and a
-reader never meets a statement before the chapter that explains it.
+The eight chapters in `docs/introduction/` grow the restaurant package one
+result at a time. Each chapter is one question that the kitchen wants an
+answer to, such as "Which dishes contain nuts?". Its title and its file name
+give the result, not a part of the language. The chapter adds to the package
+only what the answer needs, explains each part of the language where the
+answer first needs it, and shows the answer of the tool.
+
+`steps/step-NN` holds the package as it is after chapter `NN`, and the last
+one has exactly the files of `examples/restaurant`. An earlier package is
+that package with less in it: a chapter adds files, statements, and keys to
+statements, and a reader never meets a statement before the chapter that
+explains it. A file of facts must hold a test, so the first test starts
+small and gets its full form in chapter 4.
 
 A chapter is prose with snippets between the paragraphs. Each YAML snippet
 starts with a comment that names its file, such as `# defs/recipe.of.yaml`,
@@ -127,7 +135,8 @@ pull request, and publishes it to GitHub Pages on each push to `main`.
 
 On the site, each word of the [vocabulary](language/README.md#vocabulary)
 has an icon of its own. The icon is in the vocabulary table, and next to the
-title and the navigation entry of each page that is about that one word. The
+title and the navigation entry of each page of the reference that is about
+that one word. The
 icons come from [Tabler Icons](https://tabler.io/icons), under the MIT
 license (`scripts/site/tabler-icons.LICENSE`).
 

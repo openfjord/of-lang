@@ -1,0 +1,50 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name]
+  - from: file:recipe.of.yaml
+    use: [Recipe, madeAtStation, makesRecipe, usesRecipe]
+
+Station:
+  is: Kind
+  definition: A part of the kitchen where a group of cooks makes some of the recipes.
+  examples:
+    - the pizza station
+    - the pastry station
+  fields:
+    name:
+      type: Name
+
+dependsOnStation:
+  is: Link
+  from: Station
+  to: Station
+  reads: "{from} depends on {to}"
+  definition: The first station cannot make all of its recipes when the second station stops work.
+
+stationDependsOnStation:
+  is: Derivative
+  says: >
+    A station depends on each different station that makes a recipe that one
+    of its own recipes uses.
+  match:
+    - kind: { name: Station, as: $station }
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Station, as: $other }
+    - link: makesRecipe
+      from: $station
+      to:   $recipe
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: madeAtStation
+      from: $part
+      to:   $other
+  filter:
+    - node: $other
+      does not equal:
+        same as: $station
+  derive:
+    - link: dependsOnStation
+      from: $station
+      to:   $other

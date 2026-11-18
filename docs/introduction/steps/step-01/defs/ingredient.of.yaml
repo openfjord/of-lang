@@ -23,3 +23,10 @@ Allergen:
   fields:
     name:
       type: Name
+
+containsAllergen:
+  is: Link
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.

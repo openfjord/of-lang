@@ -1,0 +1,62 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, usesRecipe, usesIngredient]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [hasAllergen]
+
+allergenThroughASauce:
+  is: Test
+  says: >
+    The margherita uses the pesto, which contains nuts. Thus, the margherita
+    contains nuts.
+  expect:
+    derived:
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/nuts
+
+allergen/nuts:
+  is: Fact
+  kind: Allergen
+  fields:
+    name: nuts
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: pine_nuts
+  links:
+    containsAllergen: allergen/nuts
+
+ingredient/tomatoes:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: tomatoes
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: pesto
+  links:
+    usesIngredient: ingredient/pine_nuts
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: tomato_sauce
+  links:
+    usesIngredient: ingredient/tomatoes
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+  links:
+    usesRecipe: [recipe/tomato_sauce, recipe/pesto]

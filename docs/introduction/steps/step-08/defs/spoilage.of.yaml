@@ -4,8 +4,13 @@ import:
   - from: file:ingredient.of.yaml
     use: [Ingredient]
 
+Spoilage:
+  is: Doc
+  path: file:../docs/spoilage.md
+
 Celsius:
   is: ValueType
+  tags: [spoilage]
   definition: A temperature in degrees Celsius.
   type: integer
   minimum: -40
@@ -13,12 +18,14 @@ Celsius:
 
 Day:
   is: ValueType
+  tags: [spoilage]
   definition: A day in the calendar, such as 2026-11-17.
   type: string
   format: date
 
 StorageZone:
   is: Kind
+  tags: [spoilage]
   definition: A place in the kitchen where cooks keep food at one temperature.
   examples:
     - the fridge
@@ -33,6 +40,7 @@ StorageZone:
 
 Batch:
   is: Kind
+  tags: [spoilage]
   definition: An amount of one ingredient that the kitchen received on one day.
   examples:
     - the parmesan that arrived on Monday
@@ -45,9 +53,11 @@ Batch:
       type: Day
     keepAtMostCelsius:
       type: Celsius
+  docs: [Spoilage]
 
 batchOf:
   is: Link
+  tags: [spoilage]
   from: Batch
   to: Ingredient
   reads: "{from} is a batch of {to}"
@@ -55,6 +65,7 @@ batchOf:
 
 keptIn:
   is: Link
+  tags: [spoilage]
   from: Batch
   to: StorageZone
   reads: "{from} is kept in {to}"
@@ -62,6 +73,7 @@ keptIn:
 
 batchKeptColdEnough:
   is: Constraint
+  tags: [spoilage]
   says: The cooks keep each batch in a zone that is cold enough for it.
   match:
     - kind: { name: Batch, as: $batch }
@@ -80,6 +92,7 @@ batchKeptColdEnough:
 
 useByAfterArrival:
   is: Constraint
+  tags: [spoilage]
   says: The use-by day of a batch is on or after the day that it arrived.
   match:
     - kind: { name: Batch, as: $batch }

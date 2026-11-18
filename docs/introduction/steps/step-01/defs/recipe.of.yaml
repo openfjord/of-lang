@@ -1,6 +1,8 @@
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price, URL]
+    use: [Name]
+  - from: file:ingredient.of.yaml
+    use: [Ingredient]
 
 Recipe:
   is: Kind
@@ -14,11 +16,6 @@ Recipe:
   fields:
     name:
       type: Name
-    steps:
-      type: URL
-    prepMinutes:
-      type: Minutes
-      optional: true
 
 Dish:
   is: Kind
@@ -28,9 +25,19 @@ Dish:
     - the pizza margherita
   notExamples:
     - the tomato sauce, which is only a part of a dish
-  fields:
-    price:
-      type: Price
-    status:
-      enum: [active, retired]
-      default: active
+
+usesRecipe:
+  is: Link
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"
+  definition: The first recipe needs the second recipe, directly or through other recipes.
+  chains: true
+  inverse: usedByRecipe
+
+usesIngredient:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The recipe needs the ingredient.

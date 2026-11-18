@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Dish]
+  - from: file:../../defs/ingredient.of.yaml
+    use: [Allergen]
+  - from: file:../../defs/allergens.of.yaml
+    use: [hasAllergen]
+
+whichDishesContainNuts:
+  is: Question
+  asks: Which dishes contain nuts?
+  given: file:../examples/allergen-through-a-sauce.of.yaml
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
+    - link: hasAllergen
+      from: $dish
+      to:   $allergen
+  filter:
+    - node: $allergen
+      equals:
+        value: allergen/nuts
+  expect:
+    $dish: [dish/margherita]

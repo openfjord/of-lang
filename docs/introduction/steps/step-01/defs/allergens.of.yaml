@@ -1,0 +1,48 @@
+import:
+  - from: file:recipe.of.yaml
+    use: [Recipe, usesRecipe, usesIngredient]
+  - from: file:ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+
+hasAllergen:
+  is: Link
+  from: Recipe
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is in the recipe, through one of its ingredients or one of its recipes.
+
+allergenFromIngredient:
+  is: Derivative
+  says: A recipe contains each allergen that one of its ingredients contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesIngredient
+      from: $recipe
+      to:   $ingredient
+    - link: containsAllergen
+      from: $ingredient
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+allergenFromRecipe:
+  is: Derivative
+  says: A recipe contains each allergen that one of its recipes contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: hasAllergen
+      from: $part
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen

@@ -1,0 +1,87 @@
+import:
+  - from: file:recipe.of.yaml
+    use: [Recipe, Dish, usesRecipe, usesIngredient]
+  - from: file:ingredient.of.yaml
+    use: [Ingredient, Allergen, containsAllergen]
+
+AllergenSafety:
+  is: Doc
+  path: file:../docs/allergens.md
+
+hasAllergen:
+  is: Link
+  tags: [allergens]
+  from: Recipe
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is in the recipe, through one of its ingredients or one of its recipes.
+
+listsAllergen:
+  is: Link
+  tags: [allergens]
+  from: Dish
+  to: Allergen
+  reads: "the menu tells guests that {from} contains {to}"
+  definition: The menu gives a warning about the allergen next to the dish.
+
+allergenFromIngredient:
+  is: Derivative
+  tags: [allergens]
+  says: A recipe contains each allergen that one of its ingredients contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesIngredient
+      from: $recipe
+      to:   $ingredient
+    - link: containsAllergen
+      from: $ingredient
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+allergenFromRecipe:
+  is: Derivative
+  tags: [allergens]
+  says: A recipe contains each allergen that one of its recipes contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: hasAllergen
+      from: $part
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+dishListsItsAllergens:
+  is: Constraint
+  tags: [allergens]
+  says: >
+    The menu must give a warning about each allergen in an active dish.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
+    - link: hasAllergen
+      from: $dish
+      to:   $allergen
+  filter:
+    - node:  $dish
+      field: status
+      equals:
+        value: active
+  unless:
+    - at least one:
+        match:
+          - link: listsAllergen
+            from: $dish
+            to:   $allergen
+  message: "The menu must warn that {$dish} contains {$allergen}."

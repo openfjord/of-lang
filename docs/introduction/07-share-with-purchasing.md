@@ -1,26 +1,23 @@
 ---
-title: Packages — Introduction to the OpenFjord modeling language
+title: Share the model with purchasing — Introduction to the OpenFjord modeling language
 ---
 
-# Packages
+# Share the model with purchasing
 
 > Part of [the introduction](README.md).
 
-The package of the kitchen is a model that works. But a package is also the
-unit that people own, version and depend on. The kitchen is one team in the
-restaurant. The purchasing team has a package of its own, an app for guests
-wants a part of the kitchen's model, and a reader wants to know the reasons
-for the rules. This chapter adds what the package needs for them. All of it
-is in the manifest, in one more file of definitions, and in a `docs/`
-folder.
+The kitchen is one team in the restaurant. The purchasing team has a model
+of its own, with the suppliers of the restaurant. The kitchen wants to tell
+which supplier sells each of its ingredients, and it does not want a second
+list of suppliers that nobody keeps correct. The two teams want two models
+that fit together, where each team owns its own part.
 
-## A dependency
+## Buy from the suppliers of purchasing
 
-The purchasing team owns the suppliers of the restaurant. Its package is
+The package of purchasing is
 [`@bistro/suppliers`](../../examples/suppliers/), with the kinds `Supplier`
-and `Ingredient`. The kitchen wants to tell which supplier sells each of its
-ingredients. It does not define suppliers again. It depends on the package
-that defines them:
+and `Ingredient`. The kitchen does not define suppliers again. It depends on
+the package that defines them:
 
 ```yaml
 # package.yaml
@@ -61,23 +58,31 @@ kitchen, it is a food. For purchasing, it is a product in the catalog of a
 supplier. Two names in one file must be different, so the import gives the
 second one a different name in this file, with `as`.
 
-The links of the kitchen can end at the kinds of the other package. The
-kitchen cannot change those kinds: they belong to purchasing.
+The links of the kitchen end at the kinds of purchasing. The kitchen cannot
+change those kinds: they belong to purchasing.
+
+## The two packages check together
 
 The tool must find each package in `dependsOn`. By default, it looks in the
-folder that holds the package. `--packages` names a different folder. In the
+folder that holds the package. The suppliers package is not there, so a
+plain `of-lang check step-07` reports that it did not find
+`@bistro/suppliers`. `--packages` names the folder to look in. In the
 repository, the suppliers package is in `examples/`:
 
 ```console
-$ of-lang check --packages ../../../examples step-06
+$ of-lang check --packages ../../../examples step-07
 ok
 ```
 
-## Exports
+The tool checks the kitchen against the real definitions of purchasing. If
+purchasing removes `Supplier`, or the kitchen misspells it, `check` tells.
+Each team works on its own package, and the tool keeps the two together.
 
-A package decides what other packages can import from it. The manifest of
-`@bistro/suppliers` exports its two kinds, and that is why the kitchen can
-import them. The kitchen has a list of its own:
+## What other packages can use
+
+The kitchen can import `Supplier` because the manifest of
+`@bistro/suppliers` exports it. A package decides what other packages can
+import from it. The kitchen has a list of its own:
 
 ```yaml
 # package.yaml
@@ -91,8 +96,6 @@ A definition that is not in `exports` is internal. The definitions about
 spoilage and about buying are not in the lists, so no other package can use
 them, and the kitchen can change them freely. An inverse name, such as
 `makesRecipe`, is not in the list. The package exports it with its link.
-
-## Extension points
 
 A different package can use an exported kind as the end of its own links.
 It cannot extend the kind, or put a link under an exported link, unless the
@@ -108,7 +111,7 @@ openFor:
 With these two lines, a package of the bar can declare a kind `Cocktail`
 that extends `Recipe`, and a link under `usesIngredient`.
 
-## Tags
+## A part of the model for the allergen app
 
 An app for guests tells which dishes contain which allergens. It reads an
 export of the package, but it does not need all of it: it needs the recipes,
@@ -143,50 +146,42 @@ Ingredient:
   fields:
     name:
       type: Name
-
-containsAllergen:
-  is: Link
-  tags: [allergens]
-  from: Ingredient
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The allergen is a part of the ingredient.
 ```
 
-A set of tagged definitions must be complete. `containsAllergen` has the tag
-`allergens`, so `Ingredient` and `Allergen` must have it too, and so must the
-value type `Name` of their fields. `check` rejects a package where a tagged
-definition refers to a definition without the tag. A tag that the manifest
-does not list is also an error, so a misspelled tag does not start a
-different set.
+A set of tagged definitions must be complete, or the app gets a model with
+holes. The link `containsAllergen` has the tag `allergens`, so `Ingredient`
+and `Allergen` must have it too, and so must the value type `Name` of their
+fields. When somebody removes the tag `allergens` from `Name`, `check`
+tells what is missing:
+
+```console
+$ of-lang check --packages ../../../examples step-07
+step-07/defs/ingredient.of.yaml:9:10: Ingredient has the tag allergens and refers to Name, which does not have it (TG5)
+step-07/defs/ingredient.of.yaml:22:10: Allergen has the tag allergens and refers to Name, which does not have it (TG5)
+step-07/defs/recipe.of.yaml:11:10: Recipe has the tag allergens and refers to Name, which does not have it (TG5)
+```
+
+A tag that the manifest does not list is also an error, so a misspelled tag
+does not start a different set.
 
 Tags do not change how derivatives, constraints and tests run. They select
 what an export to RDF (Resource Description Framework) includes. The export
 is [a planned output of the tool](../../cli/README.md#the-rdf-export).
 
-## Docs
+## The reasons, next to the rules
 
-The definitions tell what the rules are. They do not tell the story of the
+A reader from a different team sees the rules, but not the story of the
 guest who became ill. A package keeps such text in Markdown files in its
-`docs/` folder. A doc has Markdown links to definitions, or embeds them with
-the syntax of an image:
+`docs/` folder. The kitchen writes
+[`docs/allergens.md`](steps/step-07/docs/allergens.md). A doc has Markdown
+links to definitions, or embeds them with the syntax of an image:
 
-````markdown
-# Allergens
-
-An allergen can cause a dangerous reaction in some persons. A recipe contains
-each allergen of its ingredients, and each allergen of the recipes that it
-uses:
-
+```markdown
 ![](../defs/allergens.of.yaml#allergenFromIngredient)
 
-![](../defs/allergens.of.yaml#allergenFromRecipe)
-
-In the past, a guest became ill. The pesto in a dish contained nuts, and the
-menu did not tell the guest. Thus, the menu must give a warning about each
-allergen in a dish. Refer to
+Refer to
 [dishListsItsAllergens](../defs/allergens.of.yaml#dishListsItsAllergens).
-````
+```
 
 The part after `#` is the name of a statement. `check` makes sure that the
 file and the statement exist.
@@ -201,12 +196,6 @@ AllergenSafety:
   path: file:../docs/allergens.md
 
 # defs/ingredient.of.yaml
-import:
-  - from: file:names.of.yaml
-    use: [Name]
-  - from: file:allergens.of.yaml
-    use: [AllergenSafety]
-
 Allergen:
   is: Kind
   tags: [allergens]
@@ -220,29 +209,36 @@ Allergen:
   docs: [AllergenSafety]
 ```
 
+`defs/ingredient.of.yaml` imports the name `AllergenSafety`, as it imports
+each name from a different file.
+
 Each Markdown file in `docs/` must have a `Doc`, unless a different doc
 refers to it. The package has a second doc, `docs/spoilage.md`, with the
 `Doc` definition `Spoilage`, which the kind `Batch` lists.
 
 ## The finished package
 
-The package holds the full model of the kitchen, and all its tests pass:
+The package holds the full model of the kitchen, and the same files as
+[the example package](../../examples/restaurant/). All its tests pass, next
+to the package of purchasing:
 
 ```console
-$ of-lang test --packages ../../../examples step-06
-pass  test allergenThroughASauce  (step-06/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test tomatoSauceInThreeDishes  (step-06/tests/examples/base-recipe.of.yaml)
-pass  test batchKeptTooWarm  (step-06/tests/examples/batch-kept-too-warm.of.yaml)
-pass  test dishWithoutAllergenWarning  (step-06/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  question whichDishesContainNuts  (step-06/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (step-06/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (step-06/tests/terms/garnish.of.yaml)
+$ of-lang test --packages ../../../examples step-07
+pass  test allergenThroughASauce  (step-07/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test tomatoSauceInThreeDishes  (step-07/tests/examples/base-recipe.of.yaml)
+pass  test batchKeptTooWarm  (step-07/tests/examples/batch-kept-too-warm.of.yaml)
+pass  test dishWithoutAllergenWarning  (step-07/tests/examples/dish-without-allergen-warning.of.yaml)
+pass  question whichDishesContainNuts  (step-07/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (step-07/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
+pass  test garnishIsAnIngredient  (step-07/tests/terms/garnish.of.yaml)
 7 passed, 0 failed
 ```
 
-It holds the same files as [the example package](../../examples/restaurant/).
-One idea is left: how the package shows a change before somebody accepts it.
-That is the last chapter: [Pending changes](07-pending-changes.md).
+Purchasing owns the suppliers, the kitchen owns the recipes, and the
+allergen app gets the part that it needs.
+
+A model that other teams depend on still has to change:
+[Change a rule without breaking the kitchen](08-change-a-rule.md).
 
 More about this: [packages](../../language/reference/package.md),
 [tags](../../language/reference/tag.md) and

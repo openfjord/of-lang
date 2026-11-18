@@ -302,8 +302,8 @@ The same package is in [`examples/menu`](examples/menu/).
 The same restaurant is the example in all of the documentation.
 
 - [The introduction](docs/introduction/README.md) grows this model into the
-  full kitchen in seven chapters: stations, prices, a base recipe, packages
-  and pending changes.
+  full kitchen in eight chapters. Each chapter is a question of the kitchen,
+  such as "Which dishes contain nuts?", and ends with the answer of the tool.
 - [The language by example](docs/by-example/README.md) has one short page
   for each thing in the language, with the text next to the code.
 - [The language specification](language/README.md) tells what the language

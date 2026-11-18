@@ -1,40 +1,21 @@
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Station]
   - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
+    use: [Recipe, Dish, usesRecipe, usesIngredient, usesGarnish]
   - from: file:../../defs/ingredient.of.yaml
     use: [Ingredient, Allergen, containsAllergen]
   - from: file:../../defs/allergens.of.yaml
-    use: [listsAllergen]
+    use: [hasAllergen, listsAllergen]
 
 allergenThroughASauce:
   is: Test
   says: >
-    Parmesan is on the margherita as a garnish. A garnish is an ingredient,
-    so the margherita uses parmesan. The marinara has no garnish, so it does
-    not use parmesan.
+    The margherita uses the pesto, which contains nuts. Thus, the margherita
+    contains nuts.
   expect:
     derived:
-      - link: usesIngredient
+      - link: hasAllergen
         from: dish/margherita
-        to:   ingredient/parmesan
-    notDerived:
-      - link: usesIngredient
-        from: dish/marinara
-        to:   ingredient/parmesan
-
-station/pizza:
-  is: Fact
-  kind: Station
-  fields:
-    name: pizza
-
-station/sauce:
-  is: Fact
-  kind: Station
-  fields:
-    name: sauce
+        to:   allergen/nuts
 
 allergen/nuts:
   is: Fact
@@ -75,9 +56,7 @@ recipe/pesto:
   kind: Recipe
   fields:
     name: pesto
-    steps: https://recipes.example.com/pesto
   links:
-    madeAtStation: station/sauce
     usesIngredient: ingredient/pine_nuts
 
 recipe/tomato_sauce:
@@ -85,9 +64,7 @@ recipe/tomato_sauce:
   kind: Recipe
   fields:
     name: tomato_sauce
-    steps: https://recipes.example.com/tomato_sauce
   links:
-    madeAtStation: station/sauce
     usesIngredient: ingredient/tomatoes
 
 dish/margherita:
@@ -95,10 +72,8 @@ dish/margherita:
   kind: Dish
   fields:
     name: margherita
-    steps: https://recipes.example.com/margherita
     price: 12
   links:
-    madeAtStation: station/pizza
     usesRecipe: [recipe/tomato_sauce, recipe/pesto]
     usesGarnish: ingredient/parmesan
     listsAllergen: [allergen/nuts, allergen/milk]
@@ -108,8 +83,6 @@ dish/marinara:
   kind: Dish
   fields:
     name: marinara
-    steps: https://recipes.example.com/marinara
     price: 10
   links:
-    madeAtStation: station/pizza
     usesRecipe: recipe/tomato_sauce

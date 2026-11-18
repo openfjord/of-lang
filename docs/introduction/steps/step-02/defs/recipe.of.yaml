@@ -1,8 +1,6 @@
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price, URL]
-  - from: file:station.of.yaml
-    use: [Station]
+    use: [Name]
   - from: file:ingredient.of.yaml
     use: [Ingredient]
 
@@ -18,11 +16,6 @@ Recipe:
   fields:
     name:
       type: Name
-    steps:
-      type: URL
-    prepMinutes:
-      type: Minutes
-      optional: true
 
 Dish:
   is: Kind
@@ -32,20 +25,6 @@ Dish:
     - the pizza margherita
   notExamples:
     - the tomato sauce, which is only a part of a dish
-  fields:
-    price:
-      type: Price
-    status:
-      enum: [active, retired]
-      default: active
-
-madeAtStation:
-  is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
-  inverse: makesRecipe
 
 usesRecipe:
   is: Link
