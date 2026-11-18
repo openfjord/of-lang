@@ -271,7 +271,7 @@ tell the guest that the margherita contains nuts, and the kitchen can show
 why.
 
 One guest has an answer. The restaurant wants the answer for all its dishes
-at one time: [Ask a question](02-dishes-with-nuts.md).
+at one time: [Ask a question](02-ask-a-question.md).
 
 More about this: [the manifest](../../language/reference/package.md#the-manifest),
 [kinds](../../language/reference/kind.md),

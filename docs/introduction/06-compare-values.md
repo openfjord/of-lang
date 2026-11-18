@@ -169,7 +169,7 @@ A cook who records a delivery gets the message at once, and moves the batch
 before the food spoils.
 
 The model of the kitchen is complete. But the kitchen is not alone in the
-restaurant: [Share a model](07-share-with-purchasing.md).
+restaurant: [Share a model](07-share-a-model.md).
 
 More about this: [constraints](../../language/reference/constraint.md) and
 [fields](../../language/reference/kind.md#fields) in the reference. In the

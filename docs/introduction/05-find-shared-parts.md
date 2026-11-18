@@ -68,7 +68,7 @@ rejected:
 ```
 
 The tomato sauce is a base recipe, and the pesto is not. The second line
-comes from [chapter 4](04-sauce-station-closes.md): each derivative of the
+comes from [chapter 4](04-trace-dependencies.md): each derivative of the
 package runs on each file of facts.
 
 ```console
@@ -204,7 +204,7 @@ recipes: when two more dishes use the pesto, the pesto becomes a base recipe
 without a decision from a person.
 
 A wrong recipe is not the only risk in a kitchen. Food also spoils:
-[Compare values](06-food-kept-cold.md)
+[Compare values](06-compare-values.md)
 
 More about this: [derivatives](../../language/reference/derivative.md),
 [value types](../../language/reference/kind.md#value-types) and

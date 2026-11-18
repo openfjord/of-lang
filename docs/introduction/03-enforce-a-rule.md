@@ -179,7 +179,7 @@ menu.
 
 Allergens are not the only thing that goes through the kitchen from recipe
 to recipe. Work does too:
-[Trace dependencies](04-sauce-station-closes.md)
+[Trace dependencies](04-trace-dependencies.md)
 
 More about this: [constraints](../../language/reference/constraint.md),
 [fields](../../language/reference/kind.md#fields) and

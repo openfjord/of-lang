@@ -139,7 +139,7 @@ dish/margherita:
 
 No fact states that the margherita uses parmesan as an ingredient. The tool
 adds that fact because of `under`. Then the derivative from
-[chapter 1](01-margherita-and-nuts.md), which finds `usesIngredient` links,
+[chapter 1](01-get-an-answer.md), which finds `usesIngredient` links,
 finds the parmesan too:
 
 ```console
@@ -160,7 +160,7 @@ garnish. The kitchen wrote no rule about garnishes and allergens.
 The restaurant can ask the model which dishes contain an allergen, and the
 answer follows each change to a recipe. But nothing makes the menu tell the
 guests. That is the next chapter:
-[Enforce a rule](03-menu-that-hides-an-allergen.md).
+[Enforce a rule](03-enforce-a-rule.md).
 
 More about this: [questions](../../language/reference/test.md#questions) and
 [what links imply](../../language/reference/link.md#what-links-imply) in the

@@ -15,24 +15,24 @@ package is the same as [the example package](../../examples/restaurant/).
 Read the chapters in order. Each chapter uses only what the chapters before
 it explain.
 
-1. [Get an answer](01-margherita-and-nuts.md). Does
+1. [Get an answer](01-get-an-answer.md). Does
    the margherita contain nuts? The tool gives the answer, and each step
    that leads to it.
-2. [Ask a question](02-dishes-with-nuts.md). Which dishes contain
+2. [Ask a question](02-ask-a-question.md). Which dishes contain
    nuts? The answer follows each change to a recipe.
-3. [Enforce a rule](03-menu-that-hides-an-allergen.md). A menu
+3. [Enforce a rule](03-enforce-a-rule.md). A menu
    hides an allergen. The tool rejects it, with a message that tells which
    warning is missing.
-4. [Trace dependencies](04-sauce-station-closes.md). What stops when
+4. [Trace dependencies](04-trace-dependencies.md). What stops when
    the sauce station closes? The tool finds each station that depends on
    it.
-5. [Find shared parts](05-recipes-that-need-care.md). Which
+5. [Find shared parts](05-find-shared-parts.md). Which
    recipes need extra care? The tool finds the recipes that many dishes
    share.
-6. [Compare values](06-food-kept-cold.md). Is the food kept
+6. [Compare values](06-compare-values.md). Is the food kept
    cold enough? The tool rejects a batch in a storage zone that is too
    warm.
-7. [Share a model](07-share-with-purchasing.md). The kitchen
+7. [Share a model](07-share-a-model.md). The kitchen
    and purchasing have two packages, and the tool checks them together.
 8. [Change a rule](08-change-a-rule.md). The owner sees the kitchen
    with the change and without it, and then accepts or rejects the change.

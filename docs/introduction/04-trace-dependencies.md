@@ -142,7 +142,7 @@ station/pizza depends on station/sauce  (derivative stationDependsOnStation)
 ```
 
 The head cook asks the model in the same way as in
-[chapter 2](02-dishes-with-nuts.md). The question
+[chapter 2](02-ask-a-question.md). The question
 [`whichStationsStopWithTheSauceStation`](steps/step-04/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
 finds each station with a `dependsOnStation` link to `station/sauce`, and
 expects the answer `[station/pizza]`.
@@ -182,7 +182,7 @@ violation: a recipe without a station, or a recipe with two stations.
 
 ## The story of the margherita, complete
 
-The test from [chapter 1](01-margherita-and-nuts.md) expects one derived
+The test from [chapter 1](01-get-an-answer.md) expects one derived
 fact. The kitchen makes
 [the test](steps/step-04/tests/examples/allergen-through-a-sauce.of.yaml)
 tell all that the example shows so far:
@@ -208,7 +208,7 @@ When a station closes, the head cook knows what stops, and why. When a cook
 moves a recipe to a different station, the answer follows.
 
 Some recipes are in so many dishes that each change to them is a risk:
-[Find shared parts](05-recipes-that-need-care.md)
+[Find shared parts](05-find-shared-parts.md)
 
 More about this: [links](../../language/reference/link.md),
 [derivatives](../../language/reference/derivative.md),
