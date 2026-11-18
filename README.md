@@ -40,7 +40,7 @@ of-lang test examples/restaurant
 ## Learn more
 
 The documentation is also a site, with all the pages below:
-<http://lang.openfjord.io/>.
+<https://lang.openfjord.io/>.
 
 - [The introduction](docs/introduction/README.md): seven chapters that build
   the example package, a restaurant's kitchen, one idea at a time.
