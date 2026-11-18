@@ -1,8 +1,8 @@
 ---
-title: Share the model with purchasing — Introduction to the OpenFjord modeling language
+title: Share a model between teams — Introduction to the OpenFjord modeling language
 ---
 
-# Share the model with purchasing
+# Share a model between teams
 
 > Part of [the introduction](README.md).
 
@@ -238,7 +238,7 @@ Purchasing owns the suppliers, the kitchen owns the recipes, and the
 allergen app gets the part that it needs.
 
 A model that other teams depend on still has to change:
-[Change a rule without breaking the kitchen](08-change-a-rule.md).
+[Change a rule safely](08-change-a-rule.md).
 
 More about this: [packages](../../language/reference/package.md),
 [tags](../../language/reference/tag.md) and

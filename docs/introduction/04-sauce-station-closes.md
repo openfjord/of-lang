@@ -1,8 +1,8 @@
 ---
-title: What stops when the sauce station closes? — Introduction to the OpenFjord modeling language
+title: Find what depends on what — Introduction to the OpenFjord modeling language
 ---
 
-# What stops when the sauce station closes?
+# Find what depends on what
 
 > Part of [the introduction](README.md).
 
@@ -208,7 +208,7 @@ When a station closes, the head cook knows what stops, and why. When a cook
 moves a recipe to a different station, the answer follows.
 
 Some recipes are in so many dishes that each change to them is a risk:
-[Which recipes need extra care?](05-recipes-that-need-care.md)
+[Find what many things share](05-recipes-that-need-care.md)
 
 More about this: [links](../../language/reference/link.md),
 [derivatives](../../language/reference/derivative.md),

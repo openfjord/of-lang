@@ -1,8 +1,8 @@
 ---
-title: Stop a menu that hides an allergen — Introduction to the OpenFjord modeling language
+title: Reject what breaks a rule — Introduction to the OpenFjord modeling language
 ---
 
-# Stop a menu that hides an allergen
+# Reject what breaks a rule
 
 > Part of [the introduction](README.md).
 
@@ -179,7 +179,7 @@ menu.
 
 Allergens are not the only thing that goes through the kitchen from recipe
 to recipe. Work does too:
-[What stops when the sauce station closes?](04-sauce-station-closes.md)
+[Find what depends on what](04-sauce-station-closes.md)
 
 More about this: [constraints](../../language/reference/constraint.md),
 [fields](../../language/reference/kind.md#fields) and

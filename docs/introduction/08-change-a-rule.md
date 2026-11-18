@@ -1,8 +1,8 @@
 ---
-title: Change a rule without breaking the kitchen — Introduction to the OpenFjord modeling language
+title: Change a rule safely — Introduction to the OpenFjord modeling language
 ---
 
-# Change a rule without breaking the kitchen
+# Change a rule safely
 
 > Part of [the introduction](README.md).
 

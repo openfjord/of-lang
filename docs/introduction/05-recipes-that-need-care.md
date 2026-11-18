@@ -1,8 +1,8 @@
 ---
-title: Which recipes need extra care? — Introduction to the OpenFjord modeling language
+title: Find what many things share — Introduction to the OpenFjord modeling language
 ---
 
-# Which recipes need extra care?
+# Find what many things share
 
 > Part of [the introduction](README.md).
 
@@ -204,7 +204,7 @@ recipes: when two more dishes use the pesto, the pesto becomes a base recipe
 without a decision from a person.
 
 A wrong recipe is not the only risk in a kitchen. Food also spoils:
-[Is the food kept cold enough?](06-food-kept-cold.md)
+[Check one value against another](06-food-kept-cold.md)
 
 More about this: [derivatives](../../language/reference/derivative.md),
 [value types](../../language/reference/kind.md#value-types) and

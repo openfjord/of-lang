@@ -1,8 +1,8 @@
 ---
-title: Does the margherita contain nuts? — Introduction to the OpenFjord modeling language
+title: Get an answer that nobody wrote down — Introduction to the OpenFjord modeling language
 ---
 
-# Does the margherita contain nuts?
+# Get an answer that nobody wrote down
 
 > Part of [the introduction](README.md).
 
@@ -271,7 +271,7 @@ tell the guest that the margherita contains nuts, and the kitchen can show
 why.
 
 One guest has an answer. The restaurant wants the answer for all its dishes
-at one time: [Which dishes contain nuts?](02-dishes-with-nuts.md)
+at one time: [Ask the model a question](02-dishes-with-nuts.md).
 
 More about this: [the manifest](../../language/reference/package.md#the-manifest),
 [kinds](../../language/reference/kind.md),
