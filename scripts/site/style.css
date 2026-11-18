@@ -65,6 +65,16 @@ nav ul { list-style: none; margin: 0 0 12px; padding: 0; }
 nav li a { display: block; padding: 3px 8px; border-radius: 6px; color: var(--fg); }
 nav li a:hover { background: var(--code); text-decoration: none; }
 nav li a[aria-current="page"] { background: var(--inline); font-weight: 600; }
+nav details { margin: 0 0 2px; }
+nav details ul { margin: 0 0 6px 12px; }
+nav summary {
+  padding: 3px 8px;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+}
+nav summary:hover { background: var(--code); color: var(--fg); }
+nav details[open] > summary { color: var(--fg); }
 nav .group {
   margin: 16px 8px 4px;
   color: var(--muted);

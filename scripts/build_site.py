@@ -52,13 +52,16 @@ class Section:
     """One group of the navigation.
 
     The group holds the listed pages, and then each page in ``folder`` that
-    the ``index`` page links to, in the order of the links.
+    the ``index`` page links to, in the order of the links. With ``grouped``,
+    the linked pages go in smaller groups, one for each heading of the index
+    page that has links under it.
     """
 
     title: str
     pages: tuple[str, ...] = ()
     index: str = ""
     folder: str = ""
+    grouped: bool = False
 
 
 SECTIONS = (
@@ -76,6 +79,7 @@ SECTIONS = (
         pages=("docs/by-example/README.md",),
         index="docs/by-example/README.md",
         folder="docs/by-example/",
+        grouped=True,
     ),
     Section("More", pages=("docs/design.md", "cli/README.md")),
 )
@@ -91,6 +95,7 @@ class Page:
     tokens: tuple[Token, ...]
     anchors: frozenset[str]
     links: tuple[str, ...]
+    link_headings: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -162,22 +167,29 @@ def parse(path: str, text: str) -> Page | None:
     counts: dict[str, int] = {}
     heading = ""
     links: list[str] = []
+    link_headings: list[str] = []
+    section = ""
     for index, token in enumerate(tokens):
         if token.type == "heading_open":
             text_of = plain_text(tokens[index + 1])
+            section = text_of if token.tag == "h2" else section
             base = slug(text_of, 0)
             token.attrSet("id", slug(text_of, counts.get(base, 0)))
             counts[base] = counts.get(base, 0) + 1
             heading = heading or text_of
-        links.extend(
+        found = [
             str(child.attrGet("href"))
             for child in token.children or ()
             if child.type == "link_open"
-        )
+        ]
+        links.extend(found)
+        link_headings.extend(section for _ in found)
     anchors = frozenset(
         str(t.attrGet("id")) for t in tokens if t.type == "heading_open"
     )
-    return Page(path, title, heading, tuple(tokens), anchors, tuple(links))
+    return Page(
+        path, title, heading, tuple(tokens), anchors, tuple(links), tuple(link_headings)
+    )
 
 
 def repo_path(page: str, link: str) -> str:
@@ -256,28 +268,50 @@ def rewritten(
     return frozenset(assets), tuple(problems)
 
 
-def linked_files(index: Page | None) -> tuple[str, ...]:
-    """Return the files of the repository that a page links to, in order."""
+@dataclass(frozen=True)
+class Group:
+    """One group of the navigation: its pages, and then its smaller groups."""
+
+    title: str
+    pages: tuple[str, ...]
+    parts: tuple[tuple[str, tuple[str, ...]], ...] = ()
+
+
+def linked_files(index: Page | None) -> tuple[tuple[str, str], ...]:
+    """Return each file that a page links to, in order, with the heading above the link."""
     if index is None:
         return ()
     return tuple(
-        repo_path(index.path, link.partition("#")[0])
-        for link in index.links
+        (heading, repo_path(index.path, link.partition("#")[0]))
+        for heading, link in zip(index.link_headings, index.links, strict=True)
         if not HAS_SCHEME.match(link) and link.partition("#")[0]
     )
 
 
-def navigation(pages: Mapping[str, Page]) -> tuple[tuple[str, tuple[str, ...]], ...]:
+def navigation(pages: Mapping[str, Page]) -> tuple[Group, ...]:
     """Return each group of the navigation with the pages it holds, in order."""
-    groups: list[tuple[str, tuple[str, ...]]] = []
+    groups: list[Group] = []
     for section in SECTIONS:
-        linked = linked_files(pages.get(section.index))
-        found = [p for p in section.pages if p in pages]
-        for path in linked:
-            if path.startswith(section.folder) and path in pages and path not in found:
-                found.append(path)
-        groups.append((section.title, tuple(found)))
+        listed = tuple(p for p in section.pages if p in pages)
+        linked: dict[str, str] = {}
+        for heading, path in linked_files(pages.get(section.index)):
+            if path.startswith(section.folder) and path in pages and path not in listed:
+                linked.setdefault(path, heading)
+        if not section.grouped:
+            groups.append(Group(section.title, (*listed, *linked)))
+            continue
+        headings = tuple(dict.fromkeys(linked.values()))
+        parts = tuple(
+            (heading, tuple(p for p, h in linked.items() if h == heading))
+            for heading in headings
+        )
+        groups.append(Group(section.title, listed, parts))
     return tuple(groups)
+
+
+def group_pages(group: Group) -> tuple[str, ...]:
+    """Return every page of a group, also the pages of its smaller groups."""
+    return (*group.pages, *(path for _, paths in group.parts for path in paths))
 
 
 def label(page: Page, group: str) -> str:
@@ -289,23 +323,36 @@ def label(page: Page, group: str) -> str:
     return page.heading or page.title
 
 
-def navigation_html(
-    groups: Sequence[tuple[str, tuple[str, ...]]],
-    pages: Mapping[str, Page],
-    current: Page,
+def links_html(
+    paths: Sequence[str], group: str, pages: Mapping[str, Page], current: Page
 ) -> str:
-    """Return the navigation as seen from one page."""
+    """Return a list of links to pages, as seen from one page."""
+    items: list[str] = []
+    for path in paths:
+        here = ' aria-current="page"' if path == current.path else ""
+        url = html.escape(relative_url(current.path, output_path(path)))
+        name = html.escape(label(pages[path], group))
+        items.append(f'<li><a href="{url}"{here}>{name}</a></li>')
+    return "<ul>\n" + "\n".join(items) + "\n</ul>"
+
+
+def navigation_html(
+    groups: Sequence[Group], pages: Mapping[str, Page], current: Page
+) -> str:
+    """Return the navigation as seen from one page.
+
+    A smaller group is closed, unless it holds the page.
+    """
     parts: list[str] = []
-    for title, paths in groups:
-        if title:
-            parts.append(f'<p class="group">{html.escape(title)}</p>')
-        parts.append("<ul>")
-        for path in paths:
-            here = ' aria-current="page"' if path == current.path else ""
-            url = html.escape(relative_url(current.path, output_path(path)))
-            name = html.escape(label(pages[path], title))
-            parts.append(f'<li><a href="{url}"{here}>{name}</a></li>')
-        parts.append("</ul>")
+    for group in groups:
+        if group.title:
+            parts.append(f'<p class="group">{html.escape(group.title)}</p>')
+        parts.append(links_html(group.pages, group.title, pages, current))
+        for title, paths in group.parts:
+            is_open = " open" if current.path in paths else ""
+            parts.append(f"<details{is_open}><summary>{html.escape(title)}</summary>")
+            parts.append(links_html(paths, group.title, pages, current))
+            parts.append("</details>")
     return "\n".join(parts)
 
 
@@ -364,7 +411,7 @@ def main(arguments: Sequence[str]) -> int:
     )
     pages = {page.path: page for page in parsed if page is not None}
     groups = navigation(pages)
-    in_navigation = {path for _, paths in groups for path in paths}
+    in_navigation = {path for group in groups for path in group_pages(group)}
     problems = [
         f"{path}: the page is not in the navigation"
         for path in sorted(pages.keys() - in_navigation)
