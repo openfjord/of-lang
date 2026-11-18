@@ -1,0 +1,4 @@
+package: "@bistro/wrong-value"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: wrong-value

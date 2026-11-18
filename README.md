@@ -20,14 +20,7 @@ down, explains each one, and runs the model's tests.
 The documentation is also a site: <https://lang.openfjord.io/>.
 <!-- end -->
 
-## From nothing to an answer
-
-A guest asks: "Does the margherita contain nuts?" Nobody wrote the answer
-down. The margherita uses the pesto, and the pesto uses pine nuts. This page
-builds a small model of a restaurant's menu that finds the answer, shows the
-steps, and rejects a menu that does not warn the guest.
-
-### 1. Install the tool
+## Install
 
 With [Homebrew](https://brew.sh):
 
@@ -38,272 +31,284 @@ brew install openfjord/tap/of-lang
 Or download a binary for macOS or Linux from the
 [releases](https://github.com/openfjord/of-lang/releases).
 
-### 2. Make a package
+## Three small examples
 
-A model is in a package: a folder with a manifest, definitions and tests.
+Each example below is complete. It needs nothing from the other two.
+
+Each example is a **package**: a folder with three files.
 
 ```
-menu/                      # the root of the package
-  package.yaml             # the manifest
+wrong-value/                 # the root of the package
+  package.yaml               # the manifest: the name and the owner of the package
   defs/
-    menu.of.yaml           # the definitions
+    menu.of.yaml             # the definitions: what can exist, and the rules
   tests/
     examples/
-      margherita.of.yaml   # facts, and what must follow from them
+      margherita.of.yaml     # the facts: what does exist, in one example
 ```
 
-The manifest gives the package its name, its version and its owner. Only
-the export to RDF (Resource Description Framework) uses `rdfNamespace`:
+The manifest is four lines. Only the name is different in each example:
 
 ```yaml
-# package.yaml
-package: "@bistro/menu"
+# wrong-value/package.yaml
+package: "@bistro/wrong-value"
 version: 0.1.0
 owner: kitchen
-rdfNamespace: menu
+rdfNamespace: wrong-value
 ```
 
-### 3. Name the things
+To try an example, make these files, or use the copies in
+[`examples/quickstart`](examples/quickstart/). Run the commands in the
+folder that holds the package.
 
-A kind is a category of things. Each one has a definition in plain words. A
-dish is a recipe that the restaurant sells, so `Dish` extends `Recipe`.
+### 1. Catch a wrong value
+
+The definitions say what a dish is. A **kind** is a category of things, with
+a definition in plain words. A **field** is a value that each thing of the
+kind has. Here, each dish has a price, and the price is a number.
 
 ```yaml
-# defs/menu.of.yaml
-Recipe:
-  is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
-
+# wrong-value/defs/menu.of.yaml
 Dish:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
-
-Ingredient:
-  is: Kind
-  definition: A food that the kitchen buys and does not make.
-
-Allergen:
-  is: Kind
-  definition: A substance in food that can cause a dangerous reaction in some persons.
+  definition: A food that the restaurant sells to guests.
+  fields:
+    price:
+      type: number
+      minimum: 0
 ```
 
-A link is a named relationship from one kind to a different kind, or to the
-same kind. `reads` is the sentence that people read for one such link.
+A **fact** states one real thing. This file states one dish, the margherita,
+and gives it a price that is not a number. The `import` block at the top
+tells where the name `Dish` comes from. A file of facts ends with a
+**test**, which tells what must follow from the facts. This one expects no
+problem.
 
 ```yaml
-usesRecipe:
-  is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"
-  definition: The first recipe needs the second recipe.
-
-usesIngredient:
-  is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The recipe needs the ingredient.
-
-containsAllergen:
-  is: Link
-  from: Ingredient
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The allergen is a part of the ingredient.
-
-hasAllergen:
-  is: Link
-  from: Recipe
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The allergen is in the recipe, through one of its ingredients or one of its recipes.
-```
-
-### 4. Say what follows
-
-Nobody states the last link, `hasAllergen`. Two derivatives add it. The
-first one finds the allergens of the ingredients of a recipe. The second one
-passes them on to each recipe that uses that recipe.
-
-```yaml
-allergenFromIngredient:
-  is: Derivative
-  says: A recipe contains each allergen that one of its ingredients contains.
-  match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Ingredient, as: $ingredient }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesIngredient
-      from: $recipe
-      to:   $ingredient
-    - link: containsAllergen
-      from: $ingredient
-      to:   $allergen
-  derive:
-    - link: hasAllergen
-      from: $recipe
-      to:   $allergen
-
-allergenFromRecipe:
-  is: Derivative
-  says: A recipe contains each allergen that one of its recipes contains.
-  match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: hasAllergen
-      from: $part
-      to:   $allergen
-  derive:
-    - link: hasAllergen
-      from: $recipe
-      to:   $allergen
-```
-
-### 5. Say what is not allowed
-
-A constraint rejects the facts that break a rule. Here, each match is a
-violation, unless the menu gives a warning about the allergen.
-
-```yaml
-listsAllergen:
-  is: Link
-  from: Dish
-  to: Allergen
-  reads: "the menu tells guests that {from} contains {to}"
-  definition: The menu gives a warning about the allergen next to the dish.
-
-dishListsItsAllergens:
-  is: Constraint
-  says: The menu must give a warning about each allergen in a dish.
-  match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Allergen, as: $allergen }
-    - link: hasAllergen
-      from: $dish
-      to:   $allergen
-  unless:
-    - at least one:
-        match:
-          - link: listsAllergen
-            from: $dish
-            to:   $allergen
-  message: "The menu must warn that {$dish} contains {$allergen}."
-```
-
-### 6. State the facts
-
-The facts tell about one kitchen. No fact says that the margherita contains
-nuts.
-
-```yaml
-# tests/examples/margherita.of.yaml
+# wrong-value/tests/examples/margherita.of.yaml
 import:
   - from: file:../../defs/menu.of.yaml
-    use: [Recipe, Dish, Ingredient, Allergen, usesRecipe, usesIngredient, containsAllergen, hasAllergen, dishListsItsAllergens]
-
-allergen/nuts:
-  is: Fact
-  kind: Allergen
-
-ingredient/pine_nuts:
-  is: Fact
-  kind: Ingredient
-  links:
-    containsAllergen: allergen/nuts
-
-recipe/pesto:
-  is: Fact
-  kind: Recipe
-  links:
-    usesIngredient: ingredient/pine_nuts
+    use: [Dish]
 
 dish/margherita:
   is: Fact
   kind: Dish
-  links:
-    usesRecipe: recipe/pesto
+  fields:
+    price: twelve
+
+oneDish:
+  is: Test
+  says: The margherita is a dish with a price.
+  expect:
+    rejected: []
 ```
 
-A test tells what must follow from these facts:
+The tool finds the wrong value, and tells the file, the line and the rule:
+
+```console
+$ of-lang test wrong-value
+wrong-value/tests/examples/margherita.of.yaml:9:5: price: twelve is not of type number (FC4)
+```
+
+### 2. Let the tool conclude something
+
+A guest with a nut allergy must know which dishes contain nuts. The kitchen
+does not write that down for each dish. It writes down which ingredients
+have nuts, and which dish uses which ingredient.
+
+The definitions have three kinds. A **link** is a named relationship from
+one kind to a different kind: a dish uses an ingredient. A **derivative**
+is a rule that adds what follows. `match` finds each dish with one of its
+ingredients, `filter` keeps the ingredients with nuts, and `derive` says
+what follows: the dish is a dish with nuts.
 
 ```yaml
-margheritaContainsNuts:
+# with-nuts/defs/menu.of.yaml
+Ingredient:
+  is: Kind
+  definition: A food that the kitchen buys and does not make.
+  fields:
+    hasNuts:
+      type: boolean
+
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+
+DishWithNuts:
+  is: Kind
+  extends: Dish
+  definition: A dish that a guest with a nut allergy must not eat.
+
+usesIngredient:
+  is: Link
+  from: Dish
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The dish needs the ingredient.
+
+dishWithNutsFromIngredient:
+  is: Derivative
+  says: A dish that uses an ingredient with nuts is a dish with nuts.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Ingredient, as: $ingredient }
+    - link: usesIngredient
+      from: $dish
+      to:   $ingredient
+  filter:
+    - node:  $ingredient
+      field: hasNuts
+      equals:
+        value: true
+  derive:
+    - node: $dish
+      becomes: DishWithNuts
+```
+
+The facts state two ingredients and two dishes. No fact says that a dish
+has nuts.
+
+```yaml
+# with-nuts/tests/examples/pesto-pasta.of.yaml
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Ingredient, Dish, DishWithNuts, usesIngredient]
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  fields:
+    hasNuts: true
+
+ingredient/tomatoes:
+  is: Fact
+  kind: Ingredient
+  fields:
+    hasNuts: false
+
+dish/pesto_pasta:
+  is: Fact
+  kind: Dish
+  links:
+    usesIngredient: [ingredient/pine_nuts, ingredient/tomatoes]
+
+dish/tomato_soup:
+  is: Fact
+  kind: Dish
+  links:
+    usesIngredient: ingredient/tomatoes
+
+pestoPastaHasNuts:
   is: Test
   says: >
-    The margherita uses the pesto, and the pesto contains pine nuts. Thus,
-    the margherita contains nuts. The menu does not say so, so the
-    constraint rejects the dish.
+    The pesto pasta uses pine nuts, so it is a dish with nuts. The tomato
+    soup is not.
   expect:
     derived:
-      - link: hasAllergen
-        from: dish/margherita
-        to:   allergen/nuts
-    rejected: [dishListsItsAllergens]
+      - node: dish/pesto_pasta
+        becomes: DishWithNuts
+    notDerived:
+      - node: dish/tomato_soup
+        becomes: DishWithNuts
 ```
 
-### 7. Get the answer
-
-`check` makes sure that the package obeys the rules of the language:
-
-```console
-$ of-lang check menu
-ok
-```
-
-`run` derives the facts that follow, and then applies the constraints. The
-margherita contains nuts, and the menu does not say so:
+`run` shows what follows from the facts. The tool concludes that the pesto
+pasta is a dish with nuts, and names the derivative that says so:
 
 ```console
-$ of-lang run menu menu/tests/examples/margherita.of.yaml
+$ of-lang run with-nuts with-nuts/tests/examples/pesto-pasta.of.yaml
 derived:
-  recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
-  dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
+  dish/pesto_pasta is a DishWithNuts  (derivative dishWithNutsFromIngredient)
 rejected:
-  dishListsItsAllergens: The menu must warn that dish/margherita contains allergen/nuts.
+  nothing
 ```
 
-`explain` shows the steps to one derived fact, down to the lines of the
-file that state the facts:
+`test` makes sure that the conclusion stays correct when the definitions
+change:
 
 ```console
-$ of-lang explain menu menu/tests/examples/margherita.of.yaml dish/margherita hasAllergen allergen/nuts
-dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
-  A recipe contains each allergen that one of its recipes contains.
-  with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
-  because:
-    dish/margherita uses recipe/pesto  (written at menu/tests/examples/margherita.of.yaml:25:5)
-    recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
-      A recipe contains each allergen that one of its ingredients contains.
-      with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
-      because:
-        recipe/pesto uses ingredient/pine_nuts  (written at menu/tests/examples/margherita.of.yaml:19:5)
-        ingredient/pine_nuts contains allergen/nuts  (written at menu/tests/examples/margherita.of.yaml:13:5)
-```
-
-`test` runs the test, so that the answer stays correct when the model
-changes:
-
-```console
-$ of-lang test menu
-pass  test margheritaContainsNuts  (menu/tests/examples/margherita.of.yaml)
+$ of-lang test with-nuts
+pass  test pestoPastaHasNuts  (with-nuts/tests/examples/pesto-pasta.of.yaml)
 1 passed, 0 failed
 ```
 
-The same package is in [`examples/menu`](examples/menu/).
+### 3. Enforce a rule
+
+A restaurant must not sell a dish for less than the dish costs to make. A
+**constraint** is a rule that rejects facts. `match` finds each dish, and
+`filter` keeps the dishes whose price is at most their cost. Each dish that
+is left breaks the rule. `message` is what the tool tells about it.
+
+```yaml
+# below-cost/defs/menu.of.yaml
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    price:
+      type: number
+    cost:
+      type: number
+
+dishSellsAboveCost:
+  is: Constraint
+  says: The price of a dish must be above what the dish costs to make.
+  match:
+    - kind: { name: Dish, as: $dish }
+  filter:
+    - node:  $dish
+      field: price
+      is at most:
+        same as: { node: $dish, field: cost }
+  message: "{$dish} sells for {$dish: price} and costs {$dish: cost}."
+```
+
+The facts state two dishes. The truffle pasta costs more than its price.
+
+```yaml
+# below-cost/tests/examples/two-dishes.of.yaml
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Dish, dishSellsAboveCost]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 12
+    cost: 4
+
+dish/truffle_pasta:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 18
+    cost: 21
+
+truffleDishLosesMoney:
+  is: Test
+  says: The truffle pasta sells below its cost, so the constraint rejects it.
+  expect:
+    rejected: [dishSellsAboveCost]
+```
+
+`run` rejects the truffle pasta, with the message of the constraint:
+
+```console
+$ of-lang run below-cost below-cost/tests/examples/two-dishes.of.yaml
+derived:
+  nothing
+rejected:
+  dishSellsAboveCost: dish/truffle_pasta sells for 18 and costs 21.
+```
 
 ## Where to go next
 
-The same restaurant is the example in all of the documentation.
-
-- [The introduction](docs/introduction/README.md) grows this model into the
-  full kitchen in eight chapters. Each chapter is a question of the kitchen,
-  such as "Which dishes contain nuts?", and ends with the answer of the tool.
+- [The introduction](docs/introduction/README.md) builds the model of one
+  kitchen in eight chapters. Each chapter is a question of the kitchen,
+  such as "Which dishes contain nuts?", and ends with the answer of the
+  tool.
 - [The language by example](docs/by-example/README.md) has one short page
   for each thing in the language, with the text next to the code.
 - [The language specification](language/README.md) tells what the language

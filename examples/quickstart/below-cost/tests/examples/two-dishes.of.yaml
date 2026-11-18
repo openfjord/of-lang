@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Dish, dishSellsAboveCost]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 12
+    cost: 4
+
+dish/truffle_pasta:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 18
+    cost: 21
+
+truffleDishLosesMoney:
+  is: Test
+  says: The truffle pasta sells below its cost, so the constraint rejects it.
+  expect:
+    rejected: [dishSellsAboveCost]

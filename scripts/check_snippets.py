@@ -21,7 +21,11 @@ must be exactly the files of the package, and ``of-lang check`` and ``of-lang
 test`` must pass on it. There, only the first block of a file starts with the
 comment that names it. A page can leave out the manifest.
 
-``README.md`` shows the package ``examples/menu`` in the same way.
+``README.md`` shows the packages in ``examples/quickstart``. Each of its YAML
+blocks starts with a comment that names a package and a file, such as
+``# with-nuts/defs/menu.of.yaml``, and must be exactly that file. Each of its
+console blocks holds one ``of-lang`` command and its output, and the command
+must give that output when it runs in ``examples/quickstart``.
 
 Each folder in ``docs/introduction/steps`` is the restaurant package as it is
 after the chapter of the introduction with the same number: ``step-01`` after
@@ -58,7 +62,13 @@ BY_EXAMPLE = REPO / "docs" / "by-example"
 INTRODUCTION = REPO / "docs" / "introduction"
 STEPS = INTRODUCTION / "steps"
 STEP_PREFIX = "step-"
-FIRST_MODEL = EXAMPLES / "menu"
+QUICKSTART = EXAMPLES / "quickstart"
+QUICKSTART_PAGE = REPO / "README.md"
+QUICKSTART_HEADER = re.compile(
+    r"^# ([a-z0-9-]+/(?:(?:defs|tests)/\S+\.of\.ya?ml|package\.ya?ml))\s*$"
+)
+CONSOLE_OPEN = "```console"
+PROMPT = "$ of-lang "
 CHAPTERS = "[0-9][0-9]-*.md"
 PACKAGE_FILES = ("package.y*ml", "defs/**/*.of.*", "tests/**/*.of.*")
 MANIFESTS = frozenset({"package.yaml", "package.yml"})
@@ -314,8 +324,8 @@ def check_snippet(tool: Path, snippet: Snippet) -> Problem | None:
     return Problem(snippet, failure) if failure else None
 
 
-def shown_files(page: Path) -> dict[str, list[str]]:
-    """Return the lines that a by-example page shows for each file, in page order.
+def shown_files(page: Path, header: re.Pattern[str] = HEADER) -> dict[str, list[str]]:
+    """Return the lines that a page shows for each file, in page order.
 
     A block that starts with a file comment opens that file. A block without
     one continues the file of the block before it.
@@ -324,13 +334,68 @@ def shown_files(page: Path) -> dict[str, list[str]]:
     path = ""
     for _, lines in yaml_blocks(page.read_text()):
         for line in lines:
-            match = HEADER.match(line)
+            match = header.match(line)
             if match:
                 path = match.group(1)
                 files.setdefault(path, [])
             elif line.strip():
                 files.setdefault(path, []).append(line.rstrip())
     return files
+
+
+def console_blocks(text: str) -> tuple[tuple[int, str, str], ...]:
+    """Return each console block of a page: its line, its command and its output."""
+    blocks: list[tuple[int, str, str]] = []
+    lines = text.splitlines()
+    for number, line in enumerate(lines):
+        if line.strip() != CONSOLE_OPEN:
+            continue
+        end = next(
+            i for i in range(number + 1, len(lines)) if lines[i].strip() == FENCE_CLOSE
+        )
+        command, output = lines[number + 1], "\n".join(lines[number + 2 : end])
+        if command.startswith(PROMPT):
+            blocks.append((number + 1, command.removeprefix(PROMPT), output.strip()))
+    return tuple(blocks)
+
+
+def check_quickstart(tool: Path) -> tuple[str, ...]:
+    """Compare the README with the packages that it shows, and run its commands."""
+    where = QUICKSTART_PAGE.relative_to(REPO)
+    shown = shown_files(QUICKSTART_PAGE, QUICKSTART_HEADER)
+    real = {
+        file.relative_to(QUICKSTART).as_posix(): [
+            line.rstrip() for line in file.read_text().splitlines() if line.strip()
+        ]
+        for package in QUICKSTART.iterdir()
+        for pattern in PACKAGE_FILES
+        for file in package.glob(pattern)
+    }
+    problems = [
+        f"{where}: {path} is not the same as the file in examples/quickstart"
+        if path in real
+        else f"{where}: examples/quickstart has no file {path}"
+        for path, lines in shown.items()
+        if real.get(path) != lines
+    ]
+    problems.extend(
+        f"{where}: the page does not show {path}"
+        for path in sorted(real.keys() - shown.keys())
+        if Path(path).name not in MANIFESTS
+    )
+    for line, command, output in console_blocks(QUICKSTART_PAGE.read_text()):
+        done = subprocess.run(  # noqa: S603 — runs the tool this script just built
+            [str(tool), *command.split()],
+            cwd=QUICKSTART,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if (done.stdout + done.stderr).strip() != output:
+            problems.append(
+                f"{where}:{line}: of-lang {command} does not give the output that the page shows"
+            )
+    return tuple(problems)
 
 
 def check_example(
@@ -475,7 +540,7 @@ def main() -> int:
         tool = build_tool(Path(tmp))
         for example in examples:
             problems.extend(check_example(tool, example))
-        problems.extend(check_example(tool, FIRST_MODEL, REPO / "README.md"))
+        problems.extend(check_quickstart(tool))
         for snippet in snippets:
             problem = check_snippet(tool, snippet)
             if problem is not None:

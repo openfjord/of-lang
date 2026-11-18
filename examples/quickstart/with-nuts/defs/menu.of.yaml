@@ -1,0 +1,40 @@
+Ingredient:
+  is: Kind
+  definition: A food that the kitchen buys and does not make.
+  fields:
+    hasNuts:
+      type: boolean
+
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+
+DishWithNuts:
+  is: Kind
+  extends: Dish
+  definition: A dish that a guest with a nut allergy must not eat.
+
+usesIngredient:
+  is: Link
+  from: Dish
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The dish needs the ingredient.
+
+dishWithNutsFromIngredient:
+  is: Derivative
+  says: A dish that uses an ingredient with nuts is a dish with nuts.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Ingredient, as: $ingredient }
+    - link: usesIngredient
+      from: $dish
+      to:   $ingredient
+  filter:
+    - node:  $ingredient
+      field: hasNuts
+      equals:
+        value: true
+  derive:
+    - node: $dish
+      becomes: DishWithNuts
