@@ -132,7 +132,7 @@ SECTIONS = (
         grouped=True,
     ),
     Section(
-        "Language",
+        "About",
         pages=(
             "language/README.md",
             "language/cheatsheet.md",
@@ -379,7 +379,7 @@ def label(page: Page, group: str) -> str:
     """Return the words that the navigation shows for a page."""
     if page.path == HOME:
         return "Home"
-    if page.path.endswith("README.md") and group not in {"Language", "More"}:
+    if page.path.endswith("README.md") and group != "About":
         return "Overview"
     return page.heading or page.title
 
