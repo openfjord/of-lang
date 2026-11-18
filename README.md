@@ -10,10 +10,6 @@ Its tool, `of-lang`, checks those files, derives the facts that nobody wrote
 down, explains each one, and runs the model's tests.
 
 <p align="center">
-  <img src="docs/images/openfjord.png" alt="The OpenFjord logo: a fjord between mountains, above circuit lines" width="220">
-</p>
-
-<p align="center">
   <img src="docs/images/of-lang-flow.svg" alt="Packages go into the OpenFjord modeling language, which checks, derives, explains and tests. An agent, an MCP server, a coding factory, a knowledge base and a semantic layer use what it knows." width="100%">
 </p>
 
