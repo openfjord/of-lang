@@ -14,11 +14,18 @@ leaves out the text between a line ``<!-- not on the site -->`` and a line
 when a link points at a file or a heading that does not exist, or when a page
 is missing from the navigation.
 
+When the environment variable ``CLOUDFLARE_ANALYTICS_TOKEN`` holds the token
+of a site in Cloudflare Web Analytics, each page loads its beacon, which
+counts visits without cookies. Without the variable, the pages load no
+analytics.
+
 Usage: uv run scripts/build_site.py [output folder, default _site]
 """
 
 import hashlib
 import html
+import json
+import os
 import posixpath
 import re
 import shutil
@@ -52,6 +59,8 @@ NOT_ON_SITE = re.compile(
 DARK_STYLE = "github-dark"
 LIGHT_STYLE = "default"
 LOGO = "docs/images/openfjord.png"
+ANALYTICS_TOKEN = re.compile(r"^[0-9a-f]{32}$")
+ANALYTICS_BEACON = "https://static.cloudflareinsights.com/beacon.min.js"
 VOCABULARY = ("language/README.md", "Vocabulary")
 
 # The icon of each word of the vocabulary: its name in the Tabler Icons font
@@ -516,7 +525,19 @@ def code_colors() -> str:
     return "\n".join((rules(DARK_STYLE, "pre"), reset, rules(LIGHT_STYLE, light)))
 
 
-def page_html(page: Page, nav: str, template: str, version: str) -> str:
+def analytics_html(token: str) -> str:
+    """Return the script that loads the Cloudflare Web Analytics beacon.
+
+    The token is empty when the site has no analytics, and then the pages
+    load no script.
+    """
+    if not token:
+        return ""
+    beacon = html.escape(json.dumps({"token": token}))
+    return f'<script defer src="{ANALYTICS_BEACON}" data-cf-beacon="{beacon}"></script>'
+
+
+def page_html(page: Page, nav: str, template: str, version: str, analytics: str) -> str:
     """Return the whole HTML file of a page."""
     body = markdown().renderer.render(list(page.tokens), markdown().options, {})
     values = {
@@ -529,6 +550,7 @@ def page_html(page: Page, nav: str, template: str, version: str) -> str:
         "source": html.escape(f"{GITHUB}/blob/main/{page.path}"),
         "nav": nav,
         "body": body,
+        "analytics": analytics,
     }
     return re.sub(r"\{\{(\w+)\}\}", lambda found: values[found.group(1)], template)
 
@@ -580,6 +602,12 @@ def main(arguments: Sequence[str]) -> int:
         ),
         *icon_problems(pages),
     ]
+    token = os.environ.get("CLOUDFLARE_ANALYTICS_TOKEN", "").strip()
+    if token and not ANALYTICS_TOKEN.match(token):
+        problems.append(
+            "CLOUDFLARE_ANALYTICS_TOKEN: the token must be 32 lowercase hexadecimal digits"
+        )
+    analytics = analytics_html(token if ANALYTICS_TOKEN.match(token) else "")
     template = (ASSETS / "page.html").read_text()
     generated = {"code.css": code_colors(), "icons.css": icon_rules()}
     version = assets_version(generated)
@@ -600,7 +628,9 @@ def main(arguments: Sequence[str]) -> int:
         target = out / output_path(page.path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            page_html(page, navigation_html(groups, pages, page), template, version)
+            page_html(
+                page, navigation_html(groups, pages, page), template, version, analytics
+            )
         )
         for asset in assets:
             (out / asset).parent.mkdir(parents=True, exist_ok=True)

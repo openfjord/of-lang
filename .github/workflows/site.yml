@@ -24,8 +24,12 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
+      # The token of the site in Cloudflare Web Analytics, a repository
+      # variable. The pages of a pull request load no analytics.
       - name: Build the site
         run: uv run scripts/build_site.py _site
+        env:
+          CLOUDFLARE_ANALYTICS_TOKEN: ${{ github.event_name != 'pull_request' && vars.CLOUDFLARE_ANALYTICS_TOKEN || '' }}
 
       - uses: actions/upload-pages-artifact@v4
         if: github.event_name != 'pull_request'
