@@ -1,0 +1,4 @@
+package: "@by-example/hello-kind"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: hello-kind

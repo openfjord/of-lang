@@ -17,7 +17,8 @@ next version's heading:
 ```
 
 Group entries under `Added`, `Changed`, `Fixed` and `Removed`, and start each
-with the part it touches in bold: `language`, `of-lang` or `examples`. The
+with the part it touches in bold: `language`, `of-lang`, `examples` or
+`docs`. The
 entry becomes the release notes, so links in it must be full URLs. A new major
 version starts a new file, and gets a line in
 [`changelog/README.md`](changelog/README.md).
@@ -36,6 +37,43 @@ uv run scripts/check_snippets.py
 
 The snippets workflow (`.github/workflows/snippets.yml`) runs this check on
 each push to `main` and on each pull request.
+
+## By-example pages
+
+Each page in `docs/by-example/` shows one thing in the language. The folder
+with the name of the page is a package: `defaults.md` shows the package in
+`defaults/`. The page is a table with one row for each step, with the text
+in the left cell and the code in the right cell:
+
+````markdown
+<table>
+<tr>
+<td>
+
+`status` has a default. A dish that gives no status is `active`.
+
+</td>
+<td>
+
+```yaml
+    status:
+      enum: [active, retired]
+      default: active
+```
+
+</td>
+</tr>
+</table>
+````
+
+The code cells of a page, joined in order, must be exactly the files of the
+package. The first block of each file starts with a comment that names the
+file, such as `# defs/dish.of.yaml`, and the blocks after it continue that
+file. A page can leave out the manifest. The snippets check also runs
+`of-lang check` and `of-lang test` on each package.
+
+Add each new page to the list in `docs/by-example/README.md`, which also
+sets its place in the navigation of the site.
 
 ## Releasing
 

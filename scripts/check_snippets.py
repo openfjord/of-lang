@@ -3,7 +3,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["pyyaml==6.0.2"]
 # ///
-"""Check that every YAML snippet in the language reference is valid.
+"""Check that every YAML snippet in the reference and the by-example pages is valid.
 
 Each snippet starts with a comment that names its file in the restaurant
 example, such as ``# defs/recipe.of.yaml`` or ``# package.yaml``. A snippet can
@@ -14,6 +14,12 @@ so must each manifest key that a snippet shows. For a statement with a pending
 change, the version without the change must be the real one. A new statement is merged into
 a fresh copy of ``examples/``, with the snippet's imports, and then
 ``of-lang check`` and ``of-lang test`` must pass on the restaurant package.
+
+Each folder in ``docs/by-example`` is a package, and the page next to it with
+the same name shows it. The YAML blocks of the page, joined in page order,
+must be exactly the files of the package, and ``of-lang check`` and ``of-lang
+test`` must pass on it. There, only the first block of a file starts with the
+comment that names it. A page can leave out the manifest.
 
 Usage: uv run scripts/check_snippets.py
 """
@@ -34,6 +40,9 @@ REPO = Path(__file__).resolve().parents[1]
 EXAMPLES = REPO / "examples"
 PACKAGE = "restaurant"
 PAGES = (REPO / "language" / "reference",)
+BY_EXAMPLE = REPO / "docs" / "by-example"
+PACKAGE_FILES = ("package.y*ml", "defs/**/*.of.*", "tests/**/*.of.*")
+MANIFESTS = frozenset({"package.yaml", "package.yml"})
 HEADER = re.compile(r"^# ((?:defs|tests)/\S+\.of\.ya?ml|package\.ya?ml)\s*$")
 FENCE_OPEN = "```yaml"
 FENCE_CLOSE = "```"
@@ -201,10 +210,12 @@ def differences(file: SnippetFile) -> tuple[str, ...]:
     )
 
 
-def run_tool(tool: Path, workdir: Path, command: str) -> tuple[bool, str]:
-    """Run one of-lang command on the restaurant package in a workdir."""
+def run_tool(
+    tool: Path, workdir: Path, command: str, package: str = PACKAGE
+) -> tuple[bool, str]:
+    """Run one of-lang command on a package in a workdir."""
     done = subprocess.run(  # noqa: S603 — runs the tool this script just built
-        [str(tool), command, PACKAGE],
+        [str(tool), command, package],
         cwd=workdir,
         capture_output=True,
         text=True,
@@ -230,6 +241,63 @@ def check_snippet(tool: Path, snippet: Snippet) -> Problem | None:
     return None
 
 
+def shown_files(page: Path) -> dict[str, list[str]]:
+    """Return the lines that a by-example page shows for each file, in page order.
+
+    A block that starts with a file comment opens that file. A block without
+    one continues the file of the block before it.
+    """
+    files: dict[str, list[str]] = {}
+    path = ""
+    for _, lines in yaml_blocks(page.read_text()):
+        for line in lines:
+            match = HEADER.match(line)
+            if match:
+                path = match.group(1)
+                files.setdefault(path, [])
+            elif line.strip():
+                files.setdefault(path, []).append(line.rstrip())
+    return files
+
+
+def check_example(tool: Path, package: Path) -> tuple[str, ...]:
+    """Compare a by-example page with its package, then check and test the package."""
+    page = package.with_suffix(".md")
+    where = page.relative_to(REPO)
+    if not page.exists():
+        return (f"{package.relative_to(REPO)}: the package has no page {page.name}",)
+    shown = shown_files(page)
+    if "" in shown:
+        return (
+            f"{where}: the first snippet does not start with a comment that names its file",
+        )
+    real = {
+        str(file.relative_to(package)): [
+            line.rstrip() for line in file.read_text().splitlines() if line.strip()
+        ]
+        for pattern in PACKAGE_FILES
+        for file in package.glob(pattern)
+    }
+    problems = [
+        f"{where}: {path} is not the same as the file in the package"
+        if path in real
+        else f"{where}: the package has no file {path}"
+        for path, lines in shown.items()
+        if real.get(path) != lines
+    ]
+    problems.extend(
+        f"{where}: the page does not show {path}"
+        for path in sorted(real.keys() - shown.keys() - MANIFESTS)
+    )
+    for command in ("check", "test"):
+        ok, output = run_tool(tool, package.parent, command, package.name)
+        if not ok:
+            problems.append(
+                f"{package.relative_to(REPO)}: of-lang {command}:\n{output}"
+            )
+    return tuple(problems)
+
+
 def build_tool(into: Path) -> Path:
     """Build the of-lang tool from this repository."""
     tool = into / "of-lang"
@@ -247,8 +315,11 @@ def main() -> int:
             found, unnamed = find_snippets(page)
             snippets.extend(found)
             problems.extend(unnamed)
+    examples = sorted(p.parent for p in BY_EXAMPLE.glob("*/package.y*ml"))
     with tempfile.TemporaryDirectory() as tmp:
         tool = build_tool(Path(tmp))
+        for example in examples:
+            problems.extend(check_example(tool, example))
         for snippet in snippets:
             problem = check_snippet(tool, snippet)
             if problem is not None:
@@ -258,7 +329,9 @@ def main() -> int:
                 problems.append(f"{where}: {problem.text}")
     for p in problems:
         print(p, file=sys.stderr)
-    print(f"{len(snippets)} snippets checked, {len(problems)} problems")
+    print(
+        f"{len(snippets)} snippets and {len(examples)} by-example pages checked, {len(problems)} problems"
+    )
     return 1 if problems else 0
 
 
