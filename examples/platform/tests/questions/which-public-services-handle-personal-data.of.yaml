@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [PublicService]
+  - from: file:../../defs/table.of.yaml
+    use: [DataClass]
+  - from: file:../../defs/privacy.of.yaml
+    use: [handlesData]
+
+whichPublicServicesHandlePersonalData:
+  is: Question
+  asks: Which public services handle personal data?
+  given: file:../examples/personal-data-through-a-call.of.yaml
+  match:
+    - kind: { name: PublicService, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: handlesData
+      from: $service
+      to:   $data
+  filter:
+    - node: $data
+      equals:
+        value: data/personal
+  expect:
+    $service: [service/checkout]

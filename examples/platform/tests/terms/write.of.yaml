@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
+
+writeIsAUse:
+  is: Test
+  says: >
+    A service that writes a table also uses the table. A public service is
+    a service, so a public service can have a team that owns it. A service
+    can call a service that calls another service.
+  expect:
+    derived:
+      - kind: PublicService
+        is a: Service
+      - kind: PublicService
+        can have: ownedByTeam
+      - link: writesTable
+        implies: usesTable
+      - link: callsService
+        chains: true
+    notDerived:
+      - link: usesTable
+        implies: writesTable

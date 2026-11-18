@@ -1,0 +1,6 @@
+package: "@acme/org"
+version: 1.2.0
+owner: people
+rdfNamespace: org
+exports:
+  kinds: [Team, Region]

@@ -1,0 +1,88 @@
+import:
+  - from: file:service.of.yaml
+    use: [Service, PublicService, callsService, usesTable]
+  - from: file:table.of.yaml
+    use: [Table, DataClass, holdsData]
+
+PersonalDataCare:
+  is: Doc
+  path: file:../docs/personal-data.md
+
+handlesData:
+  is: Link
+  tags: [privacy]
+  from: Service
+  to: DataClass
+  reads: "{from} handles {to}"
+  definition: The service gets data of this sort, from one of its tables or from one of the services that it calls.
+
+declaresData:
+  is: Link
+  tags: [privacy]
+  from: PublicService
+  to: DataClass
+  reads: "the privacy notice tells customers that {from} handles {to}"
+  definition: The privacy notice names the data class next to the service.
+
+dataFromTable:
+  is: Derivative
+  tags: [privacy]
+  says: A service handles each data class that one of its tables holds.
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Table, as: $table }
+    - kind: { name: DataClass, as: $data }
+    - link: usesTable
+      from: $service
+      to:   $table
+    - link: holdsData
+      from: $table
+      to:   $data
+  derive:
+    - link: handlesData
+      from: $service
+      to:   $data
+
+dataFromService:
+  is: Derivative
+  tags: [privacy]
+  says: A service that calls a second service handles each data class that the second service handles.
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $called }
+    - kind: { name: DataClass, as: $data }
+    - link: callsService
+      from: $service
+      to:   $called
+    - link: handlesData
+      from: $called
+      to:   $data
+  derive:
+    - link: handlesData
+      from: $service
+      to:   $data
+
+publicServiceDeclaresItsData:
+  is: Constraint
+  tags: [privacy]
+  says: >
+    The privacy notice must name each data class that an active public
+    service handles.
+  match:
+    - kind: { name: PublicService, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: handlesData
+      from: $service
+      to:   $data
+  filter:
+    - node:  $service
+      field: status
+      equals:
+        value: active
+  unless:
+    - at least one:
+        match:
+          - link: declaresData
+            from: $service
+            to:   $data
+  message: "The privacy notice must tell that {$service} handles {$data}."

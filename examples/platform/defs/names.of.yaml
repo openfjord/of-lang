@@ -1,0 +1,29 @@
+Name:
+  is: ValueType
+  tags: [privacy, backups]
+  definition: A lowercase identifier for services, tables, data classes and regions.
+  type: string
+  pattern: "^[a-z][a-z0-9_]*$"
+  maxLength: 63
+
+Seconds:
+  is: ValueType
+  tags: [privacy]
+  definition: A number of seconds that a service waits for an answer.
+  type: integer
+  minimum: 1
+  maximum: 3600
+
+URL:
+  is: ValueType
+  tags: [privacy]
+  definition: The address of a page on the web.
+  type: string
+  format: uri
+
+Percent:
+  is: ValueType
+  tags: [privacy]
+  definition: A share of a whole, in parts of one hundred.
+  type: number
+  minimum: 0

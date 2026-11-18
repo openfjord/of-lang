@@ -1,0 +1,81 @@
+import:
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, SharedService, ownedByTeam, callsService]
+
+catalogCalledByThreeServices:
+  is: Test
+  says: >
+    A service that three services call is a shared service. A service that
+    only one service calls is not a shared service.
+  expect:
+    derived:
+      - node:    service/catalog
+        becomes: SharedService
+    notDerived:
+      - node:    service/accounts
+        becomes: SharedService
+
+team/web:
+  is: Fact
+  kind: Team
+  fields:
+    name: web
+
+team/core:
+  is: Fact
+  kind: Team
+  fields:
+    name: core
+
+service/catalog:
+  is: Fact
+  kind: Service
+  fields:
+    name: catalog
+    repository: https://code.example.com/catalog
+  links:
+    ownedByTeam: team/core
+
+service/accounts:
+  is: Fact
+  kind: Service
+  fields:
+    name: accounts
+    repository: https://code.example.com/accounts
+  links:
+    ownedByTeam: team/core
+
+service/checkout:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: checkout
+    repository: https://code.example.com/checkout
+    availability: 99.9
+  links:
+    ownedByTeam: team/web
+    callsService: [service/catalog, service/accounts]
+
+service/search:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: search
+    repository: https://code.example.com/search
+    availability: 99.5
+  links:
+    ownedByTeam: team/web
+    callsService: service/catalog
+
+service/cart:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: cart
+    repository: https://code.example.com/cart
+    availability: 99.5
+  links:
+    ownedByTeam: team/web
+    callsService: service/catalog

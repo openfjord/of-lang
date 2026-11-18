@@ -1,0 +1,40 @@
+import:
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:service.of.yaml
+    use: [Service, ownedByTeam, ownsService, callsService]
+
+dependsOnTeam:
+  is: Link
+  from: Team
+  to: Team
+  reads: "{from} depends on {to}"
+  definition: The services of the first team cannot all work when the services of the second team stop.
+
+teamDependsOnTeam:
+  is: Derivative
+  says: >
+    A team depends on each different team that owns a service that one of
+    its own services calls.
+  match:
+    - kind: { name: Team, as: $team }
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $called }
+    - kind: { name: Team, as: $other }
+    - link: ownsService
+      from: $team
+      to:   $service
+    - link: callsService
+      from: $service
+      to:   $called
+    - link: ownedByTeam
+      from: $called
+      to:   $other
+  filter:
+    - node: $other
+      does not equal:
+        same as: $team
+  derive:
+    - link: dependsOnTeam
+      from: $team
+      to:   $other

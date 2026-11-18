@@ -1,0 +1,58 @@
+import:
+  - from: file:../../defs/table.of.yaml
+    use: [Table]
+  - from: file:../../defs/backups.of.yaml
+    use: [Region, Backup, backupOf, storedIn, backupInAllowedRegion]
+
+backupInWrongRegion:
+  is: Test
+  says: >
+    The backups of the customers table have sensitivity 3. One backup is in
+    the European Union, which allows that sensitivity. A second backup is in
+    the United States, which allows at most sensitivity 1, so the constraint
+    rejects it. The days to delete the backups are after the days that the
+    platform made them.
+  expect:
+    rejected: [backupInAllowedRegion]
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    name: customers
+
+region/eu:
+  is: Fact
+  kind: Region
+  fields:
+    name: eu
+    maxSensitivity: 3
+
+region/us:
+  is: Fact
+  kind: Region
+  fields:
+    name: us
+    maxSensitivity: 1
+
+backup/customers_monday:
+  is: Fact
+  kind: Backup
+  fields:
+    madeOn: 2026-11-16
+    deleteOn: 2026-12-14
+    sensitivity: 3
+  links:
+    backupOf: table/customers
+    storedIn: region/eu
+
+backup/customers_tuesday:
+  is: Fact
+  kind: Backup
+  fields:
+    madeOn: 2026-11-17
+    deleteOn: 2026-12-15
+    sensitivity: 3
+  links:
+    backupOf: table/customers
+    storedIn: region/us

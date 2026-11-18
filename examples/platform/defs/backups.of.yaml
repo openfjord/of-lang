@@ -1,0 +1,106 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name]
+  - from: file:table.of.yaml
+    use: [Table]
+
+Backups:
+  is: Doc
+  path: file:../docs/backups.md
+
+Sensitivity:
+  is: ValueType
+  tags: [backups]
+  definition: How much care data needs, from 0 for public data to 3 for personal data.
+  type: integer
+  minimum: 0
+  maximum: 3
+
+Day:
+  is: ValueType
+  tags: [backups]
+  definition: A day in the calendar, such as 2026-11-17.
+  type: string
+  format: date
+
+Region:
+  is: Kind
+  tags: [backups]
+  definition: A part of the world where the platform keeps data, under one set of laws.
+  examples:
+    - the European Union
+    - the United States
+  notExamples:
+    - a database, which is in a region and is not a region itself
+  fields:
+    name:
+      type: Name
+    maxSensitivity:
+      type: Sensitivity
+
+Backup:
+  is: Kind
+  tags: [backups]
+  definition: A copy of one table that the platform made on one day.
+  examples:
+    - the copy of the customers table that the platform made on Monday
+  notExamples:
+    - the customers table itself, which services use
+  fields:
+    madeOn:
+      type: Day
+    deleteOn:
+      type: Day
+    sensitivity:
+      type: Sensitivity
+  docs: [Backups]
+
+backupOf:
+  is: Link
+  tags: [backups]
+  from: Backup
+  to: Table
+  reads: "{from} is a backup of {to}"
+  definition: The backup is a copy of the table.
+
+storedIn:
+  is: Link
+  tags: [backups]
+  from: Backup
+  to: Region
+  reads: "{from} is stored in {to}"
+  definition: The platform keeps the backup in the region until the day to delete it.
+
+backupInAllowedRegion:
+  is: Constraint
+  tags: [backups]
+  says: The platform keeps each backup in a region that allows data of its sensitivity.
+  match:
+    - kind: { name: Backup, as: $backup }
+    - kind: { name: Region, as: $region }
+    - link: storedIn
+      from: $backup
+      to:   $region
+  filter:
+    - node:  $region
+      field: maxSensitivity
+      is below:
+        same as:
+          node:  $backup
+          field: sensitivity
+  message: "{$backup} must be in a region that allows sensitivity {$backup: sensitivity}, but {$region} allows at most sensitivity {$region: maxSensitivity}."
+
+deleteOnAfterMadeOn:
+  is: Constraint
+  tags: [backups]
+  says: The day to delete a backup is on or after the day that the platform made it.
+  match:
+    - kind: { name: Backup, as: $backup }
+  filter:
+    - node:  $backup
+      field: deleteOn
+      is below:
+        same as:
+          node:  $backup
+          field: madeOn
+  message: "{$backup} must not have a day to delete it before the day that the platform made it."

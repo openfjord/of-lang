@@ -1,0 +1,22 @@
+import:
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:../../defs/team.of.yaml
+    use: [dependsOnTeam]
+
+whichTeamsStopWithTheCoreTeam:
+  is: Question
+  asks: Which teams have services that cannot all work when the services of the core team stop?
+  given: file:../examples/personal-data-through-a-call.of.yaml
+  match:
+    - kind: { name: Team, as: $team }
+    - kind: { name: Team, as: $other }
+    - link: dependsOnTeam
+      from: $team
+      to:   $other
+  filter:
+    - node: $other
+      equals:
+        value: team/core
+  expect:
+    $team: [team/web]

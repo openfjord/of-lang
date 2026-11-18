@@ -1,0 +1,116 @@
+import:
+  - from: file:names.of.yaml
+    use: [Name, Seconds, Percent, URL]
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:table.of.yaml
+    use: [Table]
+
+Service:
+  is: Kind
+  tags: [privacy]
+  definition: A program that runs in production and answers requests.
+  examples:
+    - the checkout service
+    - the catalog service
+  notExamples:
+    - a table, which holds data and answers no requests
+    - a script that a developer runs one time and does not keep
+  fields:
+    name:
+      type: Name
+    repository:
+      type: URL
+    timeoutSeconds:
+      type: Seconds
+      optional: true
+
+PublicService:
+  is: Kind
+  tags: [privacy]
+  extends: Service
+  definition: A service that customers call.
+  examples:
+    - the checkout service
+  notExamples:
+    - the catalog service, which only other services call
+  fields:
+    availability:
+      type: Percent
+    status:
+      enum: [active, retired]
+      default: active
+
+SharedService:
+  is: Kind
+  extends: Service
+  definition: A service that many other services call, so a change to it needs extra care.
+
+ownedByTeam:
+  is: Link
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
+  inverse: ownsService
+
+callsService:
+  is: Link
+  tags: [privacy]
+  from: Service
+  to: Service
+  reads: "{from} calls {to}"
+  definition: The first service needs an answer from the second service, directly or through other services.
+  chains: true
+  inverse: calledByService
+
+usesTable:
+  is: Link
+  tags: [privacy]
+  from: Service
+  to: Table
+  reads: "{from} uses {to}"
+  definition: The service reads or writes rows of the table.
+
+writesTable:
+  is: Link
+  tags: [privacy]
+  from: Service
+  to: Table
+  reads: "{from} writes {to}"
+  definition: The service adds, changes or deletes rows of the table.
+  under: usesTable
+
+sharedServiceFromCalls:
+  is: Derivative
+  says: >
+    A service that more than two services call, directly or through other
+    services, is a shared service.
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - count:
+        match:
+          - link: callsService
+            from: Service
+            to:   $service
+      is above:
+        value: 2
+  derive:
+    - node: $service
+      becomes: SharedService
+
+serviceHasOneOwner:
+  is: Constraint
+  says: Exactly one team owns each service.
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - count:
+        match:
+          - link: ownedByTeam
+            from: $service
+            to:   Team
+      does not equal:
+        value: 1
+  message: "{$service} must have exactly one team that owns it."

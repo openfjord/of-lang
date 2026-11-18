@@ -1,0 +1,26 @@
+Team:
+  is: Kind
+  definition: A group of people who build and run services.
+  examples:
+    - the web team, which builds the shop that customers see
+  notExamples:
+    - a group of people from many teams who meet for one project
+  fields:
+    name:
+      type: string
+
+Region:
+  is: Kind
+  definition: A part of the world where the company sells its product.
+  examples:
+    - Europe, with the sales office in Berlin
+  fields:
+    name:
+      type: string
+
+worksInRegion:
+  is: Link
+  from: Team
+  to: Region
+  reads: "{from} works in {to}"
+  definition: The region where the people of the team have their office.

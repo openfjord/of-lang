@@ -1,0 +1,19 @@
+import:
+  - from: file:backups.of.yaml
+    use: [Region]
+  - from: pkg:@acme/org
+    use: [Team, { name: Region, as: SalesRegion }]
+
+runByTeam:
+  is: Link
+  from: Region
+  to: Team
+  reads: "{from} is run by {to}"
+  definition: The team that runs the databases in the region.
+
+servesSalesRegion:
+  is: Link
+  from: Region
+  to: SalesRegion
+  reads: "{from} keeps the data of the customers in {to}"
+  definition: The platform keeps the data of the customers of the sales region in the region.

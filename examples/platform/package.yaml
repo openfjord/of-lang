@@ -1,0 +1,18 @@
+package: "@acme/platform"
+version: 0.1.0
+owner: platform
+rdfNamespace: platform
+dependsOn:
+  "@acme/org": ^1.2
+exports:
+  kinds: [Service, PublicService, SharedService, Table, DataClass]
+  links: [ownedByTeam, callsService, usesTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
+  valueTypes: [Name, Seconds, Percent, URL]
+openFor:
+  - extend: Service
+  - under: usesTable
+tags:
+  - name: privacy
+    description: What a privacy review needs to tell customers which services handle which sorts of data.
+  - name: backups
+    description: What the platform team needs to keep each backup in a region that allows it. Only the platform team uses it, so the package does not export it.

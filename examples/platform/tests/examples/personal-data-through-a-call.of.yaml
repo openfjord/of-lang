@@ -1,0 +1,132 @@
+import:
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:../../defs/team.of.yaml
+    use: [dependsOnTeam]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
+  - from: file:../../defs/table.of.yaml
+    use: [Table, DataClass, holdsData]
+  - from: file:../../defs/privacy.of.yaml
+    use: [handlesData, declaresData]
+
+personalDataThroughACall:
+  is: Test
+  says: >
+    The checkout service calls the accounts service, which uses a table with
+    personal data. The checkout service also writes the payments table, which
+    holds payment data. Thus, the checkout service handles personal data and
+    payment data. The privacy notice names the two data classes, so the
+    service breaks no constraint. The web team depends on the core team.
+  expect:
+    derived:
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal
+      - link: handlesData
+        from: service/checkout
+        to:   data/payment
+      - link: usesTable
+        from: service/checkout
+        to:   table/payments
+      - link: dependsOnTeam
+        from: team/web
+        to:   team/core
+    notDerived:
+      - link: handlesData
+        from: service/search
+        to:   data/personal
+      - link: dependsOnTeam
+        from: team/core
+        to:   team/web
+    rejected: []
+
+team/web:
+  is: Fact
+  kind: Team
+  fields:
+    name: web
+
+team/core:
+  is: Fact
+  kind: Team
+  fields:
+    name: core
+
+data/personal:
+  is: Fact
+  kind: DataClass
+  fields:
+    name: personal
+
+data/payment:
+  is: Fact
+  kind: DataClass
+  fields:
+    name: payment
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    name: customers
+  links:
+    holdsData: data/personal
+
+table/payments:
+  is: Fact
+  kind: Table
+  fields:
+    name: payments
+  links:
+    holdsData: data/payment
+
+table/products:
+  is: Fact
+  kind: Table
+  fields:
+    name: products
+
+service/accounts:
+  is: Fact
+  kind: Service
+  fields:
+    name: accounts
+    repository: https://code.example.com/accounts
+  links:
+    ownedByTeam: team/core
+    usesTable: table/customers
+
+service/catalog:
+  is: Fact
+  kind: Service
+  fields:
+    name: catalog
+    repository: https://code.example.com/catalog
+  links:
+    ownedByTeam: team/core
+    usesTable: table/products
+
+service/checkout:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: checkout
+    repository: https://code.example.com/checkout
+    availability: 99.9
+  links:
+    ownedByTeam: team/web
+    callsService: [service/catalog, service/accounts]
+    writesTable: table/payments
+    declaresData: [data/personal, data/payment]
+
+service/search:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: search
+    repository: https://code.example.com/search
+    availability: 99.5
+  links:
+    ownedByTeam: team/web
+    callsService: service/catalog
