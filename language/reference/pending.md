@@ -12,36 +12,36 @@ adds, removes or updates. Thus, the tool and a user interface can show what the
 change does without git.
 
 ```yaml
-# defs/recipe.of.yaml
-Cook:                        # the change adds this statement
+# defs/service.of.yaml
+Engineer:                    # the change adds this statement
   is: Kind
   pending: added
-  definition: A person who makes recipes at one or more stations.
+  definition: A person who builds and runs services in one or more teams.
 
-recipeAtOneStation:          # the change removes this statement
+serviceHasOneOwner:          # the change removes this statement
   is: Constraint
   pending: removed
-  says: Cooks make each recipe at exactly one station.
+  says: Exactly one team owns each service.
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
     - count:
         match:
-          - link: madeAtStation
-            from: $recipe
-            to:   Station
+          - link: ownedByTeam
+            from: $service
+            to:   Team
       does not equal:
         value: 1
-  message: "{$recipe} must be made at exactly one station."
+  message: "{$service} must have exactly one team that owns it."
 
-BaseRecipe:                  # the change updates this statement
+SharedService:               # the change updates this statement
   is: Kind
   pending: updated
-  extends: Recipe
-  definition: A recipe that three or more other recipes use, so a change to it needs extra care.
+  extends: Service
+  definition: A service that three or more other services call, so a change to it needs extra care.
   was:
-    extends: Recipe
-    definition: A recipe that many other recipes use, so a change to it needs extra care.
+    extends: Service
+    definition: A service that many other services call, so a change to it needs extra care.
 ```
 
 `pending` and `was` are annotations: keys that the language adds to any
@@ -56,7 +56,7 @@ the names of fields or links, because those names are always one level lower
 
 An updated statement shows its new version. `was` keeps the old version, so
 that the tool can show the difference and can reject the change. In this
-example, the update changes the definition of `BaseRecipe`.
+example, the update changes the definition of `SharedService`.
 
 ## One change at a time
 

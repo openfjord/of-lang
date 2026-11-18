@@ -11,30 +11,30 @@ links between them, and it uses conditions to narrow the matches. For each
 match, it adds a link, a kind or a field value.
 
 ```yaml
-# defs/allergens.of.yaml
-allergenFromIngredient:
+# defs/privacy.of.yaml
+dataFromTable:
   is: Derivative
-  tags: [allergens]
-  says: A recipe contains each allergen that one of its ingredients contains.
+  tags: [privacy]
+  says: A service handles each data class that one of its tables holds.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Ingredient, as: $ingredient }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesIngredient
-      from: $recipe
-      to:   $ingredient
-    - link: containsAllergen
-      from: $ingredient
-      to:   $allergen
+    - kind: { name: Service, as: $service }
+    - kind: { name: Table, as: $table }
+    - kind: { name: DataClass, as: $data }
+    - link: usesTable
+      from: $service
+      to:   $table
+    - link: holdsData
+      from: $table
+      to:   $data
   derive:
-    - link: hasAllergen
-      from: $recipe
-      to:   $allergen
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
-Read it as follows: for each recipe `$recipe` that uses an ingredient
-`$ingredient` that contains an allergen `$allergen`, add "`$recipe` contains
-`$allergen`".
+Read it as follows: for each service `$service` that uses a table
+`$table` that holds a data class `$data`, add "`$service` handles
+`$data`".
 
 Four principles apply to derivatives:
 
@@ -62,44 +62,44 @@ Four principles apply to derivatives:
 `match` lists the things and the links to find. It has two sorts of item.
 
 A kind item names a kind, and gives a variable to the things of that kind,
-as in `kind: { name: Recipe, as: $recipe }` in `allergenFromIngredient`. The
+as in `kind: { name: Service, as: $service }` in `dataFromTable`. The
 variable represents each thing of that kind in turn. A variable is `$`,
-then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
+then a lowercase letter, then letters and digits: `$service`, `$called`. Each
 variable has exactly one kind item, so its kind is written in one place.
 Every other mention of the variable is the variable alone.
 
 A link item is one link that must exist between two things, such as the
-`usesIngredient` link from `$recipe` to `$ingredient` in
-`allergenFromIngredient`.
+`usesTable` link from `$service` to `$table` in
+`dataFromTable`.
 
 `from` and `to` are each a variable or a kind. A variable is for a thing
 that the derivative refers to again. A kind alone is for a thing that nothing
-else refers to, as in `from: Recipe`. A derivative has no unused variables.
+else refers to, as in `from: Service`. A derivative has no unused variables.
 
 `match` finds each combination of things for which all its items hold. Each
 combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. An
 end with a kind alone only has to exist. In a nested block, a row also gives
 one thing to each end with a kind alone. Thus `count` counts the different
-things there, for example the recipes that use a recipe in `baseRecipeFromUses`. Two
+things there, for example the services that call a service in `sharedServiceFromCalls`. Two
 variables can represent the same thing, unless a condition prevents it.
 
 The inverse name of a link reads the link in the opposite direction:
-`link: makesRecipe, from: $station, to: $recipe` matches exactly the same
-things as `link: madeAtStation, from: $recipe, to: $station`.
+`link: ownsService, from: $team, to: $service` matches exactly the same
+things as `link: ownedByTeam, from: $service, to: $team`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps. The constraint
-`noStationLoop` in [Constraints](constraint.md#match) matches
-`dependsOnStation` with `repeated: true`.
+`noTeamLoop` in [Constraints](constraint.md#match) matches
+`dependsOnTeam` with `repeated: true`.
 
 `repeated` is for a link that does not chain. A link with `chains: true`
 already holds for each longer chain.
 
 A narrower kind limits the matches. For example, with
-`kind: { name: BaseRecipe, as: $part }`, a `usesRecipe` link item from
-`$recipe` to `$part` matches only recipes that use base recipes.
+`kind: { name: SharedService, as: $called }`, a `callsService` link item from
+`$service` to `$called` matches only services that call shared services.
 
 ## Filter
 
@@ -114,39 +114,39 @@ and `field`). Then it gives a comparison word and what to compare with:
 - `same as:` (a variable, or a variable and a field).
 
 ```yaml
-# defs/station.of.yaml
-stationDependsOnStation:
+# defs/team.of.yaml
+teamDependsOnTeam:
   is: Derivative
   says: >
-    A station depends on each different station that makes a recipe that one
-    of its own recipes uses.
+    A team depends on each different team that owns a service that one of
+    its own services calls.
   match:
-    - kind: { name: Station, as: $station }
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Station, as: $other }
-    - link: makesRecipe
-      from: $station
-      to:   $recipe
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: madeAtStation
-      from: $part
+    - kind: { name: Team, as: $team }
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $called }
+    - kind: { name: Team, as: $other }
+    - link: ownsService
+      from: $team
+      to:   $service
+    - link: callsService
+      from: $service
+      to:   $called
+    - link: ownedByTeam
+      from: $called
       to:   $other
   filter:
     - node: $other
       does not equal:
-        same as: $station
+        same as: $team
   derive:
-    - link: dependsOnStation
-      from: $station
+    - link: dependsOnTeam
+      from: $team
       to:   $other
 ```
 
-Read it as follows. A station makes a recipe that uses a part, and another
-station makes the part. When the two stations are different, the first
-station depends on the second.
+Read it as follows. A team owns a service that calls a second service, and
+another team owns the second service. When the two teams are different, the
+first team depends on the second.
 
 | Word | Holds when |
 |---|---|
@@ -154,14 +154,14 @@ station depends on the second.
 | `is above`, `is below` | the first is greater, or smaller |
 | `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
 | `is one of` | the first equals one of `values` |
-| `is a` | the thing has the named kind (`is a: BaseRecipe`) |
+| `is a` | the thing has the named kind (`is a: SharedService`) |
 | `is set`, `is not set` | the field has a value, or has no value |
 
 When a condition compares a thing without a field, it compares the id of the
 thing. A field with no value fails all comparisons except `is not set`.
 
 A condition on an `object` field can name one of its parts with `part`,
-for example `field: plating, part: garnish`. For a part in a part, `part`
+for example `field: schedule, part: timezone`. For a part in a part, `part`
 is a list of the names, from the outer part to the inner part. When the
 value has no such part, the condition holds only for `is not set`. A
 comparison holds only when the value has the type of the other side.
@@ -184,61 +184,61 @@ negative cases, and each condition stays easy to read alone.
 
 | Adds | Written | Example |
 |---|---|---|
-| a link | `link`, `from`, `to` | `link: dependsOnStation, from: $station, to: $other` |
-| a kind | `node`, `becomes` | `node: $recipe, becomes: BaseRecipe` |
-| a field value | `node`, `field`, `set to` with `value:` or `same as:` | `node: $dish, field: status, set to: { value: retired }` |
+| a link | `link`, `from`, `to` | `link: dependsOnTeam, from: $team, to: $other` |
+| a kind | `node`, `becomes` | `node: $service, becomes: SharedService` |
+| a field value | `node`, `field`, `set to` with `value:` or `same as:` | `node: $service, field: status, set to: { value: retired }` |
 
 ```yaml
-# defs/recipe.of.yaml
-baseRecipeFromUses:
+# defs/service.of.yaml
+sharedServiceFromCalls:
   is: Derivative
   says: >
-    A recipe that more than two recipes use, directly or through other
-    recipes, is a base recipe.
+    A service that more than two services call, directly or through other
+    services, is a shared service.
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
     - count:
         match:
-          - link: usesRecipe
-            from: Recipe
-            to:   $recipe
+          - link: callsService
+            from: Service
+            to:   $service
       is above:
         value: 2
   derive:
-    - node: $recipe
-      becomes: BaseRecipe
+    - node: $service
+      becomes: SharedService
 ```
 
-`$recipe` represents each recipe in turn, and the nested block counts the
-recipes that use it. The end `from: Recipe` has no variable, because nothing
-else refers to the recipe that uses `$recipe`.
+`$service` represents each service in turn, and the nested block counts the
+services that call it. The end `from: Service` has no variable, because nothing
+else refers to the service that calls `$service`.
 
 A derivative can match a link that a derivative adds. For example,
-`allergenFromRecipe` matches `hasAllergen`, and `allergenFromIngredient` adds
-`hasAllergen`. When a derived link chains, a derivative adds only the direct
+`dataFromService` matches `handlesData`, and `dataFromTable` adds
+`handlesData`. When a derived link chains, a derivative adds only the direct
 step. `chains: true` on the link adds the longer chains.
 
 ```yaml
-# defs/allergens.of.yaml
-allergenFromRecipe:
+# defs/privacy.of.yaml
+dataFromService:
   is: Derivative
-  tags: [allergens]
-  says: A recipe contains each allergen that one of its recipes contains.
+  tags: [privacy]
+  says: A service that calls a second service handles each data class that the second service handles.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: hasAllergen
-      from: $part
-      to:   $allergen
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $called }
+    - kind: { name: DataClass, as: $data }
+    - link: callsService
+      from: $service
+      to:   $called
+    - link: handlesData
+      from: $called
+      to:   $data
   derive:
-    - link: hasAllergen
-      from: $recipe
-      to:   $allergen
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
 ## Rules
@@ -256,7 +256,7 @@ allergenFromRecipe:
 - **DV4.** The kind at each end of a link item MUST be the kind that the
   link joins at that end, or a kind that extends it. For a variable, this is
   the kind in its kind item.
-- **DV5.** Conditions and `derive` MUST write a variable alone (`$recipe`), and
+- **DV5.** Conditions and `derive` MUST write a variable alone (`$service`), and
   every variable that they use MUST have a kind item.
 - **DV6.** A variable belongs to the `match` that has its kind item: the
   derivative's own `match`, or the `match` of a nested block. A variable of a

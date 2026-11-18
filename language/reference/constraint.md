@@ -14,53 +14,54 @@ violation.
 ## With `unless`
 
 ```yaml
-# defs/allergens.of.yaml
-dishListsItsAllergens:
+# defs/privacy.of.yaml
+publicServiceDeclaresItsData:
   is: Constraint
-  tags: [allergens]
+  tags: [privacy]
   says: >
-    The menu must give a warning about each allergen in an active dish.
+    The privacy notice must name each data class that an active public
+    service handles.
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Allergen, as: $allergen }
-    - link: hasAllergen
-      from: $dish
-      to:   $allergen
+    - kind: { name: PublicService, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: handlesData
+      from: $service
+      to:   $data
   filter:
-    - node:  $dish
+    - node:  $service
       field: status
       equals:
         value: active
   unless:
     - at least one:
         match:
-          - link: listsAllergen
-            from: $dish
-            to:   $allergen
-  message: "The menu must warn that {$dish} contains {$allergen}."
+          - link: declaresData
+            from: $service
+            to:   $data
+  message: "The privacy notice must tell that {$service} handles {$data}."
 ```
 
-Read it as follows. A dish contains an allergen. When the dish is active, this
-is a violation, unless the menu gives a warning about the allergen next to
-the dish.
+Read it as follows. A public service handles a data class. When the service
+is active, this is a violation, unless the privacy notice names the data
+class next to the service.
 
 ## Without `unless`
 
 ```yaml
-# defs/recipe.of.yaml
-noRecipeLoop:
+# defs/service.of.yaml
+noCallLoop:
   is: Constraint
-  says: A recipe must not use itself, directly or through other recipes.
+  says: A service must not call itself, directly or through other services.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - link: usesRecipe
-      from: $recipe
-      to:   $recipe
-  message: "{$recipe} must not use itself."
+    - kind: { name: Service, as: $service }
+    - link: callsService
+      from: $service
+      to:   $service
+  message: "{$service} must not call itself."
 ```
 
-Each match is a violation. The link `usesRecipe` chains, so this constraint
-also finds a recipe that uses itself through other recipes.
+Each match is a violation. The link `callsService` chains, so this constraint
+also finds a service that calls itself through other services.
 
 Four principles apply to constraints:
 
@@ -89,70 +90,70 @@ Four principles apply to constraints:
 `match` lists the things and the links to find. It has two sorts of item.
 
 ```yaml
-# defs/recipe.of.yaml
-baseRecipeHasNoGarnish:
+# defs/service.of.yaml
+sharedServiceWritesNoTable:
   is: Constraint
-  says: A base recipe has no garnish, because cooks put a garnish on a dish at the end.
+  says: A shared service writes no table, so that it gives the same answer to each service that calls it.
   match:
-    - kind: { name: BaseRecipe, as: $recipe }
-    - kind: { name: Ingredient, as: $ingredient }
-    - link: usesGarnish
-      from: $recipe
-      to:   $ingredient
-  message: "{$recipe} must not have {$ingredient} as a garnish."
+    - kind: { name: SharedService, as: $service }
+    - kind: { name: Table, as: $table }
+    - link: writesTable
+      from: $service
+      to:   $table
+  message: "{$service} must not write {$table}."
 ```
 
 A kind item names a kind, and gives a variable to the things of that kind,
-as in `kind: { name: BaseRecipe, as: $recipe }`. The variable represents
+as in `kind: { name: SharedService, as: $service }`. The variable represents
 each thing of that kind in turn. A variable is `$`,
-then a lowercase letter, then letters and digits: `$recipe`, `$part`. Each
+then a lowercase letter, then letters and digits: `$service`, `$called`. Each
 variable has exactly one kind item, so its kind is written in one place.
 Every other mention of the variable is the variable alone.
 
 A link item is one link that must exist between two things, such as the
-`usesGarnish` link from `$recipe` to `$ingredient`.
+`writesTable` link from `$service` to `$table`.
 
 `from` and `to` are each a variable or a kind. A variable is for a thing
 that the constraint refers to again. A kind alone is for a thing that nothing
-else refers to, as in `from: Recipe`. A constraint has no unused variables.
+else refers to, as in `from: Service`. A constraint has no unused variables.
 
 `match` finds each combination of things for which all its items hold. Each
 combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. An
 end with a kind alone only has to exist. In a nested block, a row also gives
 one thing to each end with a kind alone. Thus `count` counts the different
-things there, for example the recipes that use a recipe in `baseRecipeFromUses`. Two
+things there, for example the services that call a service in `sharedServiceFromCalls`. Two
 variables can represent the same thing, unless a condition prevents it. One
-variable at two ends, as in `noRecipeLoop`, is the same thing at both ends.
+variable at two ends, as in `noCallLoop`, is the same thing at both ends.
 
 The inverse name of a link reads the link in the opposite direction:
-`link: makesRecipe, from: $station, to: $recipe` matches exactly the same
-things as `link: madeAtStation, from: $recipe, to: $station`.
+`link: ownsService, from: $team, to: $service` matches exactly the same
+things as `link: ownedByTeam, from: $service, to: $team`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
 things is still one match. Explanations list the steps.
 
 ```yaml
-# defs/station.of.yaml
-noStationLoop:
+# defs/team.of.yaml
+noTeamLoop:
   is: Constraint
-  says: A station must not depend on itself, directly or through other stations.
+  says: A team must not depend on itself, directly or through other teams.
   match:
-    - kind: { name: Station, as: $station }
-    - link: dependsOnStation
-      from: $station
-      to:   $station
+    - kind: { name: Team, as: $team }
+    - link: dependsOnTeam
+      from: $team
+      to:   $team
       repeated: true
-  message: "{$station} must not depend on itself."
+  message: "{$team} must not depend on itself."
 ```
 
 `repeated` is for a link that does not chain. A link with `chains: true`
 already holds for each longer chain.
 
-A narrower kind limits the matches. In `baseRecipeHasNoGarnish`, the kind
-item `BaseRecipe` limits the `usesGarnish` link items to the garnishes of base
-recipes.
+A narrower kind limits the matches. In `sharedServiceWritesNoTable`, the kind
+item `SharedService` limits the `writesTable` link items to the tables that
+shared services write.
 
 ## Filter and unless
 
@@ -169,36 +170,37 @@ and `field`). Then it gives a comparison word and what to compare with:
 - `same as:` (a variable, or a variable and a field).
 
 ```yaml
-# defs/recipe.of.yaml
-dishTakesLongerThanItsParts:
+# defs/service.of.yaml
+publicServiceWaitsLongest:
   is: Constraint
-  says: Cooks need more time for a dish than for each other recipe that it uses.
+  says: A public service waits longer for an answer than each other service that it calls.
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Recipe, as: $part }
-    - link: usesRecipe
-      from: $dish
-      to:   $part
+    - kind: { name: PublicService, as: $service }
+    - kind: { name: Service, as: $called }
+    - link: callsService
+      from: $service
+      to:   $called
   filter:
-    - node: $part
+    - node: $called
       does not equal:
-        same as: $dish
-    - node:  $part
-      field: prepMinutes
+        same as: $service
+    - node:  $called
+      field: timeoutSeconds
       is at least:
         same as:
-          node:  $dish
-          field: prepMinutes
+          node:  $service
+          field: timeoutSeconds
   unless:
-    - node:  $dish
+    - node:  $service
       field: status
       is one of:
         values: [retired]
-  message: "{$dish} must take more time than {$part}."
+  message: "{$service} must have a longer timeout than {$called}."
 ```
 
-Read it as follows. A dish uses another recipe that takes as long as the dish
-or longer. This is a violation, unless the dish is retired.
+Read it as follows. A public service calls another service that waits as long
+as the public service or longer. This is a violation, unless the public
+service is retired.
 
 | Word | Holds when |
 |---|---|
@@ -206,14 +208,14 @@ or longer. This is a violation, unless the dish is retired.
 | `is above`, `is below` | the first is greater, or smaller |
 | `is at least`, `is at most` | the first is greater or equal, or smaller or equal |
 | `is one of` | the first equals one of `values` |
-| `is a` | the thing has the named kind (`is a: BaseRecipe`) |
+| `is a` | the thing has the named kind (`is a: SharedService`) |
 | `is set`, `is not set` | the field has a value, or has no value |
 
 When a condition compares a thing without a field, it compares the id of the
 thing. A field with no value fails all comparisons except `is not set`.
 
 A condition on an `object` field can name one of its parts with `part`,
-for example `field: plating, part: garnish`. For a part in a part, `part`
+for example `field: schedule, part: timezone`. For a part in a part, `part`
 is a list of the names, from the outer part to the inner part. When the
 value has no such part, the condition holds only for `is not set`. A
 comparison holds only when the value has the type of the other side.
@@ -236,7 +238,7 @@ negative cases, and each condition stays easy to read alone.
 
 A message states the rule that the match breaks. It SHOULD use the words
 "must" or "must not". It quotes variables in braces, and the match gives
-their values. `{$dish}` gives the id of the thing. `{$dish: status}` gives
+their values. `{$service}` gives the id of the thing. `{$service: status}` gives
 the value of a field, or the words "not set" when the field has no value.
 
 ## Rules
@@ -254,7 +256,7 @@ the value of a field, or the words "not set" when the field has no value.
 - **CN4.** The kind at each end of a link item MUST be the kind that the
   link joins at that end, or a kind that extends it. For a variable, this is
   the kind in its kind item.
-- **CN5.** Conditions MUST write a variable alone (`$recipe`). A message
+- **CN5.** Conditions MUST write a variable alone (`$service`). A message
   MUST write `{$variable}` or `{$variable: field}`. Every variable that they
   use MUST have a kind item.
 - **CN6.** A variable belongs to the `match` that has its kind item: the

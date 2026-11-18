@@ -14,17 +14,17 @@ them.
 ## Layout
 
 ```
-restaurant/
+platform/
   package.yaml                     # the manifest
   package.lock.yaml                # the exact versions of the dependencies; the tool writes it
   defs/                            # definitions
     names.of.yaml                     # value types
-    station.of.yaml                   # Station, its links, the derivative about stations
-    recipe.of.yaml                    # Recipe and its kinds, their links, the derivative about recipes
-    ingredient.of.yaml                # Ingredient, Allergen, and the link between them
-    allergens.of.yaml                 # the allergen topic: its links, derivatives and constraint
+    service.of.yaml                   # Service and its kinds, their links, the derivative about services
+    team.of.yaml                      # the link between teams, and the derivative about teams
+    table.of.yaml                     # Table, DataClass, and the link between them
+    privacy.of.yaml                   # the privacy topic: its links, derivatives and constraint
   docs/                            # Markdown that explains the definitions
-    allergens.md
+    personal-data.md
   tests/                           # examples and questions
     examples/
     questions/
@@ -43,30 +43,30 @@ restaurant/
 - **PK3.** In `defs/`, a definition SHOULD be in the file of its topic:
   - a link, constraint or derivative that concerns one kind, with that kind
   - definitions that serve one topic across several kinds, such as
-    allergens, together in one file for that topic.
+    privacy, together in one file for that topic.
 
 ## The manifest
 
 ```yaml
 # package.yaml
-package: "@bistro/kitchen"        # namespace, then name; quoted, since YAML reserves a leading @
+package: "@acme/platform"         # namespace, then name; quoted, since YAML reserves a leading @
 version: 0.1.0
-owner: kitchen                    # who must approve any change to the package
-rdfNamespace: kitchen             # used only in exported RDF, never in the files
+owner: platform                   # who must approve any change to the package
+rdfNamespace: platform            # used only in exported RDF, never in the files
 dependsOn:
-  "@bistro/suppliers": ^1.2       # semantic-version range; package.lock.yaml pins the exact version
+  "@acme/org": ^1.2               # semantic-version range; package.lock.yaml pins the exact version
 exports:                          # what other packages may use; the rest is internal
-  kinds: [Station, Recipe, Dish, BaseRecipe, Ingredient, Allergen]
-  links: [madeAtStation, usesRecipe, usesIngredient, usesGarnish, containsAllergen, hasAllergen, listsAllergen, dependsOnStation]
-  valueTypes: [Name, Minutes, Price, URL]
+  kinds: [Service, PublicService, SharedService, Table, DataClass]
+  links: [ownedByTeam, callsService, usesTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
+  valueTypes: [Name, Seconds, Percent, URL]
 openFor:                          # extension points: what other packages may add to
-  - extend: Recipe                #   another package may declare a kind of recipe
-  - under: usesIngredient         #   another package may declare a narrower link under usesIngredient
+  - extend: Service               #   another package may declare a kind of service
+  - under: usesTable              #   another package may declare a narrower link under usesTable
 tags:                             # the labels that definitions of this package can carry
-  - name: allergens
-    description: What an allergen app needs to tell guests which dishes contain which allergens.
-  - name: spoilage
-    description: What the kitchen needs to keep food safe until the cooks use it. Only the kitchen uses it, so the package does not export it.
+  - name: privacy
+    description: What a privacy review needs to tell customers which services handle which sorts of data.
+  - name: backups
+    description: What the platform team needs to keep each backup in a region that allows it. Only the platform team uses it, so the package does not export it.
 ```
 
 | Key | Required | Value |
@@ -95,8 +95,8 @@ tags:                             # the labels that definitions of this package 
 
 ## Names and namespaces
 
-A package name can start with a namespace, as in npm: `@bistro/kitchen`
-is the package `kitchen` in the namespace `@bistro`.
+A package name can start with a namespace, as in npm: `@acme/platform`
+is the package `platform` in the namespace `@acme`.
 
 - **PK6.** A package name MUST be lowercase letters, digits and hyphens,
   with a letter first. An optional namespace can come before the name: `@`,
@@ -167,17 +167,21 @@ Markdown files in `docs/` give the reasons, the methods and the context
 reader sees the text and the definitions together:
 
 ````markdown
-# Allergens
+# Personal data
 
-An allergen can cause a dangerous reaction in some persons. A recipe contains
-each allergen of its ingredients:
+Personal data is data about a person, such as a name or an address. A service
+handles each data class of its tables, and each data class that the services
+that it calls handle:
 
-![](../defs/allergens.of.yaml#allergenFromIngredient)
+![](../defs/privacy.of.yaml#dataFromTable)
 
-In the past, a guest became ill. The pesto in a dish contained nuts, and the
-menu did not tell the guest. Thus, the menu must give a warning about each
-allergen in a dish. Refer to
-[dishListsItsAllergens](../defs/allergens.of.yaml#dishListsItsAllergens).
+![](../defs/privacy.of.yaml#dataFromService)
+
+In the past, a customer asked which services had her address. The checkout
+service got the address from a different service, and the privacy notice did
+not tell the customer. Thus, the privacy notice must name each data class
+that a public service handles. Refer to
+[publicServiceDeclaresItsData](../defs/privacy.of.yaml#publicServiceDeclaresItsData).
 ````
 
 | Written | Means |
@@ -199,23 +203,23 @@ lists the docs that tell more about it in `docs`. Thus, the generated page of
 the kind can show its docs, and a reader of the kind can find them:
 
 ```yaml
-# defs/allergens.of.yaml
-AllergenSafety:
+# defs/privacy.of.yaml
+PersonalDataCare:
   is: Doc
-  path: file:../docs/allergens.md
+  path: file:../docs/personal-data.md
 
-# defs/ingredient.of.yaml
-Allergen:
+# defs/table.of.yaml
+DataClass:
   is: Kind
-  tags: [allergens]
-  definition: A substance in food that can cause a dangerous reaction in some persons.
+  tags: [privacy]
+  definition: A sort of data that needs care, because the law or a contract protects it.
   examples:
-    - nuts
-    - milk
+    - personal data
+    - payment data
   fields:
     name:
       type: Name
-  docs: [AllergenSafety]
+  docs: [PersonalDataCare]
 ```
 
 | Key | Required | Value |

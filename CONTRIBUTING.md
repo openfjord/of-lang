@@ -25,10 +25,10 @@ version starts a new file, and gets a line in
 
 ## Snippets in the reference
 
-Every YAML snippet in `language/reference/` is a file of the restaurant
-example, or a part of one. It starts with a comment that names the file, such
-as `# defs/recipe.of.yaml`. A statement that the restaurant has must be the
-same in the snippet, and a new statement must keep the package valid. Check
+Every YAML snippet in `language/reference/` is a file of the platform
+example, `examples/platform`, or a part of one. It starts with a comment that
+names the file, such as `# defs/service.of.yaml`. A statement that the
+platform example has must be the same in the snippet, and a new statement must keep the package valid. Check
 them with:
 
 ```bash
@@ -50,15 +50,15 @@ in the left cell and the code in the right cell:
 <tr>
 <td>
 
-`status` has a default. A dish that gives no status is `active`.
+`tier` has a default. A service that gives no tier is `standard`.
 
 </td>
 <td>
 
 ```yaml
-    status:
-      enum: [active, retired]
-      default: active
+    tier:
+      enum: [critical, standard]
+      default: standard
 ```
 
 </td>
@@ -68,7 +68,7 @@ in the left cell and the code in the right cell:
 
 The code cells of a page, joined in order, must be exactly the files of the
 package. The first block of each file starts with a comment that names the
-file, such as `# defs/dish.of.yaml`, and the blocks after it continue that
+file, such as `# defs/service.of.yaml`, and the blocks after it continue that
 file. A page can leave out the manifest. The snippets check also runs
 `of-lang check` and `of-lang test` on each package.
 

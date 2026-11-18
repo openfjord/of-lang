@@ -6,43 +6,43 @@ title: Kinds, fields and value types — The OpenFjord modeling language
 
 > Part of [the reference](../README.md#reference).
 
-A kind is a category of things, for example a station, a recipe or a
-dish. A kind tells what the thing is and gives examples of it. It also
+A kind is a category of things, for example a service, a table or a
+data class. A kind tells what the thing is and gives examples of it. It also
 lists the fields of the thing.
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  tags: [allergens]
-  definition: The steps that make one food from ingredients and other recipes.
+  tags: [privacy]
+  definition: A program that runs in production and answers requests.
   examples:
-    - the tomato sauce
-    - the pizza dough
+    - the checkout service
+    - the catalog service
   notExamples:
-    - a food that the restaurant buys and does not make, such as flour
-    - a new dish that a cook tries one time and does not keep
+    - a table, which holds data and answers no requests
+    - a script that a developer runs one time and does not keep
   fields:
     name:
       type: Name
-    steps:
+    repository:
       type: URL
-    prepMinutes:
-      type: Minutes
+    timeoutSeconds:
+      type: Seconds
       optional: true
 
-Dish:
+PublicService:
   is: Kind
-  tags: [allergens]
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
+  tags: [privacy]
+  extends: Service
+  definition: A service that customers call.
   examples:
-    - the pizza margherita
+    - the checkout service
   notExamples:
-    - the tomato sauce, which is only a part of a dish
+    - the catalog service, which only other services call
   fields:
-    price:
-      type: Price
+    availability:
+      type: Percent
     status:
       enum: [active, retired]
       default: active
@@ -70,12 +70,13 @@ Dish:
   - B MAY add fields of its own.
   - Each thing of kind B is also a thing of kind A.
 
-  For example, `Dish` extends `Recipe`. A dish has the fields and links of a
-  recipe, and also a price. Each dish is also a recipe.
+  For example, `PublicService` extends `Service`. A public service has the
+  fields and links of a service, and also an availability. Each public
+  service is also a service.
 - **KD13.** A kind MUST NOT declare a field with the name of a field of a
   kind that it extends, directly or through other kinds. A rule that is
   stricter for the narrower kind goes in a [constraint](constraint.md), for
-  example "each dish must have a preparation time".
+  example "each public service must have a timeout".
 - **KD14.** Each name in `docs` MUST be a `Doc` of the same package, which
   the file defines or imports.
 
@@ -88,25 +89,25 @@ kind extends, or at a union that lists its kind or a kind that it extends.
 A [constraint](constraint.md) with `count` sets how many links a thing has:
 
 ```yaml
-# defs/recipe.of.yaml
-recipeAtOneStation:
+# defs/service.of.yaml
+serviceHasOneOwner:
   is: Constraint
-  says: Cooks make each recipe at exactly one station.
+  says: Exactly one team owns each service.
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
     - count:
         match:
-          - link: madeAtStation
-            from: $recipe
-            to:   Station
+          - link: ownedByTeam
+            from: $service
+            to:   Team
       does not equal:
         value: 1
-  message: "{$recipe} must be made at exactly one station."
+  message: "{$service} must have exactly one team that owns it."
 ```
 
-A recipe without a station is an error, and so is a recipe with two
-stations. A link with no such constraint can occur any number of times,
+A service without a team is an error, and so is a service with two
+teams. A link with no such constraint can occur any number of times,
 or not at all.
 
 Every field is required, unless it has `optional: true` or a `default`
@@ -115,68 +116,69 @@ Every field is required, unless it has `optional: true` or a `default`
 ## Unions
 
 Sometimes a kind is exactly one of a fixed list of kinds, and nothing else.
-For example, the food that a recipe uses is a recipe or an ingredient. Each
-food is one of the two, and never both. `oneOf` states this:
+For example, the thing that a service needs is a service or a table. Each
+resource is one of the two, and never both. `oneOf` states this:
 
 ```yaml
-# defs/recipe.of.yaml
-Food:
+# defs/service.of.yaml
+Resource:
   is: Kind
-  definition: Something that a recipe uses to make its food.
-  oneOf: [Recipe, Ingredient]
+  definition: Something that a service needs to do its work.
+  oneOf: [Service, Table]
 
-usesFood:
+needsResource:
   is: Link
-  from: Recipe
-  to: Food
-  reads: "{from} uses {to}"
-  definition: The recipe needs the food.
+  from: Service
+  to: Resource
+  reads: "{from} needs {to}"
+  definition: The service cannot do its work without the resource.
 ```
 
-`Recipe` and `Ingredient` do not extend `Food`, and they do not get anything
-from it. `Food` gives a name to the two kinds together. Thus, a link, a
-match or a condition can use `Food` where a recipe or an ingredient can
+`Service` and `Table` do not extend `Resource`, and they do not get anything
+from it. `Resource` gives a name to the two kinds together. Thus, a link, a
+match or a condition can use `Resource` where a service or a table can
 occur.
 
 Each thing of a listed kind is also a thing of the union kind. Each rule
 that accepts a narrower kind in place of a kind also accepts a listed kind
-in place of its union kind. For example, `usesFood` can link a
-recipe to an ingredient.
+in place of its union kind. For example, `needsResource` can link a
+service to a table.
 
-A business menu shows a different use. It is a lunch with fixed courses at
-one price. The guest picks one drink: a light drink or a glass of wine.
+An alert shows a different use. It is one message that tells people about a
+problem in production. An alert goes to one target: a pager or a chat
+channel.
 
 ```yaml
-# defs/lunch.of.yaml
-LightDrink:
+# defs/alerts.of.yaml
+Pager:
   is: Kind
-  definition: A drink with little or no alcohol, such as juice or water.
+  definition: A device that wakes the person who is on call.
 
-Wine:
+ChatChannel:
   is: Kind
-  definition: A glass of wine.
+  definition: A place in the chat tool where a team reads messages.
 
-Drink:
+AlertTarget:
   is: Kind
-  definition: The drink that comes with a business menu.
-  oneOf: [LightDrink, Wine]
+  definition: The place that gets an alert.
+  oneOf: [Pager, ChatChannel]
 
-BusinessLunch:
+Alert:
   is: Kind
-  definition: One business menu that a guest orders.
+  definition: One message that tells people about a problem in production.
 
-comesWithDrink:
+sentToTarget:
   is: Link
-  from: BusinessLunch
-  to: Drink
-  reads: "{from} comes with {to}"
-  definition: The drink that the guest picks for the business lunch.
+  from: Alert
+  to: AlertTarget
+  reads: "{from} is sent to {to}"
+  definition: The target that gets the alert.
 ```
 
-A business lunch can come with a light drink or with a wine. A drink is
-never both, because each drink is exactly one listed kind. A business lunch
-cannot come with a dish, because a dish is not a drink. A [constraint](constraint.md) with `count` can make sure that each
-business lunch comes with exactly one drink
+An alert can go to a pager or to a chat channel. A target is
+never both, because each target is exactly one listed kind. An alert
+cannot go to a service, because a service is not a target. A [constraint](constraint.md) with `count` can make sure that each
+alert goes to exactly one target
 ([links of a thing](#links-of-a-thing)).
 
 A union is closed and final. Only the statement itself lists its kinds. No
@@ -199,37 +201,37 @@ union, and a union extends no kind.
 
 ## Fields
 
-A field is a value of the thing itself, for example a name, a price or a
-number of minutes. A subset of JSON Schema describes each field, and each keyword
+A field is a value of the thing itself, for example a name, an availability or a
+number of seconds. A subset of JSON Schema describes each field, and each keyword
 has the meaning that JSON Schema gives it. Only field values use JSON Schema.
 Kinds, links, constraints and derivatives use the syntax of the language
 itself, because JSON Schema describes one document and has no links between
 things.
 
 ```yaml
-# defs/specials.of.yaml
+# defs/jobs.of.yaml
 import:
   - from: file:names.of.yaml
     use: [Name]
 
-DailySpecial:
+Job:
   is: Kind
-  definition: A plate that the chef offers for one day, and that is not on the menu.
+  definition: A program that runs at set times and then stops, and that answers no requests.
   fields:
     name:
       type: Name                 # a value type, imported
     status:
       enum: [active, retired]
       default: active
-    servings:
+    attempts:
       type: integer
       minimum: 1
       optional: true
-    plating:
+    schedule:
       type: object
       properties:
-        garnish: { type: string, optional: true }
-        plate:   { type: string }
+        timezone: { type: string, optional: true }
+        times:    { type: string }
 ```
 
 ### Keywords
@@ -268,7 +270,7 @@ constraint and a derivative can see which shape a value has
 ([FD8](#field-rules)). Constraints and derivatives read a part with the
 [`part` key](constraint.md#filter-and-unless).
 
-A choice between sorts of things, such as a light drink or a wine, is not a
+A choice between sorts of things, such as a pager or a chat channel, is not a
 field. It is a [union of kinds](#unions).
 
 ### Field rules
@@ -304,40 +306,40 @@ is imported in the same way:
 # defs/names.of.yaml
 Name:
   is: ValueType
-  tags: [allergens, spoilage]
-  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
+  tags: [privacy, backups]
+  definition: A lowercase identifier for services, tables, data classes and regions.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
   maxLength: 63
 
-Minutes:
+Seconds:
   is: ValueType
-  tags: [allergens]
-  definition: A number of minutes of work.
+  tags: [privacy]
+  definition: A number of seconds that a service waits for an answer.
   type: integer
   minimum: 1
-  maximum: 1440
+  maximum: 3600
 
 URL:
   is: ValueType
-  tags: [allergens]
+  tags: [privacy]
   definition: The address of a page on the web.
   type: string
   format: uri
 
-Price:
+Percent:
   is: ValueType
-  tags: [allergens]
-  definition: An amount of money in euros.
+  tags: [privacy]
+  definition: A share of a whole, in parts of one hundred.
   type: number
   minimum: 0
 ```
 
 ```yaml
-# defs/recipe.of.yaml
+# defs/service.of.yaml
 import:
   - from: file:names.of.yaml
-    use: [Name, Minutes, Price, URL]
+    use: [Name, Seconds, Percent, URL]
 ```
 
 | Key | Required | Value |
@@ -363,7 +365,7 @@ import:
   - Neither field names a value type, and both fields have the same built-in
     type.
 
-  `Minutes` and a plain `integer` are different types. A field that
+  `Seconds` and a plain `integer` are different types. A field that
   narrows a value type ([VT3](#value-types)) keeps that value type.
 - **VT6.** A field that names a value type with `oneOf` MUST NOT add
   keywords to it, other than `optional` and `default`.

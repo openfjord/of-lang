@@ -74,15 +74,15 @@ All examples below run in the folder that holds the package.
 ### `check`
 
 ```
-$ of-lang check restaurant
+$ of-lang check platform
 ok
 ```
 
 Each problem is one line, with the file, line and column:
 
 ```
-$ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:53:3: the reads of madeAtStation must use both {from} and {to} (LK2)
+$ of-lang check platform
+platform/defs/service.of.yaml:53:3: the reads of ownedByTeam must use both {from} and {to} (LK2)
 ```
 
 Each problem names the rule it breaks, such as `(LK2)`. A package with a
@@ -97,23 +97,25 @@ Every derived fact as its `reads` sentence, with what derived it: a derivative, 
 `under` or `chains` on a link. Then every rejection, with its message.
 
 ```
-$ of-lang run restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml
+$ of-lang run platform platform/tests/examples/personal-data-through-a-call.of.yaml
 derived:
-  dish/margherita uses ingredient/parmesan  (under)
-  recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
-  dish/margherita contains allergen/milk  (derivative allergenFromIngredient)
-  dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
-  station/pizza depends on station/sauce  (derivative stationDependsOnStation)
+  service/checkout uses table/payments  (under)
+  service/accounts handles data/personal  (derivative dataFromTable)
+  service/checkout handles data/payment  (derivative dataFromTable)
+  service/checkout handles data/personal  (derivative dataFromService)
+  team/web depends on team/core  (derivative teamDependsOnTeam)
 rejected:
   nothing
 ```
 
 ```
-$ of-lang run restaurant restaurant/tests/examples/dish-without-allergen-warning.of.yaml
+$ of-lang run platform platform/tests/examples/service-without-declared-data.of.yaml
 derived:
-  ...
+  service/accounts handles data/personal  (derivative dataFromTable)
+  service/checkout handles data/personal  (derivative dataFromService)
+  team/web depends on team/core  (derivative teamDependsOnTeam)
 rejected:
-  dishListsItsAllergens: The menu must warn that dish/margherita contains allergen/nuts.
+  publicServiceDeclaresItsData: The privacy notice must tell that service/checkout handles data/personal.
 ```
 
 A rejection makes `run` exit with 1.
@@ -125,25 +127,25 @@ the match used. A derived fact among them unfolds into its own explanation,
 indented below it.
 
 ```
-$ of-lang explain restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml dish/margherita hasAllergen allergen/nuts
-dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
-  A recipe contains each allergen that one of its recipes contains.
-  with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
+$ of-lang explain platform platform/tests/examples/personal-data-through-a-call.of.yaml service/checkout handlesData data/personal
+service/checkout handles data/personal  (derivative dataFromService)
+  A service that calls a second service handles each data class that the second service handles.
+  with $called = service/accounts, $data = data/personal, $service = service/checkout
   because:
-    dish/margherita uses recipe/pesto  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:117:5)
-    recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
-      A recipe contains each allergen that one of its ingredients contains.
-      with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
+    service/checkout calls service/accounts  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:119:5)
+    service/accounts handles data/personal  (derivative dataFromTable)
+      A service handles each data class that one of its tables holds.
+      with $data = data/personal, $service = service/accounts, $table = table/customers
       because:
-        recipe/pesto uses ingredient/pine_nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:96:5)
-        ingredient/pine_nuts contains allergen/nuts  (written at restaurant/tests/examples/allergen-through-a-sauce.of.yaml:72:5)
+        service/accounts uses table/customers  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:98:5)
+        table/customers holds data/personal  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:74:5)
 ```
 
 ```
-$ of-lang explain restaurant restaurant/tests/examples/base-recipe.of.yaml recipe/tomato_sauce BaseRecipe
-recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipeFromUses)
-  A recipe that more than two recipes use, directly or through other recipes, is a base recipe.
-  with $recipe = recipe/tomato_sauce
+$ of-lang explain platform platform/tests/examples/shared-service.of.yaml service/catalog SharedService
+service/catalog is a SharedService  (derivative sharedServiceFromCalls)
+  A service that more than two services call, directly or through other services, is a shared service.
+  with $service = service/catalog
 ```
 
 ### `diff`
@@ -152,19 +154,20 @@ What changes from one facts file to the other, in three parts: facts stated,
 facts derived, and rejections. `+` is added, `-` is gone. A field value is a
 fact of its own, so a changed value shows as one `-` and one `+`.
 
-In this example, a copy of the test file adds the pesto to the marinara and
-increases its price. The file is `marinara-with-pesto.of.yaml`.
+In this example, a copy of the test file makes the search service call the
+accounts service and increases its availability. The file is
+`search-with-accounts.of.yaml`.
 
 ```
-$ of-lang diff restaurant restaurant/tests/examples/allergen-through-a-sauce.of.yaml marinara-with-pesto.of.yaml
+$ of-lang diff platform platform/tests/examples/personal-data-through-a-call.of.yaml search-with-accounts.of.yaml
 stated:
-  + dish/marinara has price 11
-  + dish/marinara uses recipe/pesto
-  - dish/marinara has price 10
+  + service/search calls service/accounts
+  + service/search has availability 99.9
+  - service/search has availability 99.5
 derived:
-  + dish/marinara contains allergen/nuts
+  + service/search handles data/personal
 rejected:
-  + dishListsItsAllergens: The menu must warn that dish/marinara contains allergen/nuts.
+  + publicServiceDeclaresItsData: The privacy notice must tell that service/search handles data/personal.
 ```
 
 `diff` always exits with 0: a difference is not a problem.
@@ -172,20 +175,21 @@ rejected:
 ### `test`
 
 One line per test or question, then a total. A failure says what was
-expected and did not happen. In this example, somebody removed the parmesan
-garnish from the margherita in `allergen-through-a-sauce.of.yaml`:
+expected and did not happen. In this example, somebody made the checkout
+service write the products table, not the payments table, in
+`personal-data-through-a-call.of.yaml`:
 
 ```
-$ of-lang test restaurant
-FAIL  test allergenThroughASauce  (restaurant/tests/examples/allergen-through-a-sauce.of.yaml)
-      expected derived, but not: dish/margherita contains allergen/milk
-      expected derived, but not: dish/margherita uses ingredient/parmesan
-pass  test tomatoSauceInThreeDishes  (restaurant/tests/examples/base-recipe.of.yaml)
-pass  test batchKeptTooWarm  (restaurant/tests/examples/batch-kept-too-warm.of.yaml)
-pass  test dishWithoutAllergenWarning  (restaurant/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  question whichDishesContainNuts  (restaurant/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (restaurant/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (restaurant/tests/terms/garnish.of.yaml)
+$ of-lang test platform
+pass  test backupInWrongRegion  (platform/tests/examples/backup-in-wrong-region.of.yaml)
+FAIL  test personalDataThroughACall  (platform/tests/examples/personal-data-through-a-call.of.yaml)
+      expected derived, but not: service/checkout handles data/payment
+      expected derived, but not: service/checkout uses table/payments
+pass  test serviceWithoutDeclaredData  (platform/tests/examples/service-without-declared-data.of.yaml)
+pass  test catalogCalledByThreeServices  (platform/tests/examples/shared-service.of.yaml)
+pass  question whichPublicServicesHandlePersonalData  (platform/tests/questions/which-public-services-handle-personal-data.of.yaml)
+pass  question whichTeamsStopWithTheCoreTeam  (platform/tests/questions/which-teams-stop-with-the-core-team.of.yaml)
+pass  test writeIsAUse  (platform/tests/terms/write.of.yaml)
 6 passed, 1 failed
 ```
 
@@ -197,10 +201,10 @@ to read. A derived link, for example:
 ```json
 {
   "type": "link",
-  "sentence": "dish/margherita contains allergen/nuts",
-  "from": "dish/margherita",
-  "link": "hasAllergen",
-  "to": "allergen/nuts"
+  "sentence": "service/checkout handles data/personal",
+  "from": "service/checkout",
+  "link": "handlesData",
+  "to": "data/personal"
 }
 ```
 
@@ -209,11 +213,11 @@ stood for:
 
 ```json
 {
-  "constraint": "dishListsItsAllergens",
-  "message": "The menu must warn that dish/margherita contains allergen/nuts.",
+  "constraint": "publicServiceDeclaresItsData",
+  "message": "The privacy notice must tell that service/checkout handles data/personal.",
   "bindings": [
-    { "var": "$allergen", "id": "allergen/nuts" },
-    { "var": "$dish", "id": "dish/margherita" }
+    { "var": "$data", "id": "data/personal" },
+    { "var": "$service", "id": "service/checkout" }
   ]
 }
 ```
@@ -231,17 +235,17 @@ was derived, never repeating the stated one. Its `kind` is the kind a
 derivative made the thing, or the stated kind if no derivative did.
 
 ```yaml
-recipe/tomato_sauce:
+service/catalog:
   is: Fact
-  kind: BaseRecipe                 # a derivative made it a base recipe
+  kind: SharedService              # a derivative made it a shared service
   derived: true
 
-recipe/pesto:
+service/accounts:
   is: Fact
-  kind: Recipe                     # the stated kind; no derivative changed it
+  kind: Service                    # the stated kind; no derivative changed it
   derived: true
   links:
-    hasAllergen: [allergen/nuts]   # from allergenFromIngredient
+    handlesData: [data/personal]   # from dataFromTable
 ```
 
 The tool does not write facts in this form yet.
@@ -260,29 +264,29 @@ what newly follows and why, what no longer follows, and what is rejected.
 
 ```
 Stated (2)
-  + dish/margherita uses recipe/pesto
-  + dish/marinara uses recipe/pesto
+  + service/checkout calls service/accounts
+  + service/search calls service/accounts
 
 Derived (3)
-  + station/pizza depends on station/sauce
-      derivative  stationDependsOnStation
-      match   $station = station/pizza, $recipe = dish/margherita,
-              $part = recipe/pesto, $other = station/sauce
-      links   dish/margherita is made at station/pizza
-              dish/margherita uses recipe/pesto
-              recipe/pesto is made at station/sauce
-      filter  station/sauce does not equal station/pizza
-  + dish/margherita contains allergen/nuts
-      derivative  allergenFromRecipe
-  + (1 more, grouped: hasAllergen)
+  + team/web depends on team/core
+      derivative  teamDependsOnTeam
+      match   $team = team/web, $service = service/checkout,
+              $called = service/accounts, $other = team/core
+      links   service/checkout is owned by team/web
+              service/checkout calls service/accounts
+              service/accounts is owned by team/core
+      filter  team/core does not equal team/web
+  + service/checkout handles data/personal
+      derivative  dataFromService
+  + (1 more, grouped: handlesData)
 
 No longer derived (0)
 
 Rejected (2)
-  ✗ dishListsItsAllergens
-    The menu must warn that dish/margherita contains allergen/nuts.
-  ✗ dishListsItsAllergens
-    The menu must warn that dish/marinara contains allergen/nuts.
+  ✗ publicServiceDeclaresItsData
+    The privacy notice must tell that service/checkout handles data/personal.
+  ✗ publicServiceDeclaresItsData
+    The privacy notice must tell that service/search handles data/personal.
 ```
 
 Large results are grouped by link, with new kinds of conclusion and
@@ -294,15 +298,15 @@ A page per definition for product: the definition, examples and
 non-examples, and every constraint and derivative as its
 `says`, shown as written.
 
-> **Recipe** — The steps that make one food from ingredients and other recipes.
-> - Cooks make each recipe at exactly one station.
-> - A recipe contains each allergen that one of its ingredients contains.
+> **Service** — A program that runs in production and answers requests.
+> - Exactly one team owns each service.
+> - A service handles each data class that one of its tables holds.
 >   *(derivative)*
-> - The menu must give a warning about each allergen in an active dish.
->   *(constraint)*
+> - The privacy notice must name each data class that an active public
+>   service handles. *(constraint)*
 >
-> Example: the tomato sauce. Not a recipe: a new dish that a cook tries one
-> time and does not keep.
+> Example: the checkout service. Not a service: a script that a developer
+> runs one time and does not keep.
 
 A change to a product-owned package shows the sentences that changed, for
 approval on that page.
@@ -336,13 +340,14 @@ exports only the definitions carrying at least one of the named
 exported. A tagged subset is always complete, because each definition that
 a tagged definition refers to has the same tag
 ([TG5](../language/reference/tag.md#rules)). `of-lang check` rejects a
-package that breaks this rule. For example, in the example package, `Dish`
-has the tag `allergens`, so `Price`, the type of its `price` field, must
-have it too. If somebody removed the tag from `Price`:
+package that breaks this rule. For example, in the example package,
+`PublicService` has the tag `privacy`, so `Percent`, the type of its
+`availability` field, must have it too. If somebody removed the tag from
+`Percent`:
 
 ```
-$ of-lang check restaurant
-restaurant/defs/recipe.of.yaml:30:10: Dish has the tag allergens and refers to Price, which does not have it (TG5)
+$ of-lang check platform
+platform/defs/service.of.yaml:30:10: PublicService has the tag privacy and refers to Percent, which does not have it (TG5)
 ```
 
 ## Planned: a language server
@@ -387,7 +392,7 @@ needs them to.
 | Feature | What it does |
 |---|---|
 | Diagnostics | the check's errors as you type, each with its rule code, linked to that rule in the reference |
-| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `kind: { name: … }`, fact ids, docs links such as `recipe.of.yaml#Recipe`, and a `$variable` to its kind item |
+| Go to definition | from any name to where it is defined: names in `use:`, `kind:`, `link:`, `extends`, `under`, `type:`, `kind: { name: … }`, fact ids, docs links such as `service.of.yaml#Service`, and a `$variable` to its kind item |
 | Find references | where a definition is used, including the docs that link to it or embed it |
 | Hover | a key's description from the schema; a definition's `definition`; a link's `reads`; a variable's kind; on a fact, what derivatives add to it |
 | Completion | the keys and words the schema allows at that place; after `link:`, the links the file imports; in a link item's `from` and `to`, only variables and kinds that fit that end of the link; in `kind: { name: … }`, only kinds; after `field:`, only fields of that node's kind; a name not yet imported, with its import |

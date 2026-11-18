@@ -30,16 +30,16 @@ A kind, a link, a value type, a derivative, a constraint and a doc are
 definitions. Together, the definitions are the model.
 
 A **fact** tells what does exist: one thing, with its kind, its fields and
-its links. "A dish is a recipe that the restaurant sells" is a definition.
-"The margherita is a dish, and it uses the pesto" is two facts.
+its links. "A public service is a service that customers call" is a definition.
+"Checkout is a public service, and it calls the accounts service" is two facts.
 
 A package holds definitions. The only facts in a package are in its tests,
 where they are examples: they show what the definitions derive and reject.
-The facts of a real kitchen are not in a package. They come from the
-systems that run the kitchen.
+The facts of a real product are not in a package. They come from the
+systems that run the product.
 
 Thus, a change to a fact never changes the model, and one model can check
-the facts of many kitchens.
+the facts of many products.
 
 ## How to read this
 
@@ -49,10 +49,12 @@ the facts of many kitchens.
 | see all of the language on one page | [the cheat sheet](cheatsheet.md) |
 | run it | [the `of-lang` tool](../cli/README.md) |
 
-Every example uses one small, fictional restaurant. Stations in the kitchen
-make recipes, dishes use recipes and ingredients, and ingredients contain
-allergens. [examples/restaurant](../examples/restaurant/) holds the full
-domain as one package.
+Every example uses one small, fictional software product. Teams own
+services, services call services and use tables, and tables hold data
+classes. [examples/platform](../examples/platform/) holds the full
+domain as one package, with the teams in a second package,
+[examples/org](../examples/org/). [The introduction](../docs/introduction/README.md)
+uses a different example, the kitchen of a restaurant.
 
 ## Conventions
 
@@ -112,8 +114,8 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **package** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm (the Node.js package manager) |
 | **statement** | one named item in a package; its `is:` key tells what it is |
 | **definition** | a statement in `defs/`: a kind, a link, a value type, a constraint, a derivative or a doc |
-| **kind** | a kind of thing (station, recipe, dish); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
-| **field** | a value of the thing itself (a name, a price); JSON Schema describes it |
+| **kind** | a kind of thing (service, table, data class); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
+| **field** | a value of the thing itself (a name, a timeout); JSON Schema describes it |
 | **value type** | a named, reusable description of a field's value |
 | **link** | a named, directed relationship between two things |
 | **doc** | a definition that names a Markdown file in `docs/`; a kind lists the docs that tell more about it |
@@ -124,7 +126,7 @@ Thus, an error from the tool can identify the rule that it enforces.
 | **derived fact** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one |
 | **test** | facts with what they must derive and reject, or what the definitions must derive about kinds and links |
 | **question** | a match over the facts of an example, with the answer it expects |
-| **derived term** | what the definitions derive about kinds and links, with no facts: a dish is a recipe, and a garnish link implies an ingredient link; tests can expect one |
+| **derived term** | what the definitions derive about kinds and links, with no facts: a public service is a service, and a write link implies a use link; tests can expect one |
 | **pending change** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most |
 
 Fields and links are different: a field is a value of the thing, and a link

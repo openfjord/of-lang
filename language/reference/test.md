@@ -24,137 +24,139 @@ example. A question asks about the stated facts and the derived facts
 together.
 
 ```yaml
-# tests/examples/allergen-through-a-sauce.of.yaml
+# tests/examples/personal-data-through-a-call.of.yaml
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Station, dependsOnStation]
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
-  - from: file:../../defs/ingredient.of.yaml
-    use: [Ingredient, Allergen, containsAllergen]
-  - from: file:../../defs/allergens.of.yaml
-    use: [hasAllergen, listsAllergen]
+  - from: pkg:@acme/org
+    use: [Team]
+  - from: file:../../defs/team.of.yaml
+    use: [dependsOnTeam]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
+  - from: file:../../defs/table.of.yaml
+    use: [Table, DataClass, holdsData]
+  - from: file:../../defs/privacy.of.yaml
+    use: [handlesData, declaresData]
 
-allergenThroughASauce:
+personalDataThroughACall:
   is: Test
   says: >
-    The margherita uses the pesto, which contains nuts. Parmesan, which
-    contains milk, is on the margherita as a garnish. Thus, the margherita
-    contains nuts and milk. The menu gives a warning about the two allergens,
-    so the dish breaks no constraint. The pizza station depends on the sauce
-    station.
+    The checkout service calls the accounts service, which uses a table with
+    personal data. The checkout service also writes the payments table, which
+    holds payment data. Thus, the checkout service handles personal data and
+    payment data. The privacy notice names the two data classes, so the
+    service breaks no constraint. The web team depends on the core team.
   expect:
     derived:
-      - link: hasAllergen
-        from: dish/margherita
-        to:   allergen/nuts
-      - link: hasAllergen
-        from: dish/margherita
-        to:   allergen/milk
-      - link: usesIngredient
-        from: dish/margherita
-        to:   ingredient/parmesan
-      - link: dependsOnStation
-        from: station/pizza
-        to:   station/sauce
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal
+      - link: handlesData
+        from: service/checkout
+        to:   data/payment
+      - link: usesTable
+        from: service/checkout
+        to:   table/payments
+      - link: dependsOnTeam
+        from: team/web
+        to:   team/core
     notDerived:
-      - link: hasAllergen
-        from: dish/marinara
-        to:   allergen/nuts
-      - link: dependsOnStation
-        from: station/sauce
-        to:   station/pizza
+      - link: handlesData
+        from: service/search
+        to:   data/personal
+      - link: dependsOnTeam
+        from: team/core
+        to:   team/web
     rejected: []
 
-station/pizza:
+team/web:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: pizza
+    name: web
 
-station/sauce:
+team/core:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: sauce
+    name: core
 
-allergen/nuts:
+data/personal:
   is: Fact
-  kind: Allergen
+  kind: DataClass
   fields:
-    name: nuts
+    name: personal
 
-allergen/milk:
+data/payment:
   is: Fact
-  kind: Allergen
+  kind: DataClass
   fields:
-    name: milk
+    name: payment
 
-ingredient/pine_nuts:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: pine_nuts
+    name: customers
   links:
-    containsAllergen: allergen/nuts
+    holdsData: data/personal
 
-ingredient/parmesan:
+table/payments:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: parmesan
+    name: payments
   links:
-    containsAllergen: allergen/milk
+    holdsData: data/payment
 
-ingredient/tomatoes:
+table/products:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: tomatoes
+    name: products
 
-recipe/pesto:
+service/accounts:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: pesto
-    steps: https://recipes.example.com/pesto
+    name: accounts
+    repository: https://code.example.com/accounts
   links:
-    madeAtStation: station/sauce
-    usesIngredient: ingredient/pine_nuts
+    ownedByTeam: team/core
+    usesTable: table/customers
 
-recipe/tomato_sauce:
+service/catalog:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: tomato_sauce
-    steps: https://recipes.example.com/tomato_sauce
+    name: catalog
+    repository: https://code.example.com/catalog
   links:
-    madeAtStation: station/sauce
-    usesIngredient: ingredient/tomatoes
+    ownedByTeam: team/core
+    usesTable: table/products
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: margherita
-    steps: https://recipes.example.com/margherita
-    price: 12
+    name: checkout
+    repository: https://code.example.com/checkout
+    availability: 99.9
   links:
-    madeAtStation: station/pizza
-    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
-    usesGarnish: ingredient/parmesan
-    listsAllergen: [allergen/nuts, allergen/milk]
+    ownedByTeam: team/web
+    callsService: [service/catalog, service/accounts]
+    writesTable: table/payments
+    declaresData: [data/personal, data/payment]
 
-dish/marinara:
+service/search:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: marinara
-    steps: https://recipes.example.com/marinara
-    price: 10
+    name: search
+    repository: https://code.example.com/search
+    availability: 99.5
   links:
-    madeAtStation: station/pizza
-    usesRecipe: recipe/tomato_sauce
+    ownedByTeam: team/web
+    callsService: service/catalog
 ```
 
 | Key under `expect` | Value |
@@ -196,30 +198,30 @@ kinds and links before there are any facts. A test can expect this
 information under `derived` and `notDerived`, next to facts or alone:
 
 ```yaml
-# tests/terms/garnish.of.yaml
+# tests/terms/write.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish, madeAtStation, usesRecipe, usesIngredient, usesGarnish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
 
-garnishIsAnIngredient:
+writeIsAUse:
   is: Test
   says: >
-    A garnish is one of the ingredients that a recipe uses. A dish is a
-    recipe, so a dish can have a station. A recipe can use a recipe that uses
-    another recipe.
+    A service that writes a table also uses the table. A public service is
+    a service, so a public service can have a team that owns it. A service
+    can call a service that calls another service.
   expect:
     derived:
-      - kind: Dish
-        is a: Recipe
-      - kind: Dish
-        can have: madeAtStation
-      - link: usesGarnish
-        implies: usesIngredient
-      - link: usesRecipe
+      - kind: PublicService
+        is a: Service
+      - kind: PublicService
+        can have: ownedByTeam
+      - link: writesTable
+        implies: usesTable
+      - link: callsService
         chains: true
     notDerived:
-      - link: usesIngredient
-        implies: usesGarnish
+      - link: usesTable
+        implies: writesTable
 ```
 
 | Term | Written | Derived from |
@@ -241,31 +243,31 @@ conditions to narrow the matches. Then it compares the things that a variable
 represented with the expected list.
 
 ```yaml
-# tests/questions/which-dishes-contain-nuts.of.yaml
+# tests/questions/which-public-services-handle-personal-data.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Dish]
-  - from: file:../../defs/ingredient.of.yaml
-    use: [Allergen]
-  - from: file:../../defs/allergens.of.yaml
-    use: [hasAllergen]
+  - from: file:../../defs/service.of.yaml
+    use: [PublicService]
+  - from: file:../../defs/table.of.yaml
+    use: [DataClass]
+  - from: file:../../defs/privacy.of.yaml
+    use: [handlesData]
 
-whichDishesContainNuts:
+whichPublicServicesHandlePersonalData:
   is: Question
-  asks: Which dishes contain nuts?
-  given: file:../examples/allergen-through-a-sauce.of.yaml
+  asks: Which public services handle personal data?
+  given: file:../examples/personal-data-through-a-call.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Allergen, as: $allergen }
-    - link: hasAllergen
-      from: $dish
-      to:   $allergen
+    - kind: { name: PublicService, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: handlesData
+      from: $service
+      to:   $data
   filter:
-    - node: $allergen
+    - node: $data
       equals:
-        value: allergen/nuts
+        value: data/personal
   expect:
-    $dish: [dish/margherita]
+    $service: [service/checkout]
 ```
 
 | Key | Required | Value |
@@ -278,7 +280,7 @@ whichDishesContainNuts:
 | `expect` | yes | for each listed variable, the ids that it must represent |
 
 Each item in `match` is a kind item or a link item. A kind item, such as
-`kind: { name: Dish, as: $dish }`, gives a variable to the things of a kind:
+`kind: { name: PublicService, as: $service }`, gives a variable to the things of a kind:
 the variable represents each thing of that kind in turn. Each variable has
 exactly one kind item. A link item is one link that must exist, with
 `link`, `from` and `to`. `from` and `to` are each a variable, or a kind
@@ -317,7 +319,7 @@ A condition can also name a `part` of an `object` field, as in
   `match` that encloses its nested block. The kind at each end MUST be the kind of
   the link at that end, or a kind that extends it. For a variable, this is
   the kind in its kind item.
-- **TS7.** Conditions MUST write a variable alone (`$allergen`), and every
+- **TS7.** Conditions MUST write a variable alone (`$data`), and every
   variable that they use MUST have a kind item. A variable of a nested block
   MUST NOT be used outside that block.
 - **TS8.** A comparison MUST compare values of the same type: two fields that

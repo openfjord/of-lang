@@ -13,33 +13,34 @@ are [derived](#derived-facts). Facts that running systems write are deferred
 (see [the design notes](../../docs/design.md#deferred-facts-at-runtime)).
 
 ```yaml
-# tests/examples/allergen-through-a-sauce.of.yaml
+# tests/examples/personal-data-through-a-call.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Dish, madeAtStation, usesRecipe, usesGarnish]
-  - from: file:../../defs/allergens.of.yaml
-    use: [listsAllergen]
+  - from: file:../../defs/service.of.yaml
+    use: [PublicService, ownedByTeam, callsService, writesTable]
+  - from: file:../../defs/privacy.of.yaml
+    use: [declaresData]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: margherita
-    steps: https://recipes.example.com/margherita
-    price: 12
+    name: checkout
+    repository: https://code.example.com/checkout
+    availability: 99.9
   links:
-    madeAtStation: station/pizza
-    usesRecipe: [recipe/tomato_sauce, recipe/pesto]
-    usesGarnish: ingredient/parmesan
-    listsAllergen: [allergen/nuts, allergen/milk]
+    ownedByTeam: team/web
+    callsService: [service/catalog, service/accounts]
+    writesTable: table/payments
+    declaresData: [data/personal, data/payment]
 ```
 
-The fact omits `status`, so the dish takes the default, `active`. The kind
-`Dish` extends `Recipe`, so the fact can state `name` and `madeAtStation`.
+The fact omits `status`, so the service takes the default, `active`. The kind
+`PublicService` extends `Service`, so the fact can state `name` and
+`ownedByTeam`.
 
 | Key | Required | Value |
 |---|---|---|
-| the fact's id | — | the name of the statement: any text, usually a path such as `dish/margherita` |
+| the fact's id | — | the name of the statement: any text, usually a path such as `service/checkout` |
 | `is` | yes | `Fact` |
 | `kind` | yes | the kind of the thing |
 | `fields` | as the kind tells | the value of each field, by the name of the field |
@@ -61,9 +62,9 @@ The fact omits `status`, so the dish takes the default, `active`. The kind
 - **FC4.** Each field value MUST be a value that its field allows.
 - **FC5.** The value of a link MUST be the id of a fact in the same file, or a
   list of such ids. Each of these facts MUST be of the kind where the link
-  ends, of a kind that extends it, or of a kind that a union there lists. A fact MAY use an inverse name under `links`: `makesRecipe: recipe/pesto` on a
-  station states the same fact as `madeAtStation: station/sauce` on the
-  recipe.
+  ends, of a kind that extends it, or of a kind that a union there lists. A fact MAY use an inverse name under `links`: `ownsService: service/accounts` on a
+  team states the same fact as `ownedByTeam: team/core` on the
+  service.
 - **FC6.** Facts define nothing: a fact never declares a kind, a link or a
   field.
 

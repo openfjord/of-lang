@@ -5,15 +5,15 @@
 # ///
 """Check that every YAML snippet in the reference, the by-example pages and the introduction is valid.
 
-Each snippet starts with a comment that names its file in the restaurant
-example, such as ``# defs/recipe.of.yaml`` or ``# package.yaml``. A snippet can
+Each snippet starts with a comment that names its file in the platform
+example, such as ``# defs/service.of.yaml`` or ``# package.yaml``. A snippet can
 hold several files, each starting with such a comment.
 
-A statement that the restaurant already has must be exactly the real one, and
+A statement that the platform package already has must be exactly the real one, and
 so must each manifest key that a snippet shows. For a statement with a pending
 change, the version without the change must be the real one. A new statement is merged into
 a fresh copy of ``examples/``, with the snippet's imports, and then
-``of-lang check`` and ``of-lang test`` must pass on the restaurant package.
+``of-lang check`` and ``of-lang test`` must pass on the platform package.
 
 Each folder in ``docs/by-example`` is a package, and the page next to it with
 the same name shows it. The YAML blocks of the page, joined in page order,
@@ -56,7 +56,8 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 EXAMPLES = REPO / "examples"
-PACKAGE = "restaurant"
+PACKAGE = "platform"
+FINISHED = "restaurant"
 PAGES = (REPO / "language" / "reference",)
 BY_EXAMPLE = REPO / "docs" / "by-example"
 INTRODUCTION = REPO / "docs" / "introduction"
@@ -450,19 +451,19 @@ def all_files(package: Path) -> dict[str, bytes]:
 def check_finished(step: Path) -> tuple[str, ...]:
     """Compare the last package of the introduction with the restaurant example."""
     where = step.relative_to(REPO).as_posix()
-    shown, real = all_files(step), all_files(EXAMPLES / PACKAGE)
+    shown, real = all_files(step), all_files(EXAMPLES / FINISHED)
     return (
         *(
-            f"{where}: {path} is not the same as in examples/{PACKAGE}"
+            f"{where}: {path} is not the same as in examples/{FINISHED}"
             for path in sorted(shown.keys() & real.keys())
             if shown[path] != real[path]
         ),
         *(
-            f"{where}: {path} is not in examples/{PACKAGE}"
+            f"{where}: {path} is not in examples/{FINISHED}"
             for path in sorted(shown.keys() - real.keys())
         ),
         *(
-            f"{where}: the package does not have {path} of examples/{PACKAGE}"
+            f"{where}: the package does not have {path} of examples/{FINISHED}"
             for path in sorted(real.keys() - shown.keys())
         ),
     )

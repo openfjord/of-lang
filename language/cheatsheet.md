@@ -23,22 +23,22 @@ my-package/
 
 ```yaml
 # package.yaml
-package: "@bistro/kitchen"         # required; quoted because of the leading @
+package: "@acme/platform"          # required; quoted because of the leading @
 version: 0.1.0                     # required
-owner: kitchen                     # required; owns everything in the package
-rdfNamespace: kitchen              # required; used only in exported RDF
+owner: platform                    # required; owns everything in the package
+rdfNamespace: platform             # required; used only in exported RDF
 dependsOn:
-  "@bistro/suppliers": ^1.2
+  "@acme/org": ^1.2
 exports:
-  kinds: [Recipe]
-  links: [madeAtStation]
+  kinds: [Service]
+  links: [ownedByTeam]
   valueTypes: [Name]
 openFor:
-  - extend: Recipe
-  - under: usesIngredient
+  - extend: Service
+  - under: usesTable
 tags:                                # each label that definitions can carry
-  - name: allergens
-    description: What an allergen app needs to tell guests which dishes contain which allergens.
+  - name: privacy
+    description: What a privacy review needs to tell customers which services handle which sorts of data.
 ```
 
 ## A file
@@ -47,8 +47,8 @@ tags:                                # each label that definitions can carry
 import:
   - from: file:names.of.yaml                     # relative to this file
     use: [Name]
-  - from: pkg:@bistro/suppliers                  # must be in dependsOn and exported there
-    use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
+  - from: pkg:@acme/org                          # must be in dependsOn and exported there
+    use: [Team, { name: Region, as: SalesRegion }]
 
 SomeStatement:
   is: Kind        # or Link, ValueType, Constraint, Derivative, Doc — Fact, Test, Question in tests/
@@ -64,64 +64,64 @@ All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 ## Definitions
 
 ```yaml
-Recipe:                                  # UpperCamelCase
+Service:                                 # UpperCamelCase
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.   # required
-  tags: [allergens]                      # optional; names from package.yaml; on any definition but a Doc
-  examples:    [the tomato sauce]
-  notExamples: [a new dish that a cook tries one time and does not keep]
+  definition: A program that runs in production and answers requests.   # required
+  tags: [privacy]                        # optional; names from package.yaml; on any definition but a Doc
+  examples:    [the checkout service]
+  notExamples: [a script that a developer runs one time and does not keep]
   fields:
-    name:        { type: Name }                       # required by default
-    steps:       { type: URL }                        # where the steps are written
-    prepMinutes: { type: Minutes, optional: true }
-  docs: [KitchenGuide]                   # optional; Docs of this package
+    name:           { type: Name }                       # required by default
+    repository:     { type: URL }                        # where the code is
+    timeoutSeconds: { type: Seconds, optional: true }
+  docs: [PlatformGuide]                  # optional; Docs of this package
 
-KitchenGuide:                            # UpperCamelCase
+PlatformGuide:                           # UpperCamelCase
   is: Doc
-  path: file:../docs/kitchen.md          # a Markdown file in docs/, relative to this file
+  path: file:../docs/platform.md         # a Markdown file in docs/, relative to this file
 
-Dish:
+PublicService:
   is: Kind
-  extends: Recipe                        # optional
-  definition: A recipe that the restaurant sells to guests.
+  extends: Service                       # optional
+  definition: A service that customers call.
   fields:
-    price:  { type: Price }
-    status: { enum: [active, retired], default: active }
+    availability: { type: Percent }
+    status:       { enum: [active, retired], default: active }
 
-Food:
+Resource:
   is: Kind
-  definition: Something that a recipe uses to make its food.
-  oneOf: [Recipe, Ingredient]            # a union: each food is exactly one; closed; no fields or links
+  definition: Something that a service needs to do its work.
+  oneOf: [Service, Table]                # a union: each resource is exactly one; closed; no fields or links
 
-usesRecipe:                              # lowerCamelCase, two words or more
+callsService:                            # lowerCamelCase, two words or more
   is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"              # required, with both {from} and {to}
-  definition: The first recipe needs the second recipe, directly or through other recipes.
+  from: Service
+  to: Service
+  reads: "{from} calls {to}"             # required, with both {from} and {to}
+  definition: The first service needs an answer from the second service, directly or through other services.
   chains: true                           # optional: a→b and b→c means a→c
-  inverse: usedByRecipe                  # optional: the name read the other way
+  inverse: calledByService               # optional: the name read the other way
 
-usesGarnish:
+writesTable:
   is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} is garnished with {to}"
-  definition: The cook puts the ingredient on the food at the end, to make it look or taste better.
-  under: usesIngredient                  # optional: every usesGarnish is a usesIngredient
+  from: Service
+  to: Table
+  reads: "{from} writes {to}"
+  definition: The service adds, changes or deletes rows of the table.
+  under: usesTable                       # optional: every writesTable is a usesTable
 
 Name:
   is: ValueType
-  definition: A lowercase identifier for stations, recipes, ingredients and allergens.
+  definition: A lowercase identifier for services, tables, data classes and regions.
   type: string
   pattern: "^[a-z][a-z0-9_]*$"
 
-Minutes:
+Seconds:
   is: ValueType
-  definition: A number of minutes of work.
+  definition: A number of seconds that a service waits for an answer.
   type: integer                          # a type and its keywords
   minimum: 1
-  maximum: 1440
+  maximum: 3600
 
 URL:
   is: ValueType
@@ -149,19 +149,19 @@ Derivatives, constraints and questions each define their own `match` and
 others.
 
 ```yaml
-match:                                   # things and links that must exist
-  - kind: { name: Dish, as: $dish }      # each variable has exactly one kind item
-  - kind: { name: Recipe, as: $part }
-  - link: makesRecipe                    # a link or an inverse name
-    from: Station                        # a kind alone: nothing else refers to this end
-    to:   $dish
-  - link: usesRecipe
-    from: $dish
-    to:   $part                          # usesRecipe chains, so this also finds longer chains
-filter:                                  # conditions; all must hold
-  - node: $part
-    does not equal: { same as: $dish }
-  - node: $dish
+match:                                             # things and links that must exist
+  - kind: { name: PublicService, as: $service }    # each variable has exactly one kind item
+  - kind: { name: Service, as: $called }
+  - link: ownsService                              # a link or an inverse name
+    from: Team                                     # a kind alone: nothing else refers to this end
+    to:   $service
+  - link: callsService
+    from: $service
+    to:   $called                                  # callsService chains, so this also finds longer chains
+filter:                                            # conditions; all must hold
+  - node: $called
+    does not equal: { same as: $service }
+  - node: $service
     field: status
     equals: { value: active }
 ```
@@ -174,11 +174,11 @@ of the kind:
 
 ```yaml
 match:
-  - kind: { name: Dish, as: $dish }      # each dish in turn
+  - kind: { name: PublicService, as: $service }    # each public service in turn
 filter:
-  - node: $dish
-    field: price
-    is above: { value: 30 }
+  - node: $service
+    field: availability
+    is below: { value: 99.9 }
 ```
 
 | Comparison | Takes |
@@ -201,82 +201,113 @@ for a part in a part.
 ## Constraints and derivatives
 
 ```yaml
-dishListsItsAllergens:
+publicServiceDeclaresItsData:
   is: Constraint
-  says: The menu must give a warning about each allergen in an active dish.   # no $ words
+  says: The privacy notice must name each data class that an active public service handles.   # no $ words
   match: [ ... ]
   filter: [ ... ]
   unless: [ ... ]                        # optional; a match is a violation unless these hold
-  message: "The menu must warn that {$dish} contains {$allergen}."
+  message: "The privacy notice must tell that {$service} handles {$data}."
 
-allergenFromIngredient:
+dataFromTable:
   is: Derivative
-  says: A recipe contains each allergen that one of its ingredients contains.
+  says: A service handles each data class that one of its tables holds.
   match: [ ... ]
   derive:
-    - { link: hasAllergen, from: $recipe, to: $allergen }          # a link
-    - { node: $recipe, becomes: BaseRecipe }                       # a kind
-    - { node: $recipe, field: prepMinutes, set to: { value: 30 } } # a field value
+    - { link: handlesData, from: $service, to: $data }                    # a link
+    - { node: $service, becomes: SharedService }                          # a kind
+    - { node: $service, field: timeoutSeconds, set to: { value: 30 } }    # a field value
 ```
 
 ## Tests
 
 ```yaml
 # tests/examples/some-example.of.yaml — facts plus exactly one Test
-dish/margherita:                         # a fact's id
+service/checkout:                        # a fact's id
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: margherita
-    price: 12
+    name: checkout
+    repository: https://code.example.com/checkout
+    availability: 99.9
   links:
-    madeAtStation: station/pizza
-    usesRecipe: [recipe/tomato_sauce, recipe/pesto]   # a link: an id, or a list of ids
+    ownedByTeam: team/web
+    callsService: [service/catalog, service/accounts]   # a link: an id, or a list of ids
 
 someExample:
   is: Test
   says: What this example shows.
   expect:
-    derived:    [ { link: hasAllergen, from: dish/margherita, to: allergen/nuts } ]
-    notDerived: [ { node: recipe/pesto, becomes: BaseRecipe } ]
-    rejected:   [dishListsItsAllergens]
+    derived:    [ { link: handlesData, from: service/checkout, to: data/personal } ]
+    notDerived: [ { node: service/accounts, becomes: SharedService } ]
+    rejected:   [publicServiceDeclaresItsData]
 
-# tests/terms/garnish.of.yaml — no facts: what the definitions derive about kinds and links
-garnishIsAnIngredient:
+# tests/terms/write.of.yaml — no facts: what the definitions derive about kinds and links
+writeIsAUse:
   is: Test
-  says: A garnish is one of the ingredients that a recipe uses.
+  says: A service that writes a table also uses the table.
   expect:
     derived:
-      - { kind: Dish, is a: Recipe }                  # also: never is, can have
-      - { link: usesGarnish, implies: usesIngredient } # also: chains, inverse of
+      - { kind: PublicService, is a: Service }        # also: never is, can have
+      - { link: writesTable, implies: usesTable }     # also: chains, inverse of
     notDerived:
-      - { link: usesIngredient, implies: usesGarnish }
+      - { link: usesTable, implies: writesTable }
 
-# tests/questions/which-dishes-contain-nuts.of.yaml
-whichDishesContainNuts:
+# tests/questions/which-public-services-handle-personal-data.of.yaml
+whichPublicServicesHandlePersonalData:
   is: Question
-  asks: Which dishes contain nuts?
-  given: file:../examples/allergen-through-a-sauce.of.yaml
+  asks: Which public services handle personal data?
+  given: file:../examples/personal-data-through-a-call.of.yaml
   match: [ ... ]
   filter: [ ... ]
   expect:
-    $dish: [dish/margherita]
+    $service: [service/checkout]
 ```
 
 ## Pending changes
 
 ```yaml
-Garnish:
+Cache:
   is: Kind
   pending: added                         # or removed, or updated
-  definition: An ingredient that the cook puts on the food at the end.
+  definition: A copy of rows that a service keeps in memory.
 
-Recipe:
+Service:
   is: Kind
   pending: updated
-  definition: The steps that make one dish or one part of a dish.   # the new version
+  tags: [privacy]
+  definition: A program that runs in production and gives answers to other programs.   # the new version
+  examples:
+    - the checkout service
+    - the catalog service
+  notExamples:
+    - a table, which holds data and answers no requests
+    - a script that a developer runs one time and does not keep
+  fields:
+    name:
+      type: Name
+    repository:
+      type: URL
+    timeoutSeconds:
+      type: Seconds
+      optional: true
   was:                                   # the whole old version, without is
-    definition: The steps that make one food from ingredients and other recipes.
+    tags: [privacy]
+    definition: A program that runs in production and answers requests.
+    examples:
+      - the checkout service
+      - the catalog service
+    notExamples:
+      - a table, which holds data and answers no requests
+      - a script that a developer runs one time and does not keep
+    fields:
+      name:
+        type: Name
+      repository:
+        type: URL
+      timeoutSeconds:
+        type: Seconds
+        optional: true
 ```
 
 A package has one pending change or none. Accept applies all marks in one

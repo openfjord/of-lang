@@ -12,7 +12,7 @@ the syntax inside a file depends on its form. This page shows the YAML form,
 which is the default.
 
 The name of a file ends in `.of.`, then the name of its form: `.of.yaml`
-or `.of.yml` for YAML, `.of.json` for JSON. For example, `recipe.of.yaml`. The ending
+or `.of.yml` for YAML, `.of.json` for JSON. For example, `service.of.yaml`. The ending
 tells editors and tools which files are in the language and which form they
 use. All the files of one package use the same form.
 
@@ -31,27 +31,45 @@ statements. The key of each statement is its name.
   same form.
 
 ```yaml
-# defs/station.of.yaml
+# defs/table.of.yaml
 import:
   - from: file:names.of.yaml
     use: [Name]
+  - from: file:privacy.of.yaml
+    use: [PersonalDataCare]
 
-Station:
+Table:
   is: Kind
-  definition: A part of the kitchen where a group of cooks makes some of the recipes.
+  tags: [privacy, backups]
+  definition: A set of rows in a database that all have the same columns.
   examples:
-    - the pizza station
-    - the pastry station
+    - the customers table
+    - the products table
+  notExamples:
+    - a backup of the customers table, which no service uses
   fields:
     name:
       type: Name
 
-dependsOnStation:
+DataClass:
+  is: Kind
+  tags: [privacy]
+  definition: A sort of data that needs care, because the law or a contract protects it.
+  examples:
+    - personal data
+    - payment data
+  fields:
+    name:
+      type: Name
+  docs: [PersonalDataCare]
+
+holdsData:
   is: Link
-  from: Station
-  to: Station
-  reads: "{from} depends on {to}"
-  definition: The first station cannot make all of its recipes when the second station stops work.
+  tags: [privacy]
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: Some columns of the table contain data of this sort.
 ```
 
 ## Statements
@@ -93,16 +111,16 @@ includes keys that a later version of the language adds.
 
 | Statement | Written as | Examples |
 |---|---|---|
-| kind, value type, doc | UpperCamelCase | `Recipe`, `BaseRecipe`, `Minutes`, `AllergenSafety` |
-| link, link inverse | lowerCamelCase, two words or more | `madeAtStation`, `usesRecipe`, `makesRecipe` |
-| constraint, derivative, test, question | lowerCamelCase | `dishListsItsAllergens`, `whichDishesContainNuts` |
-| fact | an id: any text, usually a path | `dish/margherita` |
+| kind, value type, doc | UpperCamelCase | `Service`, `SharedService`, `Seconds`, `PersonalDataCare` |
+| link, link inverse | lowerCamelCase, two words or more | `ownedByTeam`, `callsService`, `ownsService` |
+| constraint, derivative, test, question | lowerCamelCase | `publicServiceDeclaresItsData`, `whichPublicServicesHandlePersonalData` |
+| fact | an id: any text, usually a path | `service/checkout` |
 
 - **FL6.** Each name in a package MUST be unique, also when case is
-  ignored: a package cannot have both `BaseRecipe` and `baseRecipe`. The
+  ignored: a package cannot have both `SharedService` and `sharedService`. The
   names of a package are the names of its definitions and the `inverse`
-  names of its links. Thus, a link named `makesRecipe` cannot exist in a
-  package where a different link has `inverse: makesRecipe`.
+  names of its links. Thus, a link named `ownsService` cannot exist in a
+  package where a different link has `inverse: ownsService`.
 - **FL7.** Kind, value type and doc names MUST be UpperCamelCase; constraint,
   derivative, test and question names MUST be lowerCamelCase.
   [LK1](link.md#rules) gives the rule for link names.
@@ -115,30 +133,30 @@ A file can use a name only if the file defines or imports that name. The
 `import` block is at the top of the file. It shows the source of each name:
 
 ```yaml
-# defs/buying.of.yaml
+# defs/regions.of.yaml
 import:
-  - from: file:ingredient.of.yaml         # a file in this package, relative to this one
-    use: [Ingredient]
-  - from: pkg:@bistro/suppliers           # another package
-    use: [Supplier, { name: Ingredient, as: SupplierIngredient }]
+  - from: file:backups.of.yaml            # a file in this package, relative to this one
+    use: [Region]
+  - from: pkg:@acme/org                   # another package
+    use: [Team, { name: Region, as: SalesRegion }]
 
-boughtFrom:
+runByTeam:
   is: Link
-  from: Ingredient
-  to: Supplier
-  reads: "the kitchen buys {from} from {to}"
-  definition: The supplier that sells the ingredient to the kitchen.
+  from: Region
+  to: Team
+  reads: "{from} is run by {to}"
+  definition: The team that runs the databases in the region.
 
-boughtAs:
+servesSalesRegion:
   is: Link
-  from: Ingredient
-  to: SupplierIngredient
-  reads: "the kitchen buys {from} as {to}"
-  definition: The product of a supplier that the kitchen buys to have the ingredient.
+  from: Region
+  to: SalesRegion
+  reads: "{from} keeps the data of the customers in {to}"
+  definition: The platform keeps the data of the customers of the sales region in the region.
 ```
 
-Both packages have a kind named `Ingredient`, so the file renames the
-supplier's kind to `SupplierIngredient`.
+Both packages have a kind named `Region`, so the file renames the kind of
+the other package to `SalesRegion`.
 
 | Key | Value |
 |---|---|
@@ -149,7 +167,7 @@ The scheme tells where the names come from. The language has two schemes:
 
 | Scheme | Value | Source |
 |---|---|---|
-| `file:` | a path relative to the importing file, such as `file:../station.of.yaml` from a folder in `defs/` | a file in the same package |
+| `file:` | a path relative to the importing file, such as `file:../service.of.yaml` from a folder in `defs/` | a file in the same package |
 | `pkg:` | the full name of a package | a different package |
 
 The list of schemes can grow. A later version of the language can add a
@@ -173,8 +191,8 @@ scheme for a different source. The other import rules apply to all schemes.
 - **FL12.** Two names in one file MUST NOT be the same; use `as` to rename one
   of them.
 - **FL13.** A file MAY import the inverse name of a link alone, as for any
-  other name. For example, `makesRecipe` is the inverse of `madeAtStation`, and a
-  file can import `makesRecipe` without `madeAtStation`.
+  other name. For example, `ownsService` is the inverse of `ownedByTeam`, and a
+  file can import `ownsService` without `ownedByTeam`.
 - **FL14.** Field names are not imported: a field belongs to its kind.
 - **FL19.** Files of one package MAY import each other, also in a circle.
 
@@ -201,7 +219,7 @@ for each word, active voice and simple verb tenses.
 
 ## Ids
 
-Files use plain names, for example `Recipe` for a kind and
-`dish/margherita` for a fact. Imports show the source of each name.
+Files use plain names, for example `Service` for a kind and
+`service/checkout` for a fact. Imports show the source of each name.
 An id is a name, not a web address. In the RDF export only, the tool puts
 the `rdfNamespace` of the package in front of each name.

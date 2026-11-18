@@ -9,19 +9,19 @@ title: Tags — The OpenFjord modeling language
 A tag is a label that marks definitions that belong together for one
 purpose. By default, the export to RDF (Resource Description Framework)
 includes the full package. An optional list of tags limits the export to the
-definitions with those tags. For example, an allergen app needs recipes,
-ingredients, allergens and the links between them. A food safety app needs
-batches of ingredients and the places where the cooks keep them.
+definitions with those tags. For example, a privacy review needs services,
+tables, data classes and the links between them. The platform team needs
+backups and the regions where the platform keeps them.
 
 ```yaml
-# defs/ingredient.of.yaml
-containsAllergen:
+# defs/table.of.yaml
+holdsData:
   is: Link
-  tags: [allergens]
-  from: Ingredient
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The allergen is a part of the ingredient.
+  tags: [privacy]
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: Some columns of the table contain data of this sort.
 ```
 
 The manifest of the package lists its tags, each with a name and a description
@@ -30,10 +30,10 @@ The manifest of the package lists its tags, each with a name and a description
 ```yaml
 # package.yaml
 tags:
-  - name: allergens
-    description: What an allergen app needs to tell guests which dishes contain which allergens.
-  - name: spoilage
-    description: What the kitchen needs to keep food safe until the cooks use it. Only the kitchen uses it, so the package does not export it.
+  - name: privacy
+    description: What a privacy review needs to tell customers which services handle which sorts of data.
+  - name: backups
+    description: What the platform team needs to keep each backup in a region that allows it. Only the platform team uses it, so the package does not export it.
 ```
 
 Thus, a misspelled tag is an error, not a new subset. Each package has its
@@ -47,25 +47,25 @@ kinds, links, value types, constraints and derivatives. Single fields have no
 tags. They are exported with their kind.
 
 ```yaml
-# defs/allergens.of.yaml
-allergenFromRecipe:
+# defs/privacy.of.yaml
+dataFromService:
   is: Derivative
-  tags: [allergens]
-  says: A recipe contains each allergen that one of its recipes contains.
+  tags: [privacy]
+  says: A service that calls a second service handles each data class that the second service handles.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: hasAllergen
-      from: $part
-      to:   $allergen
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $called }
+    - kind: { name: DataClass, as: $data }
+    - link: callsService
+      from: $service
+      to:   $called
+    - link: handlesData
+      from: $called
+      to:   $data
   derive:
-    - link: hasAllergen
-      from: $recipe
-      to:   $allergen
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
 A tagged derivative or constraint is in the subset, as a rule of the
@@ -95,10 +95,11 @@ cover an untagged derivative that adds facts that a tagged definition uses.
 How the tool checks that a subset answers its questions as the full package
 does is still open (see [the design notes](../../docs/design.md#open-questions)).
 
-For example, `Dish` extends `Recipe`. When `Dish` has the tag `allergens`,
-`Recipe` must also have it. Otherwise the tool rejects the package and names
-`Recipe`. In the same way, when `allergenFromRecipe` has the tag
-`allergens`, so must `Recipe`, `Allergen`, `usesRecipe` and `hasAllergen`.
+For example, `PublicService` extends `Service`. When `PublicService` has the
+tag `privacy`, `Service` must also have it. Otherwise the tool rejects the
+package and names `Service`. In the same way, when `dataFromService` has the
+tag `privacy`, so must `Service`, `DataClass`, `callsService` and
+`handlesData`.
 
 ## Rules
 

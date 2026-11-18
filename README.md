@@ -241,9 +241,9 @@ rejected:
   - [The reference](language/README.md#reference) has every rule.
 - [The `of-lang` tool](cli/README.md) tells about each command and its
   output, and what is planned.
-- [The full example package](examples/restaurant/) is the model that the
-  introduction builds. It depends on
-  [a second package](examples/suppliers/), the restaurant's suppliers.
+- [The full example package](examples/platform/) is the model of a software
+  product that the reference uses. It depends on
+  [a second package](examples/org/), which has the teams.
 - [Why a model](docs/why.md) tells which problems a model solves, who it is
   for, and why this is a language of its own.
 - [The design of the language](docs/design.md) tells what the language

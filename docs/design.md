@@ -51,10 +51,10 @@ and remove what makes them hard for software people?
   different answer tomorrow with the same facts. Time belongs to the system
   that is modeled, not to the definitions. Dates are plain field values.
 - **Optional links in a match.** Nothing in the language returns rows with
-  empty cells. "Every dish, and its garnish if it has one" is two
+  empty cells. "Every service, and its team if it has one" is two
   statements, or a condition with `at least one` or `none`.
-- **A limit on chains.** The links that chain, such as "uses" and "contains
-  an allergen", are true at any distance. A rule that needs exactly two
+- **A limit on chains.** The links that chain, such as "calls" and "handles
+  a data class", are true at any distance. A rule that needs exactly two
   steps writes two link items.
 - **Facts as definitions.** Facts appear only in tests and examples, and
   define nothing.
@@ -83,15 +83,15 @@ and remove what makes them hard for software people?
   reuse it, at the cost of a second schema interface to keep in step; the
   logic is written against this language's own kinds and links instead.
 - **Fields on links, as in a property graph.** It lets a link say when it
-  started, or how much of an ingredient a recipe uses. But derived and chained links would have
+  started, or which rows of a table a service can read. But derived and chained links would have
   nothing to fill the fields with, and matches would need a way to reach
   them. A link stays only its link, from and to; anything said about it
-  becomes a thing in the middle, such as a `Portion` between a recipe and an ingredient.
+  becomes a thing in the middle, such as a `Grant` between a service and a table.
 
 ## Deferred: mappings to outside vocabularies
 
 Saying that a definition means the same as a term in another vocabulary —
-`Dish` as a class in someone else's ontology — is left out of the
+`Service` as a class in someone else's ontology — is left out of the
 specification until it is designed.
 
 ## Deferred: facts at runtime
