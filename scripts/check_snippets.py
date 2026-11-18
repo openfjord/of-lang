@@ -21,6 +21,8 @@ must be exactly the files of the package, and ``of-lang check`` and ``of-lang
 test`` must pass on it. There, only the first block of a file starts with the
 comment that names it. A page can leave out the manifest.
 
+``README.md`` shows the package ``examples/menu`` in the same way.
+
 Each folder in ``docs/introduction/steps`` is the restaurant package as it is
 after the chapter of the introduction with the same number: ``step-01`` after
 chapter 01. ``of-lang check``
@@ -56,6 +58,7 @@ BY_EXAMPLE = REPO / "docs" / "by-example"
 INTRODUCTION = REPO / "docs" / "introduction"
 STEPS = INTRODUCTION / "steps"
 STEP_PREFIX = "step-"
+FIRST_MODEL = EXAMPLES / "menu"
 CHAPTERS = "[0-9][0-9]-*.md"
 PACKAGE_FILES = ("package.y*ml", "defs/**/*.of.*", "tests/**/*.of.*")
 MANIFESTS = frozenset({"package.yaml", "package.yml"})
@@ -330,9 +333,11 @@ def shown_files(page: Path) -> dict[str, list[str]]:
     return files
 
 
-def check_example(tool: Path, package: Path) -> tuple[str, ...]:
+def check_example(
+    tool: Path, package: Path, page: Path | None = None
+) -> tuple[str, ...]:
     """Compare a by-example page with its package, then check and test the package."""
-    page = package.with_suffix(".md")
+    page = page or package.with_suffix(".md")
     where = page.relative_to(REPO)
     if not page.exists():
         return (f"{package.relative_to(REPO)}: the package has no page {page.name}",)
@@ -470,6 +475,7 @@ def main() -> int:
         tool = build_tool(Path(tmp))
         for example in examples:
             problems.extend(check_example(tool, example))
+        problems.extend(check_example(tool, FIRST_MODEL, REPO / "README.md"))
         for snippet in snippets:
             problem = check_snippet(tool, snippet)
             if problem is not None:

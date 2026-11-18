@@ -1,0 +1,38 @@
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Recipe, Dish, Ingredient, Allergen, usesRecipe, usesIngredient, containsAllergen, hasAllergen, dishListsItsAllergens]
+
+allergen/nuts:
+  is: Fact
+  kind: Allergen
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  links:
+    containsAllergen: allergen/nuts
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  links:
+    usesIngredient: ingredient/pine_nuts
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  links:
+    usesRecipe: recipe/pesto
+
+margheritaContainsNuts:
+  is: Test
+  says: >
+    The margherita uses the pesto, and the pesto contains pine nuts. Thus,
+    the margherita contains nuts. The menu does not say so, so the
+    constraint rejects the dish.
+  expect:
+    derived:
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/nuts
+    rejected: [dishListsItsAllergens]

@@ -16,7 +16,18 @@ down, explains each one, and runs the model's tests.
 > **Status: a draft, version 0.1.0.** The language may still change in ways
 > that break a package.
 
-## Install
+<!-- not on the site -->
+The documentation is also a site: <https://lang.openfjord.io/>.
+<!-- end -->
+
+## From nothing to an answer
+
+A guest asks: "Does the margherita contain nuts?" Nobody wrote the answer
+down. The margherita uses the pesto, and the pesto uses pine nuts. This page
+builds a small model of a restaurant's menu that finds the answer, shows the
+steps, and rejects a menu that does not warn the guest.
+
+### 1. Install the tool
 
 With [Homebrew](https://brew.sh):
 
@@ -27,157 +38,289 @@ brew install openfjord/tap/of-lang
 Or download a binary for macOS or Linux from the
 [releases](https://github.com/openfjord/of-lang/releases).
 
-Then try it on the example package, from a clone of this repository:
+### 2. Make a package
 
-```bash
-of-lang check examples/restaurant
+A model is in a package: a folder with a manifest, definitions and tests.
+
+```
+menu/                      # the root of the package
+  package.yaml             # the manifest
+  defs/
+    menu.of.yaml           # the definitions
+  tests/
+    examples/
+      margherita.of.yaml   # facts, and what must follow from them
 ```
 
-```bash
-of-lang test examples/restaurant
+The manifest gives the package its name, its version and its owner. Only
+the export to RDF (Resource Description Framework) uses `rdfNamespace`:
+
+```yaml
+# package.yaml
+package: "@bistro/menu"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: menu
 ```
 
-## Learn more
+### 3. Name the things
 
-<!-- not on the site -->
-The documentation is also a site, with all the pages below:
-<https://lang.openfjord.io/>.
-<!-- end -->
+A kind is a category of things. Each one has a definition in plain words. A
+dish is a recipe that the restaurant sells, so `Dish` extends `Recipe`.
 
-- [The introduction](docs/introduction/README.md): seven chapters that build
-  the example package, a restaurant's kitchen, one idea at a time.
-- [The language by example](docs/by-example/README.md): short pages that
-  each show one thing, with the text next to the code.
-- [The language specification](language/README.md): what the language is,
-  its principles and its vocabulary.
-  - [The cheat sheet](language/cheatsheet.md): the whole language on one page.
-  - [The reference](language/README.md#reference): every rule.
-- [The `of-lang` tool](cli/README.md): its commands and their output, and
-  what is planned.
-- [The example package](examples/restaurant/): a restaurant's kitchen
-  stations, recipes, dishes, ingredients and allergens. It depends on
+```yaml
+# defs/menu.of.yaml
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients and other recipes.
+
+Dish:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.
+
+Ingredient:
+  is: Kind
+  definition: A food that the kitchen buys and does not make.
+
+Allergen:
+  is: Kind
+  definition: A substance in food that can cause a dangerous reaction in some persons.
+```
+
+A link is a named relationship from one kind to a different kind, or to the
+same kind. `reads` is the sentence that people read for one such link.
+
+```yaml
+usesRecipe:
+  is: Link
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"
+  definition: The first recipe needs the second recipe.
+
+usesIngredient:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The recipe needs the ingredient.
+
+containsAllergen:
+  is: Link
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.
+
+hasAllergen:
+  is: Link
+  from: Recipe
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is in the recipe, through one of its ingredients or one of its recipes.
+```
+
+### 4. Say what follows
+
+Nobody states the last link, `hasAllergen`. Two derivatives add it. The
+first one finds the allergens of the ingredients of a recipe. The second one
+passes them on to each recipe that uses that recipe.
+
+```yaml
+allergenFromIngredient:
+  is: Derivative
+  says: A recipe contains each allergen that one of its ingredients contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesIngredient
+      from: $recipe
+      to:   $ingredient
+    - link: containsAllergen
+      from: $ingredient
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+allergenFromRecipe:
+  is: Derivative
+  says: A recipe contains each allergen that one of its recipes contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: hasAllergen
+      from: $part
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+```
+
+### 5. Say what is not allowed
+
+A constraint rejects the facts that break a rule. Here, each match is a
+violation, unless the menu gives a warning about the allergen.
+
+```yaml
+listsAllergen:
+  is: Link
+  from: Dish
+  to: Allergen
+  reads: "the menu tells guests that {from} contains {to}"
+  definition: The menu gives a warning about the allergen next to the dish.
+
+dishListsItsAllergens:
+  is: Constraint
+  says: The menu must give a warning about each allergen in a dish.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
+    - link: hasAllergen
+      from: $dish
+      to:   $allergen
+  unless:
+    - at least one:
+        match:
+          - link: listsAllergen
+            from: $dish
+            to:   $allergen
+  message: "The menu must warn that {$dish} contains {$allergen}."
+```
+
+### 6. State the facts
+
+The facts tell about one kitchen. No fact says that the margherita contains
+nuts.
+
+```yaml
+# tests/examples/margherita.of.yaml
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Recipe, Dish, Ingredient, Allergen, usesRecipe, usesIngredient, containsAllergen, hasAllergen, dishListsItsAllergens]
+
+allergen/nuts:
+  is: Fact
+  kind: Allergen
+
+ingredient/pine_nuts:
+  is: Fact
+  kind: Ingredient
+  links:
+    containsAllergen: allergen/nuts
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  links:
+    usesIngredient: ingredient/pine_nuts
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  links:
+    usesRecipe: recipe/pesto
+```
+
+A test tells what must follow from these facts:
+
+```yaml
+margheritaContainsNuts:
+  is: Test
+  says: >
+    The margherita uses the pesto, and the pesto contains pine nuts. Thus,
+    the margherita contains nuts. The menu does not say so, so the
+    constraint rejects the dish.
+  expect:
+    derived:
+      - link: hasAllergen
+        from: dish/margherita
+        to:   allergen/nuts
+    rejected: [dishListsItsAllergens]
+```
+
+### 7. Get the answer
+
+`check` makes sure that the package obeys the rules of the language:
+
+```console
+$ of-lang check menu
+ok
+```
+
+`run` derives the facts that follow, and then applies the constraints. The
+margherita contains nuts, and the menu does not say so:
+
+```console
+$ of-lang run menu menu/tests/examples/margherita.of.yaml
+derived:
+  recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
+  dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
+rejected:
+  dishListsItsAllergens: The menu must warn that dish/margherita contains allergen/nuts.
+```
+
+`explain` shows the steps to one derived fact, down to the lines of the
+file that state the facts:
+
+```console
+$ of-lang explain menu menu/tests/examples/margherita.of.yaml dish/margherita hasAllergen allergen/nuts
+dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
+  A recipe contains each allergen that one of its recipes contains.
+  with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
+  because:
+    dish/margherita uses recipe/pesto  (written at menu/tests/examples/margherita.of.yaml:25:5)
+    recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
+      A recipe contains each allergen that one of its ingredients contains.
+      with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
+      because:
+        recipe/pesto uses ingredient/pine_nuts  (written at menu/tests/examples/margherita.of.yaml:19:5)
+        ingredient/pine_nuts contains allergen/nuts  (written at menu/tests/examples/margherita.of.yaml:13:5)
+```
+
+`test` runs the test, so that the answer stays correct when the model
+changes:
+
+```console
+$ of-lang test menu
+pass  test margheritaContainsNuts  (menu/tests/examples/margherita.of.yaml)
+1 passed, 0 failed
+```
+
+The same package is in [`examples/menu`](examples/menu/).
+
+## Where to go next
+
+The same restaurant is the example in all of the documentation.
+
+- [The introduction](docs/introduction/README.md) grows this model into the
+  full kitchen in seven chapters: stations, prices, a base recipe, packages
+  and pending changes.
+- [The language by example](docs/by-example/README.md) has one short page
+  for each thing in the language, with the text next to the code.
+- [The language specification](language/README.md) tells what the language
+  is, with its principles and its vocabulary.
+  - [The cheat sheet](language/cheatsheet.md) has the whole language on one
+    page.
+  - [The reference](language/README.md#reference) has every rule.
+- [The `of-lang` tool](cli/README.md) tells about each command and its
+  output, and what is planned.
+- [The full example package](examples/restaurant/) is the kitchen that the
+  introduction builds. It depends on
   [a second package](examples/suppliers/), the restaurant's suppliers.
-- [The design of the language](docs/design.md): why ontologies are hard for
-  software people, what the language leaves out, the roads not taken, and
-  the open questions.
+- [Why a model](docs/why.md) tells which problems a model solves, who it is
+  for, and why this is a language of its own.
+- [The design of the language](docs/design.md) tells what the language
+  leaves out, the roads not taken, and the open questions.
 - [The changelog](CHANGELOG.md) and [how to contribute](CONTRIBUTING.md).
-
-## What this is
-
-### The problem
-
-Every business has things, and rules about those things. Take a restaurant,
-which is the example in this repository. Its things are dishes, recipes,
-ingredients, allergens and the stations in the kitchen. Some of its rules
-are:
-
-- A dish contains each allergen of its ingredients, and of the sauces that it
-  uses.
-- The menu must give a warning about each allergen in a dish.
-- A sauce that many dishes use needs extra care when it changes.
-
-Usually, nobody writes these things and rules down in one place. They are in
-the heads of the cooks, in recipe books, in the menu text and in the code of
-the ordering app. This causes problems:
-
-- **The same word has different meanings.** One cook says "pesto" for a pesto
-  with pine nuts. A different cook uses the same word for a pesto without
-  nuts. Nobody sees the difference until a guest becomes ill.
-- **Nothing checks a rule that is only text.** A rule in a recipe book does
-  not stop a change that breaks it. A cook adds nuts to a sauce, and the menu
-  does not change. People find the problem later, when a guest eats the dish.
-- **Nobody sees the effect of a change.** The sauce station closes for a day.
-  Which dishes can the kitchen not make? To get the answer, somebody must read
-  all the recipes by hand.
-- **The people who own the meaning cannot read where it is written.** The
-  head chef decides what a "base recipe" is. But the decision ends up in the
-  code of the ordering app, which the chef does not read.
-- **Each tool keeps its own copy.** The menu app, the ordering app and the
-  stock system each describe the same dishes in their own way. The copies do
-  not agree.
-- **AI agents guess.** A guest asks a chatbot: "Is the margherita free of
-  nuts?" The chatbot reads the menu text, finds no exact rules, and guesses.
-  A wrong guess looks the same as a correct answer.
-
-A software product has the same problems. Its things are services, tables
-and jobs in place of dishes and recipes, but the rules are spread out in the
-same way.
-
-### What a model gives
-
-A model writes these things down one time, in files next to the code. It
-contains four types of information:
-
-| Information | Example |
-|---|---|
-| the kinds of things, and their fields | a dish has a name and a price |
-| the links between things | a dish uses a recipe; an ingredient contains an allergen |
-| what follows from other facts | if a dish uses a sauce, and the sauce contains nuts, then the dish contains nuts |
-| what is not allowed | an active dish must not contain an allergen that the menu does not give a warning about |
-
-Then a tool can do things that text in a recipe book cannot do:
-
-- **Check.** The tool compares data with the rules, and rejects data that
-  breaks a rule. It tells which rule and why.
-- **Derive.** The tool finds facts that nobody wrote. Nobody wrote "the
-  margherita contains nuts". The tool finds it from the recipes and the
-  ingredients, and shows the steps.
-- **Answer questions.** "Which dishes contain nuts?" The tool answers from the
-  model, not from a search by hand.
-- **Show the effect of a change.** Before a change is merged, the tool shows
-  the new facts that follow, the facts that no longer follow, and the rules
-  that the change breaks.
-- **Give the owners of the meaning a page to read.** The tool makes a page for
-  each term, in sentences and examples. The owners review the page, not the
-  files.
-- **Give other tools one source.** The tool exports the model in standard
-  formats. A menu app or a stock system reads the export, so there is one
-  source, not many copies.
-- **Give AI agents exact knowledge.** An AI agent reads the model to learn
-  what a term means and which rules apply. It asks the tool questions, and
-  gets answers with their steps. The tool checks each change that the agent
-  makes, and rejects a change that breaks a rule.
-
-In `of-lang` 0.1.0, `check`, `run` and `explain` check and derive, `test`
-answers the questions that a package writes as tests, and `diff` shows what
-a change to the facts does. The report for a change to the model, the pages
-and the export are planned; [the tool's page](cli/README.md) describes them.
-
-A database schema or a JSON Schema does not do this. A database schema tells
-how one system stores its data. A JSON Schema checks one document. Neither
-describes things across many systems, the links between those things, or
-what follows from the links.
-
-### Who it is for
-
-- **Developers** who write the model in files next to their code, review it
-  like code, and check it in CI (continuous integration).
-- **Product people** who own what the terms mean. Each definition is a
-  plain sentence with examples, and each link reads as a sentence, so they
-  need no background in logic.
-- **The tools and AI agents** that need one exact source for what a term
-  means and which rules apply.
-
-No one needs to know RDF, OWL or any other ontology standard to use it.
-
-### Why a new language
-
-A model of this type has a name: an **ontology**. Standards for ontologies
-already exist. The W3C (World Wide Web Consortium) published them, and many
-tools read them:
-
-- **RDF** (Resource Description Framework) stores each fact as three parts:
-  a thing, a link and a different thing. "margherita uses pesto" is one fact.
-- **RDFS** (RDF Schema) and **OWL** (Web Ontology Language) describe the
-  kinds of things and the links, and what follows from them.
-- **SHACL** (Shapes Constraint Language) describes what is not allowed.
-
-These standards can describe a product exactly. But few product people or
-developers read or write them, for eighteen reasons that
-[the design of the language](docs/design.md#why-ontologies-are-hard-for-software-people)
-lists. This language is one that software people can read and write. It
-keeps what the standards do well, inference above all, and its tool will
-make the standard formats from it.
 
 ## License
 

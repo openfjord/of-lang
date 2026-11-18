@@ -72,6 +72,9 @@ file, such as `# defs/dish.of.yaml`, and the blocks after it continue that
 file. A page can leave out the manifest. The snippets check also runs
 `of-lang check` and `of-lang test` on each package.
 
+The top `README.md` shows the package `examples/menu` in the same way, as
+text with code below it, and the same check compares the two.
+
 Add each new page to the list in `docs/by-example/README.md`, under the
 heading of its group. The list also sets the place of the page in the
 navigation of the site, and each heading is a group there.

@@ -133,7 +133,7 @@ SECTIONS = (
         folder="docs/by-example/",
         grouped=True,
     ),
-    Section("More", pages=("docs/design.md", "cli/README.md")),
+    Section("More", pages=("docs/why.md", "docs/design.md", "cli/README.md")),
 )
 
 

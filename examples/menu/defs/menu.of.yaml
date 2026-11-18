@@ -1,0 +1,104 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients and other recipes.
+
+Dish:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.
+
+Ingredient:
+  is: Kind
+  definition: A food that the kitchen buys and does not make.
+
+Allergen:
+  is: Kind
+  definition: A substance in food that can cause a dangerous reaction in some persons.
+
+usesRecipe:
+  is: Link
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"
+  definition: The first recipe needs the second recipe.
+
+usesIngredient:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The recipe needs the ingredient.
+
+containsAllergen:
+  is: Link
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.
+
+hasAllergen:
+  is: Link
+  from: Recipe
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is in the recipe, through one of its ingredients or one of its recipes.
+
+allergenFromIngredient:
+  is: Derivative
+  says: A recipe contains each allergen that one of its ingredients contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Ingredient, as: $ingredient }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesIngredient
+      from: $recipe
+      to:   $ingredient
+    - link: containsAllergen
+      from: $ingredient
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+allergenFromRecipe:
+  is: Derivative
+  says: A recipe contains each allergen that one of its recipes contains.
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Recipe, as: $part }
+    - kind: { name: Allergen, as: $allergen }
+    - link: usesRecipe
+      from: $recipe
+      to:   $part
+    - link: hasAllergen
+      from: $part
+      to:   $allergen
+  derive:
+    - link: hasAllergen
+      from: $recipe
+      to:   $allergen
+
+listsAllergen:
+  is: Link
+  from: Dish
+  to: Allergen
+  reads: "the menu tells guests that {from} contains {to}"
+  definition: The menu gives a warning about the allergen next to the dish.
+
+dishListsItsAllergens:
+  is: Constraint
+  says: The menu must give a warning about each allergen in a dish.
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Allergen, as: $allergen }
+    - link: hasAllergen
+      from: $dish
+      to:   $allergen
+  unless:
+    - at least one:
+        match:
+          - link: listsAllergen
+            from: $dish
+            to:   $allergen
+  message: "The menu must warn that {$dish} contains {$allergen}."
