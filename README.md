@@ -13,7 +13,7 @@ down, explains each one, and runs the model's tests.
   <img src="docs/images/openfjord.png" alt="The OpenFjord logo: a fjord between mountains, above circuit lines" width="220">
 </p>
 
-> **Status: a draft, version 0.1.0.** The language may still change in ways
+> **Version 0.1.0.** Before version 1.0, the language can change in ways
 > that break a package.
 
 <!-- not on the site -->

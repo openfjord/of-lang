@@ -4,10 +4,9 @@ title: The OpenFjord modeling language
 
 # The OpenFjord modeling language
 
-> **Status: a draft, explored, not decided.** This is the specification of
-> the language that [the overview](../README.md) describes. Nothing here is
-> mandatory yet. For why the language is necessary, read
-> [Why a model](../docs/why.md).
+> This is the specification of the language that
+> [the overview](../README.md) describes. For why the language is necessary,
+> read [Why a model](../docs/why.md).
 
 The language describes the parts of a software product. The description is
 a set of statements. By default, the statements are in YAML files, which are

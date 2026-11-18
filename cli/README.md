@@ -248,8 +248,8 @@ The tool does not write facts in this form yet.
 
 ## Planned outputs
 
-Not built yet; the draft describes them so the language can be judged by what
-it produces.
+Not built yet. This page describes them so that the language can be judged
+by what it produces.
 
 ### The change report
 

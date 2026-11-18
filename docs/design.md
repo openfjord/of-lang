@@ -114,9 +114,9 @@ reasons table wait on them:
    those, and no others? An untagged derivative that adds facts to a tagged
    link is part of this question: the subset then misses those facts.
 
-## Explored, not decided: what the tool must do
+## What the tool may need to do
 
-This is an early list, not a decision. The tool may need to:
+The tool may need to:
 
 - **Validate packages.** Check each package against every rule in the
   specification.
