@@ -577,7 +577,7 @@ def page_html(page: Page, nav: str, template: str, version: str, analytics: str)
         "assets": html.escape(relative_url(page.path, "assets")),
         "logo": html.escape(relative_url(page.path, LOGO)),
         "version": version,
-        "source": html.escape(f"{GITHUB}/blob/main/{page.path}"),
+        "repo": html.escape(GITHUB),
         "nav": nav,
         "body": body,
         "analytics": analytics,

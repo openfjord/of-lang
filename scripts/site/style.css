@@ -66,6 +66,8 @@ header .site { flex: 1 1 auto; min-width: 0; display: flex; align-items: center;
 header .site:hover { text-decoration: none; }
 header .site img { display: block; }
 header .tools { display: flex; align-items: center; gap: 16px; font-size: 14px; }
+header .repo { display: flex; color: var(--fg); }
+header .repo:hover { color: var(--link); }
 #menu { display: none; }
 #theme, #menu {
   white-space: nowrap;
@@ -185,7 +187,4 @@ table.steps tr:last-child > td:last-child { border-bottom-right-radius: 8px; }
   main { padding: 4px 16px 60px; }
   main h1 { font-size: 1.6em; }
   pre { padding: 12px; }
-}
-@media (max-width: 520px) {
-  header .tools a { display: none; }
 }
