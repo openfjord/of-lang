@@ -89,23 +89,23 @@ Thus, an error from the tool can identify the rule that it enforces.
 
 | Word | Meaning |
 |---|---|
-| **[package](reference/package.md)** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm (the Node.js package manager) |
-| **[statement](reference/files.md)** | one named item in a package; its `is:` key tells what it is |
+| **package** | a versioned unit with one manifest and one owner; the owner owns everything in the package; its name can start with a namespace, as in npm (the Node.js package manager) |
+| **statement** | one named item in a package; its `is:` key tells what it is |
 | **definition** | a statement in `defs/`: a kind, a link, a value type, a constraint, a derivative or a doc |
-| **[kind](reference/kind.md)** | a kind of thing (station, recipe, dish); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
-| **[field](reference/kind.md#fields)** | a value of the thing itself (a name, a price); JSON Schema describes it |
-| **[value type](reference/kind.md#value-types)** | a named, reusable description of a field's value |
-| **[link](reference/link.md)** | a named, directed relationship between two things |
-| **[doc](reference/package.md#doc-definitions)** | a definition that names a Markdown file in `docs/`; a kind lists the docs that tell more about it |
-| **[tag](reference/tag.md)** | a label for a purpose that any definition but a doc can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
-| **[constraint](reference/constraint.md)** | finds things by their links and conditions, and rejects the matches that break it |
-| **[derivative](reference/derivative.md)** | finds things by their links and conditions, and adds links, kinds or field values for every match |
-| **[fact](reference/fact.md)** | a stated thing with its fields and links; tests and examples use facts |
-| **[derived fact](reference/fact.md#derived-facts)** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one |
-| **[test](reference/test.md)** | facts with what they must derive and reject, or what the definitions must derive about kinds and links |
-| **[question](reference/test.md#questions)** | a match over the facts of an example, with the answer it expects |
-| **[derived term](reference/test.md#derived-terms)** | what the definitions derive about kinds and links, with no facts: a dish is a recipe, and a garnish link implies an ingredient link; tests can expect one |
-| **[pending change](reference/pending.md)** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most |
+| **kind** | a kind of thing (station, recipe, dish); a kind can also be exactly one of a fixed list of kinds, with `oneOf` |
+| **field** | a value of the thing itself (a name, a price); JSON Schema describes it |
+| **value type** | a named, reusable description of a field's value |
+| **link** | a named, directed relationship between two things |
+| **doc** | a definition that names a Markdown file in `docs/`; a kind lists the docs that tell more about it |
+| **tag** | a label for a purpose that any definition but a doc can carry; the package manifest lists each tag with a name and a description; by default the RDF export includes everything, and an optional list of tags limits it to the items that carry them |
+| **constraint** | finds things by their links and conditions, and rejects the matches that break it |
+| **derivative** | finds things by their links and conditions, and adds links, kinds or field values for every match |
+| **fact** | a stated thing with its fields and links; tests and examples use facts |
+| **derived fact** | a fact that nobody stated: a derivative adds it, or the `under` or `chains` key of a link implies it; tests can expect one, but no file declares one |
+| **test** | facts with what they must derive and reject, or what the definitions must derive about kinds and links |
+| **question** | a match over the facts of an example, with the answer it expects |
+| **derived term** | what the definitions derive about kinds and links, with no facts: a dish is a recipe, and a garnish link implies an ingredient link; tests can expect one |
+| **pending change** | the statements that a change adds, removes or updates, marked in the files until somebody accepts or rejects the change; one for each package at most |
 
 Fields and links are different: a field is a value of the thing, and a link
 points to another thing.
