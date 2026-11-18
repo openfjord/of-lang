@@ -113,6 +113,10 @@ exist, or when a page is missing from the navigation. The template, the
 stylesheet and the theme script are in `scripts/site/`. The groups of the
 navigation are at the top of the script.
 
+Text that makes sense on GitHub but not on the site, such as the link to
+the site, goes between a line `<!-- not on the site -->` and a line
+`<!-- end -->`. GitHub shows it, and the site leaves it out.
+
 The site workflow (`.github/workflows/site.yml`) builds the site on each
 pull request, and publishes it to GitHub Pages on each push to `main`.
 

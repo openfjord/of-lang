@@ -8,7 +8,9 @@
 A Markdown file is a page of the site when it starts with a block that gives
 its ``title``. ``README.md`` becomes the ``index.html`` of its folder, and any
 other file keeps its name, with ``.html``. Links between pages are rewritten,
-and a link to any other file of the repository goes to GitHub. The build fails
+and a link to any other file of the repository goes to GitHub. The site
+leaves out the text between a line ``<!-- not on the site -->`` and a line
+``<!-- end -->``, which GitHub shows. The build fails
 when a link points at a file or a heading that does not exist, or when a page
 is missing from the navigation.
 
@@ -43,6 +45,9 @@ IMAGE_ENDINGS = frozenset({".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp"})
 HAS_SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:|^//")
 HTML_LINK = re.compile(r'\b(src|href)="([^"]*)"')
 FRONT_MATTER = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
+NOT_ON_SITE = re.compile(
+    r"^<!-- not on the site -->\n.*?^<!-- end -->\n\n?", re.DOTALL | re.MULTILINE
+)
 DARK_STYLE = "github-dark"
 LIGHT_STYLE = "default"
 
@@ -162,7 +167,8 @@ def parse(path: str, text: str) -> Page | None:
     )
     if front is None or not isinstance(title, str):
         return None
-    body = re.sub(r"(?m)^<table>$", '<table class="steps">', text[front.end() :])
+    shown = NOT_ON_SITE.sub("", text[front.end() :])
+    body = re.sub(r"(?m)^<table>$", '<table class="steps">', shown)
     tokens = markdown().parse(body)
     counts: dict[str, int] = {}
     heading = ""
