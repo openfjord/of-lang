@@ -39,6 +39,9 @@ of-lang test examples/restaurant
 
 ## Learn more
 
+The documentation is also a site, with all the pages below:
+<https://openfjord.github.io/of-lang/>.
+
 - [The introduction](docs/introduction/README.md): seven chapters that build
   the example package, a restaurant's kitchen, one idea at a time.
 - [The language by example](docs/by-example/README.md): short pages that
