@@ -120,6 +120,29 @@ the site, goes between a line `<!-- not on the site -->` and a line
 The site workflow (`.github/workflows/site.yml`) builds the site on each
 pull request, and publishes it to GitHub Pages on each push to `main`.
 
+## Icons of the vocabulary
+
+On the site, each word of the [vocabulary](language/README.md#vocabulary)
+has an icon of its own. The icon is in the vocabulary table, and next to the
+title and the navigation entry of each page that is about that one word. The
+icons come from [Tabler Icons](https://tabler.io/icons), under the MIT
+license (`scripts/site/tabler-icons.LICENSE`).
+
+`ICONS` in `scripts/build_site.py` gives each word the name of its icon and
+its code point in the font, and `PAGE_WORDS` gives each such page its word.
+The build fails when a word of the vocabulary has no icon, or when two words
+have the same icon.
+
+`scripts/site/tabler-icons.woff2` holds only the icons in use. To add or
+change an icon, make the file again from the full font of Tabler Icons, with
+the code points in `ICONS`:
+
+```bash
+uvx --from fonttools --with brotli pyftsubset tabler-icons.woff2 \
+  --unicodes=U+eaff,U+ebcc --flavor=woff2 \
+  --output-file=scripts/site/tabler-icons.woff2
+```
+
 ## Releasing
 
 One version covers the whole repository. To release version `X.Y.Z`:

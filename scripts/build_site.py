@@ -50,6 +50,52 @@ NOT_ON_SITE = re.compile(
 )
 DARK_STYLE = "github-dark"
 LIGHT_STYLE = "default"
+LOGO = "docs/images/openfjord.png"
+VOCABULARY = ("language/README.md", "Vocabulary")
+
+# The icon of each word of the vocabulary: its name in the Tabler Icons font
+# and its code point. scripts/site/tabler-icons.woff2 holds only these icons.
+ICONS: Mapping[str, tuple[str, str]] = {
+    "package": ("package", "eaff"),
+    "statement": ("braces", "ebcc"),
+    "definition": ("vocabulary", "ef1e"),
+    "kind": ("category", "f1f6"),
+    "field": ("forms", "ee8f"),
+    "value type": ("ruler-2", "eed2"),
+    "link": ("link", "eade"),
+    "doc": ("file-text", "eaa2"),
+    "tag": ("tag", "10096"),
+    "constraint": ("shield-check", "eb22"),
+    "derivative": ("sparkles", "f6d7"),
+    "fact": ("circle-dot", "efb1"),
+    "derived fact": ("circle-dotted", "ed28"),
+    "test": ("flask", "ebd2"),
+    "question": ("help-circle", "f91d"),
+    "derived term": ("hierarchy-2", "ee9d"),
+    "pending change": ("clock-edit", "f547"),
+}
+
+# The pages that are about one word of the vocabulary. The icon of the word
+# is next to the title of the page and next to its entry in the navigation.
+PAGE_WORDS: Mapping[str, str] = {
+    "language/reference/files.md": "statement",
+    "language/reference/package.md": "package",
+    "language/reference/kind.md": "kind",
+    "language/reference/link.md": "link",
+    "language/reference/tag.md": "tag",
+    "language/reference/constraint.md": "constraint",
+    "language/reference/derivative.md": "derivative",
+    "language/reference/fact.md": "fact",
+    "language/reference/test.md": "test",
+    "language/reference/pending.md": "pending change",
+    "docs/introduction/01-kinds.md": "kind",
+    "docs/introduction/02-links.md": "link",
+    "docs/introduction/03-facts-and-tests.md": "fact",
+    "docs/introduction/04-derivatives.md": "derivative",
+    "docs/introduction/05-constraints.md": "constraint",
+    "docs/introduction/06-packages.md": "package",
+    "docs/introduction/07-pending-changes.md": "pending change",
+}
 
 
 @dataclass(frozen=True)
@@ -329,16 +375,107 @@ def label(page: Page, group: str) -> str:
     return page.heading or page.title
 
 
+def icon_html(word: str) -> str:
+    """Return the icon of a word of the vocabulary. An empty word gives an empty place."""
+    name = f" ti-{ICONS[word][0]}" if word else ""
+    return f'<i class="ti{name}" aria-hidden="true"></i>'
+
+
+def icon_rules() -> str:
+    """Return the style rules that give each icon its sign in the font."""
+    return "\n".join(
+        f'.ti-{name}::before {{ content: "\\{code}"; }}'
+        for name, code in sorted(ICONS.values())
+    )
+
+
+def icon_problems(pages: Mapping[str, Page]) -> tuple[str, ...]:
+    """Name each thing that stops every word from having an icon of its own."""
+    path, heading = VOCABULARY
+    words = vocabulary_words(pages[path], heading) if path in pages else ()
+    names = [name for name, _ in ICONS.values()]
+    return (
+        *(f"{path}: the word {w} has no icon" for w in words if w not in ICONS),
+        *(
+            f"the icon of {w} is for a word that is not in the vocabulary"
+            for w in ICONS
+            if w not in words
+        ),
+        *(
+            f"the icon {n} is the icon of two words"
+            for n in sorted(set(names))
+            if names.count(n) > 1
+        ),
+        *(
+            f"{p}: the page is about {w}, which has no icon"
+            for p, w in PAGE_WORDS.items()
+            if w not in ICONS
+        ),
+        *(
+            f"{p}: the page with an icon does not exist"
+            for p in PAGE_WORDS
+            if p not in pages
+        ),
+    )
+
+
+def vocabulary_cells(page: Page, heading: str) -> tuple[Token, ...]:
+    """Return the first cell of each row of the table under a heading of a page."""
+    cells: list[Token] = []
+    under = False
+    for index, token in enumerate(page.tokens):
+        if token.type == "heading_open":
+            under = plain_text(page.tokens[index + 1]) == heading
+        elif (
+            under
+            and token.type == "tr_open"
+            and page.tokens[index + 1].type == "td_open"
+        ):
+            cells.append(page.tokens[index + 2])
+    return tuple(cells)
+
+
+def vocabulary_words(page: Page, heading: str) -> tuple[str, ...]:
+    """Return the words that the vocabulary table of a page lists."""
+    return tuple(plain_text(cell) for cell in vocabulary_cells(page, heading))
+
+
+def add_icons(page: Page) -> None:
+    """Put the icons in a page: at its title, and at each word of the vocabulary table."""
+    marked: list[tuple[Token, str]] = []
+    if page.path in PAGE_WORDS:
+        title = next(
+            page.tokens[index + 1]
+            for index, token in enumerate(page.tokens)
+            if token.type == "heading_open" and token.tag == "h1"
+        )
+        marked.append((title, PAGE_WORDS[page.path]))
+    if page.path == VOCABULARY[0]:
+        marked.extend(
+            (cell, plain_text(cell)) for cell in vocabulary_cells(page, VOCABULARY[1])
+        )
+    for inline, word in marked:
+        if word in ICONS:
+            icon = Token("html_inline", "", 0, content=icon_html(word) + " ")
+            inline.children = [icon, *(inline.children or [])]
+
+
 def links_html(
     paths: Sequence[str], group: str, pages: Mapping[str, Page], current: Page
 ) -> str:
-    """Return a list of links to pages, as seen from one page."""
+    """Return a list of links to pages, as seen from one page.
+
+    When a page of the list has an icon, each page of the list has a place
+    for one, so that the names are in line.
+    """
+    with_icons = any(path in PAGE_WORDS for path in paths)
     items: list[str] = []
     for path in paths:
         here = ' aria-current="page"' if path == current.path else ""
         url = html.escape(relative_url(current.path, output_path(path)))
         name = html.escape(label(pages[path], group))
-        items.append(f'<li><a href="{url}"{here}>{name}</a></li>')
+        icon = icon_html(PAGE_WORDS.get(path, "")) if with_icons else ""
+        items.append(f'<li><a href="{url}"{here}>{icon}{name}</a></li>')
     return "<ul>\n" + "\n".join(items) + "\n</ul>"
 
 
@@ -386,6 +523,7 @@ def page_html(page: Page, nav: str, template: str) -> str:
         "site": html.escape(SITE_NAME),
         "home": html.escape(relative_url(page.path, output_path(HOME))),
         "assets": html.escape(relative_url(page.path, "assets")),
+        "logo": html.escape(relative_url(page.path, LOGO)),
         "source": html.escape(f"{GITHUB}/blob/main/{page.path}"),
         "nav": nav,
         "body": body,
@@ -419,20 +557,27 @@ def main(arguments: Sequence[str]) -> int:
     groups = navigation(pages)
     in_navigation = {path for group in groups for path in group_pages(group)}
     problems = [
-        f"{path}: the page is not in the navigation"
-        for path in sorted(pages.keys() - in_navigation)
+        *(
+            f"{path}: the page is not in the navigation"
+            for path in sorted(pages.keys() - in_navigation)
+        ),
+        *icon_problems(pages),
     ]
     template = (ASSETS / "page.html").read_text()
 
     shutil.rmtree(out, ignore_errors=True)
     (out / "assets").mkdir(parents=True)
-    for name in ("style.css", "theme.js"):
+    for name in ("style.css", "theme.js", "tabler-icons.woff2", "tabler-icons.LICENSE"):
         shutil.copy(ASSETS / name, out / "assets" / name)
     (out / "assets" / "code.css").write_text(code_colors())
+    (out / "assets" / "icons.css").write_text(icon_rules())
+    (out / LOGO).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(REPO / LOGO, out / LOGO)
     (out / ".nojekyll").write_text("")
     for page in pages.values():
         assets, found = rewritten(page, pages, files)
         problems.extend(found)
+        add_icons(page)
         target = out / output_path(page.path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
