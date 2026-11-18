@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{title}}</title>
+<script src="{{assets}}/theme.js"></script>
+<link rel="stylesheet" href="{{assets}}/style.css">
+<link rel="stylesheet" href="{{assets}}/code.css">
+</head>
+<body>
+<header>
+<a class="site" href="{{home}}">{{site}}</a>
+<span class="tools">
+<a href="{{source}}">Source</a>
+<button id="theme" type="button" aria-label="Switch between the dark and the light theme">Light / dark</button>
+</span>
+</header>
+<div class="layout">
+<nav aria-label="Pages">
+{{nav}}
+</nav>
+<main>
+{{body}}
+</main>
+</div>
+</body>
+</html>

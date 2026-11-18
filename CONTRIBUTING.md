@@ -75,6 +75,23 @@ file. A page can leave out the manifest. The snippets check also runs
 Add each new page to the list in `docs/by-example/README.md`, which also
 sets its place in the navigation of the site.
 
+## The site
+
+The documentation site holds each Markdown file that starts with a block
+that gives its `title`. Build it into `_site/` with:
+
+```bash
+uv run scripts/build_site.py
+```
+
+The build fails when a link points at a file or a heading that does not
+exist, or when a page is missing from the navigation. The template, the
+stylesheet and the theme script are in `scripts/site/`. The groups of the
+navigation are at the top of the script.
+
+The site workflow (`.github/workflows/site.yml`) builds the site on each
+pull request, and publishes it to GitHub Pages on each push to `main`.
+
 ## Releasing
 
 One version covers the whole repository. To release version `X.Y.Z`:
