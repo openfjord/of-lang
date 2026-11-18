@@ -6,42 +6,39 @@ title: Why a model — The OpenFjord modeling language
 
 ## The problem
 
-Every business has things, and rules about those things. Take a restaurant,
-which is the example in all of this documentation. Its things are dishes, recipes,
-ingredients, allergens and the stations in the kitchen. Some of its rules
-are:
+Every software product has things, and rules about those things. Its things
+are services, databases, tables, jobs and the teams that own them. Some of
+its rules are:
 
-- A dish contains each allergen of its ingredients, and of the sauces that it
-  uses.
-- The menu must give a warning about each allergen in a dish.
-- A sauce that many dishes use needs extra care when it changes.
+- A service that depends on a second service also depends on everything
+  that the second service depends on.
+- Each service must have a team that owns it.
+- A table that many services read needs extra care when it changes.
 
 Usually, nobody writes these things and rules down in one place. They are in
-the heads of the cooks, in recipe books, in the menu text and in the code of
-the ordering app. This causes problems:
+the heads of the engineers, in wiki pages, in diagrams and in the code. This
+causes problems:
 
-- **The same word has different meanings.** One cook says "pesto" for a pesto
-  with pine nuts. A different cook uses the same word for a pesto without
-  nuts. Nobody sees the difference until a guest becomes ill.
-- **Nothing checks a rule that is only text.** A rule in a recipe book does
-  not stop a change that breaks it. A cook adds nuts to a sauce, and the menu
-  does not change. People find the problem later, when a guest eats the dish.
-- **Nobody sees the effect of a change.** The sauce station closes for a day.
-  Which dishes can the kitchen not make? To get the answer, somebody must read
-  all the recipes by hand.
-- **The people who own the meaning cannot read where it is written.** The
-  head chef decides what a "base recipe" is. But the decision ends up in the
-  code of the ordering app, which the chef does not read.
-- **Each tool keeps its own copy.** The menu app, the ordering app and the
-  stock system each describe the same dishes in their own way. The copies do
-  not agree.
-- **AI agents guess.** A guest asks a chatbot: "Is the margherita free of
-  nuts?" The chatbot reads the menu text, finds no exact rules, and guesses.
+- **The same word has different meanings.** One team says "customer" for a
+  person who has an account. A different team uses the same word for a
+  company that pays. Nobody sees the difference until a report gives a wrong
+  number.
+- **Nothing checks a rule that is only text.** A rule in a wiki page does
+  not stop a change that breaks it. An engineer adds a service without an
+  owner, and nothing objects. People find the problem later, during an
+  incident, when nobody answers.
+- **Nobody sees the effect of a change.** The orders database goes down for
+  maintenance. Which services stop? To get the answer, somebody must read
+  the code and the diagrams by hand.
+- **The people who own the meaning cannot read where it is written.** A
+  product manager decides what an "active customer" is. But the decision
+  ends up in a query in the code, which the product manager does not read.
+- **Each tool keeps its own copy.** The service catalog, the data catalog
+  and the monitoring system each describe the same services in their own
+  way. The copies do not agree.
+- **AI agents guess.** A developer asks an AI agent: "Is it safe to remove
+  this column?" The agent reads the code, finds no exact rules, and guesses.
   A wrong guess looks the same as a correct answer.
-
-A software product has the same problems. Its things are services, tables
-and jobs in place of dishes and recipes, but the rules are spread out in the
-same way.
 
 ## What a model gives
 
@@ -50,19 +47,19 @@ contains four types of information:
 
 | Information | Example |
 |---|---|
-| the kinds of things, and their fields | a dish has a name and a price |
-| the links between things | a dish uses a recipe; an ingredient contains an allergen |
-| what follows from other facts | if a dish uses a sauce, and the sauce contains nuts, then the dish contains nuts |
-| what is not allowed | an active dish must not contain an allergen that the menu does not give a warning about |
+| the kinds of things, and their fields | a service has a name and a tier |
+| the links between things | a service depends on a service; a team owns a service |
+| what follows from other facts | if checkout depends on orders, and orders depends on the database, then checkout depends on the database |
+| what is not allowed | a service must not be without an owner |
 
-Then a tool can do things that text in a recipe book cannot do:
+Then a tool can do things that text in a wiki page cannot do:
 
 - **Check.** The tool compares data with the rules, and rejects data that
   breaks a rule. It tells which rule and why.
-- **Derive.** The tool finds facts that nobody wrote. Nobody wrote "the
-  margherita contains nuts". The tool finds it from the recipes and the
-  ingredients, and shows the steps.
-- **Answer questions.** "Which dishes contain nuts?" The tool answers from the
+- **Derive.** The tool finds facts that nobody wrote. Nobody wrote
+  "checkout depends on the database". The tool finds it from the two
+  dependencies that somebody did write, and shows the steps.
+- **Answer questions.** "Which services stop when the database is down?" The tool answers from the
   model, not from a search by hand.
 - **Show the effect of a change.** Before a change is merged, the tool shows
   the new facts that follow, the facts that no longer follow, and the rules
@@ -71,7 +68,7 @@ Then a tool can do things that text in a recipe book cannot do:
   each term, in sentences and examples. The owners review the page, not the
   files.
 - **Give other tools one source.** The tool exports the model in standard
-  formats. A menu app or a stock system reads the export, so there is one
+  formats. A service catalog or a monitoring system reads the export, so there is one
   source, not many copies.
 - **Give AI agents exact knowledge.** An AI agent reads the model to learn
   what a term means and which rules apply. It asks the tool questions, and
@@ -107,7 +104,7 @@ already exist. The W3C (World Wide Web Consortium) published them, and many
 tools read them:
 
 - **RDF** (Resource Description Framework) stores each fact as three parts:
-  a thing, a link and a different thing. "margherita uses pesto" is one fact.
+  a thing, a link and a different thing. "checkout depends on orders" is one fact.
 - **RDFS** (RDF Schema) and **OWL** (Web Ontology Language) describe the
   kinds of things and the links, and what follows from them.
 - **SHACL** (Shapes Constraint Language) describes what is not allowed.
