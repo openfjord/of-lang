@@ -33,14 +33,15 @@ func TestExamplePasses(t *testing.T) {
 	}
 }
 
-// copyExample copies the example package to a temporary folder and applies
-// one replacement to one of its files.
+// copyExample copies the example package to a temporary folder, next to the
+// packages it depends on, and applies one replacement to one of its files.
 func copyExample(t *testing.T, file, old, replacement string) string {
 	t.Helper()
-	dir := filepath.Join(t.TempDir(), "restaurant")
-	if err := os.CopyFS(dir, os.DirFS(example)); err != nil {
-		t.Fatalf("copy example: %v", err)
+	root := t.TempDir()
+	if err := os.CopyFS(root, os.DirFS(filepath.Dir(example))); err != nil {
+		t.Fatalf("copy examples: %v", err)
 	}
+	dir := filepath.Join(root, filepath.Base(example))
 	path := filepath.Join(dir, file)
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -66,8 +67,8 @@ func TestBrokenPackages(t *testing.T) {
 			command: "check", want: "recipe.of.yaml:53:3: the reads of madeAtStation must use both {from} and {to} (LK2)",
 		},
 		{
-			name: "missing garnish", file: "tests/examples/allergen-through-a-sauce.of.yaml",
-			old: "    usesGarnish: ingredient/parmesan\n", replacement: "",
+			name: "garnish without milk", file: "tests/examples/allergen-through-a-sauce.of.yaml",
+			old: "    usesGarnish: ingredient/parmesan\n", replacement: "    usesGarnish: ingredient/tomatoes\n",
 			command: "test", want: "expected derived, but not: dish/margherita contains allergen/milk",
 		},
 		{
@@ -104,6 +105,16 @@ func TestBrokenPackages(t *testing.T) {
 			name: "fact of an unknown kind", file: "tests/examples/base-recipe.of.yaml",
 			old: "kind: Station\n", replacement: "kind: Kitchen\n",
 			command: "test", want: "base-recipe.of.yaml:20:1: Kitchen is not defined in this file or imported (FL9)\n",
+		},
+		{
+			name: "import that a definition file does not use", file: "defs/station.of.yaml",
+			old: "use: [Name]\n", replacement: "use: [Name, Minutes]\n",
+			command: "check", want: "station.of.yaml:3:17: Minutes is imported and not used (FL20)",
+		},
+		{
+			name: "import that a test file does not use", file: "tests/examples/batch-kept-too-warm.of.yaml",
+			old: "batchKeptColdEnough]", replacement: "batchKeptColdEnough, useByAfterArrival]",
+			command: "test", want: "useByAfterArrival is imported and not used (FL20)",
 		},
 	}
 	for _, c := range cases {

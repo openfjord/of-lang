@@ -157,6 +157,10 @@ scheme for a different source. The other import rules apply to all schemes.
 - **FL9.** A file MUST import every name that it uses but does not define.
   This includes names from other files of the same package. Thus, the top of
   a file shows all that the file depends on.
+- **FL20.** A file MUST NOT import a name that it does not use. Thus, the top
+  of a file shows only what the file depends on. In a file with a
+  [pending change](pending.md), a name that only one of the two versions
+  uses is a name that the file uses.
 - **FL10.** A `file:` import MUST point to a file in the same package, and
   that file MUST define each name that the import uses. `./` is implied. Use
   `../` only to go to the parent folder.

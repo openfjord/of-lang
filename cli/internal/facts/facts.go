@@ -41,6 +41,7 @@ func Read(l load.Loaded, path string) (File, []diag.Diagnostic, error) {
 	if err != nil {
 		return File{}, nil, err
 	}
+	ds = append(ds, source.UnusedImports(raw)...)
 	sf, sds := source.Select(raw, l.Version)
 	ds = append(ds, sds...)
 	pkg := l.World.Packages[l.World.Root]

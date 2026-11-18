@@ -55,8 +55,8 @@ SomeStatement:
 ```
 
 The import schemes are `file:` and `pkg:`. A later version can add more.
-A file imports each name that it uses but does not define. A file does not
-import field names.
+A file imports each name that it uses but does not define, and no other
+name. A file does not import field names.
 
 All free-form text (`definition`, `reads`, `examples`, `says`, `asks`,
 `message`, docs) follows ASD-STE100 Simplified Technical English.

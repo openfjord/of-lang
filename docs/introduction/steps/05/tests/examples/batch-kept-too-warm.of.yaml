@@ -2,7 +2,7 @@ import:
   - from: file:../../defs/ingredient.of.yaml
     use: [Ingredient]
   - from: file:../../defs/spoilage.of.yaml
-    use: [StorageZone, Batch, batchOf, keptIn, batchKeptColdEnough, useByAfterArrival]
+    use: [StorageZone, Batch, batchOf, keptIn, batchKeptColdEnough]
 
 batchKeptTooWarm:
   is: Test

@@ -228,6 +228,7 @@ func collectFiles(st *state, pkg *model.Package, version source.Version) (bool, 
 			return err
 		}
 		st.diags = append(st.diags, ds...)
+		st.diags = append(st.diags, source.UnusedImports(raw)...)
 		change = change || source.HasChange(raw)
 		f, ds := source.Select(raw, version)
 		st.diags = append(st.diags, ds...)
