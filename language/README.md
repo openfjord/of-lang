@@ -21,6 +21,26 @@ Developers read and write the statements. Product people read the sentences and
 pages that a tool generates from the same statements. The tool checks the
 statements, derives what follows, and rejects what breaks a rule.
 
+## Definitions and facts
+
+The language keeps two things apart.
+
+A **definition** tells what can exist, what follows and what is not allowed.
+A kind, a link, a value type, a derivative, a constraint and a doc are
+definitions. Together, the definitions are the model.
+
+A **fact** tells what does exist: one thing, with its kind, its fields and
+its links. "A dish is a recipe that the restaurant sells" is a definition.
+"The margherita is a dish, and it uses the pesto" is two facts.
+
+A package holds definitions. The only facts in a package are in its tests,
+where they are examples: they show what the definitions derive and reject.
+The facts of a real kitchen are not in a package. They come from the
+systems that run the kitchen.
+
+Thus, a change to a fact never changes the model, and one model can check
+the facts of many kitchens.
+
 ## How to read this
 
 | If you want to | Read |
