@@ -84,7 +84,7 @@ navigation of the site, and each heading is a group there.
 The eight chapters in `docs/introduction/` grow the restaurant package one
 result at a time. Each chapter is one question that the kitchen wants an
 answer to, such as "Which dishes contain nuts?". Its title gives the result
-in general words, such as "Ask the model a question": it names neither the
+in general words, such as "Ask a question": it names neither the
 restaurant nor a part of the language. The chapter opens with the question
 of the kitchen. The chapter adds to the package
 only what the answer needs, explains each part of the language where the

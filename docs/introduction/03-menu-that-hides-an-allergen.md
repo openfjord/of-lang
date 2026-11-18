@@ -1,8 +1,8 @@
 ---
-title: Reject what breaks a rule — Introduction to the OpenFjord modeling language
+title: Enforce a rule — Introduction to the OpenFjord modeling language
 ---
 
-# Reject what breaks a rule
+# Enforce a rule
 
 > Part of [the introduction](README.md).
 
@@ -179,7 +179,7 @@ menu.
 
 Allergens are not the only thing that goes through the kitchen from recipe
 to recipe. Work does too:
-[Find what depends on what](04-sauce-station-closes.md)
+[Trace dependencies](04-sauce-station-closes.md)
 
 More about this: [constraints](../../language/reference/constraint.md),
 [fields](../../language/reference/kind.md#fields) and

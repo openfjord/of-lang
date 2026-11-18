@@ -1,8 +1,8 @@
 ---
-title: Check one value against another — Introduction to the OpenFjord modeling language
+title: Compare values — Introduction to the OpenFjord modeling language
 ---
 
-# Check one value against another
+# Compare values
 
 > Part of [the introduction](README.md).
 
@@ -169,7 +169,7 @@ A cook who records a delivery gets the message at once, and moves the batch
 before the food spoils.
 
 The model of the kitchen is complete. But the kitchen is not alone in the
-restaurant: [Share a model between teams](07-share-with-purchasing.md).
+restaurant: [Share a model](07-share-with-purchasing.md).
 
 More about this: [constraints](../../language/reference/constraint.md) and
 [fields](../../language/reference/kind.md#fields) in the reference. In the

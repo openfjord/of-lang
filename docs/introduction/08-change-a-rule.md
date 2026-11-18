@@ -1,8 +1,8 @@
 ---
-title: Change a rule safely — Introduction to the OpenFjord modeling language
+title: Change a rule — Introduction to the OpenFjord modeling language
 ---
 
-# Change a rule safely
+# Change a rule
 
 > Part of [the introduction](README.md).
 

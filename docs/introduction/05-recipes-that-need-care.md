@@ -1,8 +1,8 @@
 ---
-title: Find what many things share — Introduction to the OpenFjord modeling language
+title: Find shared parts — Introduction to the OpenFjord modeling language
 ---
 
-# Find what many things share
+# Find shared parts
 
 > Part of [the introduction](README.md).
 
@@ -204,7 +204,7 @@ recipes: when two more dishes use the pesto, the pesto becomes a base recipe
 without a decision from a person.
 
 A wrong recipe is not the only risk in a kitchen. Food also spoils:
-[Check one value against another](06-food-kept-cold.md)
+[Compare values](06-food-kept-cold.md)
 
 More about this: [derivatives](../../language/reference/derivative.md),
 [value types](../../language/reference/kind.md#value-types) and

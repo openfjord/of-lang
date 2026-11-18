@@ -1,8 +1,8 @@
 ---
-title: Ask the model a question — Introduction to the OpenFjord modeling language
+title: Ask a question — Introduction to the OpenFjord modeling language
 ---
 
-# Ask the model a question
+# Ask a question
 
 > Part of [the introduction](README.md).
 
@@ -160,7 +160,7 @@ garnish. The kitchen wrote no rule about garnishes and allergens.
 The restaurant can ask the model which dishes contain an allergen, and the
 answer follows each change to a recipe. But nothing makes the menu tell the
 guests. That is the next chapter:
-[Reject what breaks a rule](03-menu-that-hides-an-allergen.md).
+[Enforce a rule](03-menu-that-hides-an-allergen.md).
 
 More about this: [questions](../../language/reference/test.md#questions) and
 [what links imply](../../language/reference/link.md#what-links-imply) in the
