@@ -82,7 +82,7 @@ the constraint by its name, as it imports kinds and links.
 `run` shows the message of each rejection:
 
 ```console
-$ of-lang run 05 05/tests/examples/dish-without-allergen-warning.of.yaml
+$ of-lang run step-05 step-05/tests/examples/dish-without-allergen-warning.of.yaml
 derived:
   recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
   dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
@@ -135,7 +135,7 @@ the sorts that the chapters before this one explain:
 - two links: `batchOf` from a batch to its ingredient, and `keptIn` from a
   batch to its zone.
 
-[The file in `steps/05`](steps/05/defs/spoilage.of.yaml) shows them. The
+[The file in `steps/step-05`](steps/step-05/defs/spoilage.of.yaml) shows them. The
 rule of the topic is a constraint:
 
 ```yaml
@@ -168,7 +168,7 @@ An example states two batches of parmesan, one in the fridge and one in the
 dry store:
 
 ```console
-$ of-lang run 05 05/tests/examples/batch-kept-too-warm.of.yaml
+$ of-lang run step-05 step-05/tests/examples/batch-kept-too-warm.of.yaml
 derived:
   nothing
 rejected:
@@ -182,14 +182,14 @@ All the tests pass. The two tests that expect a rejection pass because the
 rejection occurs:
 
 ```console
-$ of-lang test 05
-pass  test allergenThroughASauce  (05/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test tomatoSauceInThreeDishes  (05/tests/examples/base-recipe.of.yaml)
-pass  test batchKeptTooWarm  (05/tests/examples/batch-kept-too-warm.of.yaml)
-pass  test dishWithoutAllergenWarning  (05/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  question whichDishesContainNuts  (05/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (05/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (05/tests/terms/garnish.of.yaml)
+$ of-lang test step-05
+pass  test allergenThroughASauce  (step-05/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test tomatoSauceInThreeDishes  (step-05/tests/examples/base-recipe.of.yaml)
+pass  test batchKeptTooWarm  (step-05/tests/examples/batch-kept-too-warm.of.yaml)
+pass  test dishWithoutAllergenWarning  (step-05/tests/examples/dish-without-allergen-warning.of.yaml)
+pass  question whichDishesContainNuts  (step-05/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (step-05/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
+pass  test garnishIsAnIngredient  (step-05/tests/terms/garnish.of.yaml)
 7 passed, 0 failed
 ```
 

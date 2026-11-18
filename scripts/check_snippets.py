@@ -22,7 +22,8 @@ test`` must pass on it. There, only the first block of a file starts with the
 comment that names it. A page can leave out the manifest.
 
 Each folder in ``docs/introduction/steps`` is the restaurant package as it is
-after the chapter of the introduction with the same number. ``of-lang check``
+after the chapter of the introduction with the same number: ``step-01`` after
+chapter 01. ``of-lang check``
 and ``of-lang test`` must pass on each one, with ``examples/`` as the place of
 its dependencies, and the last one must have exactly the files of
 ``examples/restaurant``. Each snippet of a chapter starts with a comment that
@@ -54,6 +55,7 @@ PAGES = (REPO / "language" / "reference",)
 BY_EXAMPLE = REPO / "docs" / "by-example"
 INTRODUCTION = REPO / "docs" / "introduction"
 STEPS = INTRODUCTION / "steps"
+STEP_PREFIX = "step-"
 CHAPTERS = "[0-9][0-9]-*.md"
 PACKAGE_FILES = ("package.y*ml", "defs/**/*.of.*", "tests/**/*.of.*")
 MANIFESTS = frozenset({"package.yaml", "package.yml"})
@@ -400,7 +402,7 @@ def check_step(tool: Path, step: Path) -> tuple[str, ...]:
     """Check and test one package of the introduction, and find its chapter."""
     where = step.relative_to(REPO).as_posix()
     failure = check_package(tool, step)
-    chapters = tuple(INTRODUCTION.glob(f"{step.name}-*.md"))
+    chapters = tuple(INTRODUCTION.glob(f"{step.name.removeprefix(STEP_PREFIX)}-*.md"))
     return (
         *((f"{where}: {failure}",) if failure else ()),
         *(() if chapters else (f"{where}: the package has no chapter",)),
@@ -416,7 +418,7 @@ def check_chapter(tool: Path, page: Path) -> tuple[int, tuple[str, ...]]:
     tested.
     """
     where = page.relative_to(REPO).as_posix()
-    step = STEPS / page.name[:2]
+    step = STEPS / f"{STEP_PREFIX}{page.name[:2]}"
     if not (step / "package.yaml").exists():
         return 0, (f"{where}: the chapter has no package steps/{step.name}",)
     snippets, unnamed = find_snippets(page)

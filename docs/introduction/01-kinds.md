@@ -19,9 +19,9 @@ A model is in a package. A package is a folder with a manifest and a `defs/`
 folder:
 
 ```
-01/
-  package.yaml
-  defs/
+step-01/             # the root of the package
+  package.yaml       # the manifest
+  defs/              # the definitions
     names.of.yaml
     station.of.yaml
     recipe.of.yaml

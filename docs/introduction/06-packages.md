@@ -69,7 +69,7 @@ folder that holds the package. `--packages` names a different folder. In the
 repository, the suppliers package is in `examples/`:
 
 ```console
-$ of-lang check --packages ../../../examples 06
+$ of-lang check --packages ../../../examples step-06
 ok
 ```
 
@@ -229,14 +229,14 @@ refers to it. The package has a second doc, `docs/spoilage.md`, with the
 The package holds the full model of the kitchen, and all its tests pass:
 
 ```console
-$ of-lang test --packages ../../../examples 06
-pass  test allergenThroughASauce  (06/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test tomatoSauceInThreeDishes  (06/tests/examples/base-recipe.of.yaml)
-pass  test batchKeptTooWarm  (06/tests/examples/batch-kept-too-warm.of.yaml)
-pass  test dishWithoutAllergenWarning  (06/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  question whichDishesContainNuts  (06/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (06/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (06/tests/terms/garnish.of.yaml)
+$ of-lang test --packages ../../../examples step-06
+pass  test allergenThroughASauce  (step-06/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test tomatoSauceInThreeDishes  (step-06/tests/examples/base-recipe.of.yaml)
+pass  test batchKeptTooWarm  (step-06/tests/examples/batch-kept-too-warm.of.yaml)
+pass  test dishWithoutAllergenWarning  (step-06/tests/examples/dish-without-allergen-warning.of.yaml)
+pass  question whichDishesContainNuts  (step-06/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (step-06/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
+pass  test garnishIsAnIngredient  (step-06/tests/terms/garnish.of.yaml)
 7 passed, 0 failed
 ```
 

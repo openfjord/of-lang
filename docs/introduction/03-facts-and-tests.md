@@ -82,7 +82,7 @@ the names of fields.
 
 The file holds more facts in the same form: the two stations, the allergen
 milk, the parmesan, the tomatoes, the tomato sauce and a second dish, the
-marinara. [The file in `steps/03`](steps/03/tests/examples/allergen-through-a-sauce.of.yaml)
+marinara. [The file in `steps/step-03`](steps/step-03/tests/examples/allergen-through-a-sauce.of.yaml)
 shows them all.
 
 ## A test
@@ -121,9 +121,9 @@ and `notDerived` lists facts that it must not add.
 `test` runs each test of the package:
 
 ```console
-$ of-lang test 03
-pass  test allergenThroughASauce  (03/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test garnishIsAnIngredient  (03/tests/terms/garnish.of.yaml)
+$ of-lang test step-03
+pass  test allergenThroughASauce  (step-03/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test garnishIsAnIngredient  (step-03/tests/terms/garnish.of.yaml)
 2 passed, 0 failed
 ```
 
@@ -131,7 +131,7 @@ pass  test garnishIsAnIngredient  (03/tests/terms/garnish.of.yaml)
 `reads` sentence of a link, with the reason for the fact:
 
 ```console
-$ of-lang run 03 03/tests/examples/allergen-through-a-sauce.of.yaml
+$ of-lang run step-03 step-03/tests/examples/allergen-through-a-sauce.of.yaml
 derived:
   dish/margherita uses ingredient/parmesan  (under)
 rejected:
@@ -145,10 +145,10 @@ A test protects the kitchen against mistakes. If somebody deletes the
 garnish from the margherita, the test fails and tells what is missing:
 
 ```console
-$ of-lang test 03
-FAIL  test allergenThroughASauce  (03/tests/examples/allergen-through-a-sauce.of.yaml)
+$ of-lang test step-03
+FAIL  test allergenThroughASauce  (step-03/tests/examples/allergen-through-a-sauce.of.yaml)
       expected derived, but not: dish/margherita uses ingredient/parmesan
-pass  test garnishIsAnIngredient  (03/tests/terms/garnish.of.yaml)
+pass  test garnishIsAnIngredient  (step-03/tests/terms/garnish.of.yaml)
 1 passed, 1 failed
 ```
 

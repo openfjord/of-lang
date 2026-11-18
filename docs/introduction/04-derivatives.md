@@ -95,7 +95,7 @@ uses it.
 `run` shows each derived fact with the derivative that added it:
 
 ```console
-$ of-lang run 04 04/tests/examples/allergen-through-a-sauce.of.yaml
+$ of-lang run step-04 step-04/tests/examples/allergen-through-a-sauce.of.yaml
 derived:
   dish/margherita uses ingredient/parmesan  (under)
   recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
@@ -112,18 +112,18 @@ ingredient of the dish, as [chapter 3](03-facts-and-tests.md) shows.
 `explain` shows why one fact holds, down to the facts that the file states:
 
 ```console
-$ of-lang explain 04 04/tests/examples/allergen-through-a-sauce.of.yaml dish/margherita hasAllergen allergen/nuts
+$ of-lang explain step-04 step-04/tests/examples/allergen-through-a-sauce.of.yaml dish/margherita hasAllergen allergen/nuts
 dish/margherita contains allergen/nuts  (derivative allergenFromRecipe)
   A recipe contains each allergen that one of its recipes contains.
   with $allergen = allergen/nuts, $part = recipe/pesto, $recipe = dish/margherita
   because:
-    dish/margherita uses recipe/pesto  (written at 04/tests/examples/allergen-through-a-sauce.of.yaml:117:5)
+    dish/margherita uses recipe/pesto  (written at step-04/tests/examples/allergen-through-a-sauce.of.yaml:117:5)
     recipe/pesto contains allergen/nuts  (derivative allergenFromIngredient)
       A recipe contains each allergen that one of its ingredients contains.
       with $allergen = allergen/nuts, $ingredient = ingredient/pine_nuts, $recipe = recipe/pesto
       because:
-        recipe/pesto uses ingredient/pine_nuts  (written at 04/tests/examples/allergen-through-a-sauce.of.yaml:96:5)
-        ingredient/pine_nuts contains allergen/nuts  (written at 04/tests/examples/allergen-through-a-sauce.of.yaml:72:5)
+        recipe/pesto uses ingredient/pine_nuts  (written at step-04/tests/examples/allergen-through-a-sauce.of.yaml:96:5)
+        ingredient/pine_nuts contains allergen/nuts  (written at step-04/tests/examples/allergen-through-a-sauce.of.yaml:72:5)
 ```
 
 ## A derivative that gives a kind
@@ -172,7 +172,7 @@ to each recipe that enough recipes use.
 through other recipes.
 
 ```console
-$ of-lang explain 04 04/tests/examples/base-recipe.of.yaml recipe/tomato_sauce BaseRecipe
+$ of-lang explain step-04 step-04/tests/examples/base-recipe.of.yaml recipe/tomato_sauce BaseRecipe
 recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipeFromUses)
   A recipe that more than two recipes use, directly or through other recipes, is a base recipe.
   with $recipe = recipe/tomato_sauce
@@ -183,7 +183,7 @@ way. The link `dependsOnStation` goes from a station to a station. The
 derivative `stationDependsOnStation` adds it when a recipe of the first
 station uses a recipe of the second station. Its match uses the inverse name
 `makesRecipe`, and its filter keeps a station from a link to itself.
-[The file in `steps/04`](steps/04/defs/station.of.yaml) shows the two
+[The file in `steps/step-04`](steps/step-04/defs/station.of.yaml) shows the two
 statements. That file imports from `recipe.of.yaml`, and `recipe.of.yaml`
 imports from it. Files of one package can import each other in a circle.
 
@@ -274,12 +274,12 @@ second example proves `baseRecipeFromUses` with three dishes that use the
 tomato sauce.
 
 ```console
-$ of-lang test 04
-pass  test allergenThroughASauce  (04/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test tomatoSauceInThreeDishes  (04/tests/examples/base-recipe.of.yaml)
-pass  question whichDishesContainNuts  (04/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (04/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (04/tests/terms/garnish.of.yaml)
+$ of-lang test step-04
+pass  test allergenThroughASauce  (step-04/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test tomatoSauceInThreeDishes  (step-04/tests/examples/base-recipe.of.yaml)
+pass  question whichDishesContainNuts  (step-04/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (step-04/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
+pass  test garnishIsAnIngredient  (step-04/tests/terms/garnish.of.yaml)
 5 passed, 0 failed
 ```
 

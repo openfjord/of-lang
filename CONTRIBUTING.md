@@ -79,7 +79,7 @@ navigation of the site, and each heading is a group there.
 ## The introduction
 
 The chapters in `docs/introduction/` grow the restaurant package one idea at
-a time. `steps/NN` holds the package as it is after chapter `NN`, and the
+a time. `steps/step-NN` holds the package as it is after chapter `NN`, and the
 last one has exactly the files of `examples/restaurant`. An earlier package
 is that package with less in it: a chapter adds files and statements, and a
 reader never meets a statement before the chapter that explains it.

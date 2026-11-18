@@ -139,7 +139,7 @@ the package:
 language:
 
 ```console
-$ of-lang check --packages ../../../examples 07
+$ of-lang check --packages ../../../examples step-07
 ok
 ```
 
@@ -148,19 +148,19 @@ owner sees that the tests of the package still pass, and that the example
 of the cook passes too:
 
 ```console
-$ of-lang test --packages ../../../examples 07
-pass  test allergenThroughASauce  (07/tests/examples/allergen-through-a-sauce.of.yaml)
-pass  test tomatoSauceInThreeDishes  (07/tests/examples/base-recipe.of.yaml)
-pass  test batchKeptTooWarm  (07/tests/examples/batch-kept-too-warm.of.yaml)
-pass  test dishWithoutAllergenWarning  (07/tests/examples/dish-without-allergen-warning.of.yaml)
-pass  test doughAtTwoStations  (07/tests/examples/dough-at-two-stations.of.yaml)
-pass  question whichDishesContainNuts  (07/tests/questions/which-dishes-contain-nuts.of.yaml)
-pass  question whichStationsStopWithTheSauceStation  (07/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
-pass  test garnishIsAnIngredient  (07/tests/terms/garnish.of.yaml)
+$ of-lang test --packages ../../../examples step-07
+pass  test allergenThroughASauce  (step-07/tests/examples/allergen-through-a-sauce.of.yaml)
+pass  test tomatoSauceInThreeDishes  (step-07/tests/examples/base-recipe.of.yaml)
+pass  test batchKeptTooWarm  (step-07/tests/examples/batch-kept-too-warm.of.yaml)
+pass  test dishWithoutAllergenWarning  (step-07/tests/examples/dish-without-allergen-warning.of.yaml)
+pass  test doughAtTwoStations  (step-07/tests/examples/dough-at-two-stations.of.yaml)
+pass  question whichDishesContainNuts  (step-07/tests/questions/which-dishes-contain-nuts.of.yaml)
+pass  question whichStationsStopWithTheSauceStation  (step-07/tests/questions/which-stations-stop-with-the-sauce-station.of.yaml)
+pass  test garnishIsAnIngredient  (step-07/tests/terms/garnish.of.yaml)
 8 passed, 0 failed
 ```
 
-The package in [`steps/07`](steps/07/) is the finished package, without this
+The package in [`steps/step-07`](steps/step-07/) is the finished package, without this
 change. To get the output above, put the marks from this chapter in a copy
 of it.
 
@@ -186,7 +186,7 @@ To reject the change is also one operation:
 2. Replace each updated statement with its `was` version.
 3. Delete `pending` from each removed statement.
 
-Then the package is again as it is in `steps/07`.
+Then the package is again as it is in `steps/step-07`.
 
 In the two cases, no mark is left, and the package has no pending change.
 The manifest and the Markdown files in `docs/` have no marks.

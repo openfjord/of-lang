@@ -30,8 +30,8 @@ it explain.
 ## The package after each chapter
 
 The folder [`steps/`](steps/) holds the package as it is after each chapter:
-`steps/01` after chapter 1, `steps/02` after chapter 2, and so on. Each one
-is a full package that the tool accepts. `steps/07` holds the same files as
+`steps/step-01` after chapter 1, `steps/step-02` after chapter 2, and so on. Each one
+is a full package that the tool accepts. `steps/step-07` holds the same files as
 the example package.
 
 The chapters show the tool, `of-lang`, at work. To run the same commands,
@@ -40,7 +40,7 @@ repository, and go to the `steps` folder:
 
 ```console
 $ cd docs/introduction/steps
-$ of-lang check 01
+$ of-lang check step-01
 ok
 ```
 
