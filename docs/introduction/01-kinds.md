@@ -232,24 +232,6 @@ Allergen:
       type: Name
 ```
 
-## Check the package
-
-`check` reads the package and tells if it obeys the rules of the language:
-
-```console
-$ of-lang check 01
-ok
-```
-
-When a statement breaks a rule, `check` gives the file, the line, the column
-and the code of the rule. For example, a `Dish` without its `definition`
-gives this:
-
-```console
-$ of-lang check 01
-01/defs/recipe.of.yaml:24:3: Dish needs definition: (KD1)
-```
-
 The package has five kinds, but it does not tell how they relate to each
 other. That is the subject of the next chapter: [Links](02-links.md).
 

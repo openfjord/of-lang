@@ -143,22 +143,6 @@ listsAllergen:
 This link starts at `Dish`, not at `Recipe`. Only a dish is on the menu, so
 only a dish can have the link.
 
-## Check the package
-
-```console
-$ of-lang check 02
-ok
-```
-
-`check` makes sure that each `from` and each `to` is a kind that the file
-defines or imports. Without the import of `Station`, the package breaks a
-rule:
-
-```console
-$ of-lang check 02
-02/defs/recipe.of.yaml:43:7: Station is not defined in this file or imported (FL9)
-```
-
 The package tells which links can exist. It does not yet tell about one
 real dish. The next chapter does: [Facts and tests](03-facts-and-tests.md).
 
