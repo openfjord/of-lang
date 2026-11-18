@@ -13,16 +13,16 @@ the list.
 <tr>
 <td>
 
-Each dish has a `name`, which can be any text.
+Each table has a `name`, which can be any text.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/table.of.yaml
+Table:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A set of rows with the same columns, in a database.
   fields:
     name:
       type: string
@@ -33,15 +33,15 @@ Dish:
 <tr>
 <td>
 
-`enum` lists the values that `course` can have. A dish is a starter, a
-main course or a dessert, and nothing else.
+`enum` lists the values that `sensitivity` can have. The data in a table
+is public, internal or confidential, and nothing else.
 
 </td>
 <td>
 
 ```yaml
-    course:
-      enum: [starter, main, dessert]
+    sensitivity:
+      enum: [public, internal, confidential]
 ```
 
 </td>
@@ -49,30 +49,30 @@ main course or a dessert, and nothing else.
 <tr>
 <td>
 
-A test file states two dishes. Each one gives a course from the list.
+A test file states two tables. Each one gives a sensitivity from the list.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-dishes.of.yaml
+# tests/examples/two-tables.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/table.of.yaml
+    use: [Table]
 
-dish/bruschetta:
+table/products:
   is: Fact
-  kind: Dish
+  kind: Table
   fields:
-    name: bruschetta
-    course: starter
+    name: products
+    sensitivity: public
 
-dish/tiramisu:
+table/customers:
   is: Fact
-  kind: Dish
+  kind: Table
   fields:
-    name: tiramisu
-    course: dessert
+    name: customers
+    sensitivity: confidential
 ```
 
 </td>
@@ -81,15 +81,15 @@ dish/tiramisu:
 <td>
 
 A test passes only if every fact obeys its kind. This one passes, so the
-field allows the two courses.
+field allows the two values.
 
 </td>
 <td>
 
 ```yaml
-twoDishes:
+twoTables:
   is: Test
-  says: A starter and a dessert are both valid dishes.
+  says: A public table and a confidential table are both valid.
   expect:
     rejected: []
 ```
@@ -99,29 +99,29 @@ twoDishes:
 <tr>
 <td>
 
-A question asks which dishes are desserts, given those facts. A condition
-compares the field with a value from the list.
+A question asks which tables are confidential, given those facts. A
+condition compares the field with a value from the list.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-desserts.of.yaml
+# tests/questions/which-tables-are-confidential.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/table.of.yaml
+    use: [Table]
 
-whichDishesAreDesserts:
+whichTablesAreConfidential:
   is: Question
-  asks: Which dishes are desserts?
-  given: file:../examples/two-dishes.of.yaml
+  asks: Which tables are confidential?
+  given: file:../examples/two-tables.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Table, as: $table }
   filter:
-    - node: $dish
-      field: course
+    - node: $table
+      field: sensitivity
       equals:
-        value: dessert
+        value: confidential
 ```
 
 </td>
@@ -129,14 +129,14 @@ whichDishesAreDesserts:
 <tr>
 <td>
 
-The answer is the tiramisu.
+The answer is the customers table.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/tiramisu]
+    $table: [table/customers]
 ```
 
 </td>
@@ -147,8 +147,8 @@ The answer is the tiramisu.
 
 ```console
 $ of-lang test enums
-pass  test twoDishes  (enums/tests/examples/two-dishes.of.yaml)
-pass  question whichDishesAreDesserts  (enums/tests/questions/which-dishes-are-desserts.of.yaml)
+pass  test twoTables  (enums/tests/examples/two-tables.of.yaml)
+pass  question whichTablesAreConfidential  (enums/tests/questions/which-tables-are-confidential.of.yaml)
 2 passed, 0 failed
 ```
 

@@ -21,11 +21,11 @@ without the change does not include it.
 <td>
 
 ```yaml
-# defs/menu.of.yaml
-Drink:
+# defs/programs.of.yaml
+Job:
   is: Kind
   pending: added
-  definition: A liquid that the restaurant sells to guests.
+  definition: A program that runs on a schedule.
 ```
 
 </td>
@@ -40,10 +40,10 @@ stays in the file, as written, until somebody accepts the change.
 <td>
 
 ```yaml
-Snack:
+Script:
   is: Kind
   pending: removed
-  definition: A small food that the restaurant sells at the bar.
+  definition: A program that a person starts by hand.
 ```
 
 </td>
@@ -52,22 +52,22 @@ Snack:
 <td>
 
 `pending: updated` marks a statement that the change updates. The statement
-shows its version with the change: here, a dish has a `course`.
+shows its version with the change: here, a service has a `tier`.
 
 </td>
 <td>
 
 ```yaml
-Dish:
+Service:
   is: Kind
   pending: updated
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    course:
-      enum: [starter, main, dessert]
-      default: main
+    tier:
+      enum: [critical, standard]
+      default: standard
 ```
 
 </td>
@@ -83,7 +83,7 @@ Only an updated statement has `was`.
 
 ```yaml
   was:
-    definition: A food that the restaurant sells to guests.
+    definition: A program that runs in production and answers requests.
     fields:
       name:
         type: string
@@ -95,27 +95,27 @@ Only an updated statement has `was`.
 <td>
 
 The tests use the package with the change. Thus, a test file can state a
-drink, and a dish with a course. It cannot state a snack.
+job, and a service with a tier. It cannot state a script.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/menu-with-the-change.of.yaml
+# tests/examples/programs-with-the-change.of.yaml
 import:
-  - from: file:../../defs/menu.of.yaml
-    use: [Drink, Dish]
+  - from: file:../../defs/programs.of.yaml
+    use: [Job, Service]
 
-drink/lemonade:
+job/nightly_backup:
   is: Fact
-  kind: Drink
+  kind: Job
 
-dish/tiramisu:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: tiramisu
-    course: dessert
+    name: checkout
+    tier: critical
 ```
 
 </td>
@@ -129,9 +129,9 @@ The test expects that the package with the change rejects nothing.
 <td>
 
 ```yaml
-menuWithTheChange:
+programsWithTheChange:
   is: Test
-  says: A drink and a dish with a course are valid.
+  says: A job and a service with a tier are valid.
   expect:
     rejected: []
 ```
@@ -147,7 +147,7 @@ with the change:
 
 ```console
 $ of-lang test pending-changes
-pass  test menuWithTheChange  (pending-changes/tests/examples/menu-with-the-change.of.yaml)
+pass  test programsWithTheChange  (pending-changes/tests/examples/programs-with-the-change.of.yaml)
 1 passed, 0 failed
 ```
 

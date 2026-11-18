@@ -1,0 +1,15 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy]
+
+whichServicesHaveAnOwner:
+  is: Question
+  asks: Which services have an owner?
+  given: file:../examples/two-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+    - link: ownedBy
+      from: $service
+      to:   Team
+  expect:
+    $service: [service/checkout]

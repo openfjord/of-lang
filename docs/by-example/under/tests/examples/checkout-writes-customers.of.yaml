@@ -1,0 +1,22 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Table, usesTable, writesTable]
+
+table/customers:
+  is: Fact
+  kind: Table
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    writesTable: table/customers
+
+checkoutWritesCustomers:
+  is: Test
+  says: The checkout service writes the customers table, so it uses that table.
+  expect:
+    derived:
+      - link: usesTable
+        from: service/checkout
+        to:   table/customers

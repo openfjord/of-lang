@@ -13,23 +13,24 @@ braces, and each match gives their values.
 <tr>
 <td>
 
-A batch states the highest temperature that is safe for it, and the
-temperature of the place where the cooks keep it. The shelf is optional.
+A service states how many replicas it has, and the smallest number that it
+needs. A replica is one running copy of the service. The person on call is
+optional.
 
 </td>
 <td>
 
 ```yaml
-# defs/batch.of.yaml
-Batch:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: An amount of one ingredient that the kitchen received on one day.
+  definition: A program that runs in production and answers requests.
   fields:
-    keepAtMostCelsius:
+    replicas:
       type: integer
-    keptAtCelsius:
+    minReplicas:
       type: integer
-    shelf:
+    onCall:
       type: string
       optional: true
 ```
@@ -39,24 +40,24 @@ Batch:
 <tr>
 <td>
 
-The constraint matches each batch that is too warm.
+The constraint matches each service that has too few replicas.
 
 </td>
 <td>
 
 ```yaml
-batchKeptColdEnough:
+serviceHasEnoughReplicas:
   is: Constraint
-  says: The cooks keep each batch cold enough.
+  says: Each service has the number of replicas that it needs, or more.
   match:
-    - kind: { name: Batch, as: $batch }
+    - kind: { name: Service, as: $service }
   filter:
-    - node:  $batch
-      field: keptAtCelsius
-      is above:
+    - node:  $service
+      field: replicas
+      is below:
         same as:
-          node:  $batch
-          field: keepAtMostCelsius
+          node:  $service
+          field: minReplicas
 ```
 
 </td>
@@ -65,17 +66,16 @@ batchKeptColdEnough:
 <td>
 
 The message states the rule that the match breaks, with the word "must".
-`{$batch}` gives the id of the thing. `{$batch: shelf}` gives the value of
-a field.
+`{$service}` gives the id of the thing. `{$service: replicas}` gives the
+value of a field.
 
 </td>
 <td>
 
 ```yaml
   message: >-
-    {$batch} on shelf {$batch: shelf} must be kept at
-    {$batch: keepAtMostCelsius} °C or colder, but it is at
-    {$batch: keptAtCelsius} °C.
+    {$service} must have {$service: minReplicas} replicas or more, but it
+    has {$service: replicas}. On call: {$service: onCall}.
 ```
 
 </td>
@@ -83,25 +83,25 @@ a field.
 <tr>
 <td>
 
-A test file states two batches that are too warm. The first one states its
-shelf.
+A test file states two services that have too few replicas. The first one
+states the person on call.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-warm-batches.of.yaml
+# tests/examples/too-few-replicas.of.yaml
 import:
-  - from: file:../../defs/batch.of.yaml
-    use: [Batch, batchKeptColdEnough]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceHasEnoughReplicas]
 
-batch/parmesan_monday:
+service/checkout:
   is: Fact
-  kind: Batch
+  kind: Service
   fields:
-    keepAtMostCelsius: 8
-    keptAtCelsius: 12
-    shelf: B2
+    replicas: 2
+    minReplicas: 3
+    onCall: dana
 ```
 
 </td>
@@ -109,18 +109,18 @@ batch/parmesan_monday:
 <tr>
 <td>
 
-The second one states no shelf.
+The second one states no person on call.
 
 </td>
 <td>
 
 ```yaml
-batch/cream_tuesday:
+service/search:
   is: Fact
-  kind: Batch
+  kind: Service
   fields:
-    keepAtMostCelsius: 4
-    keptAtCelsius: 6
+    replicas: 1
+    minReplicas: 2
 ```
 
 </td>
@@ -134,11 +134,11 @@ The test expects that the facts break the constraint.
 <td>
 
 ```yaml
-twoWarmBatches:
+tooFewReplicas:
   is: Test
-  says: The two batches are warmer than is safe for them, so the constraint rejects them.
+  says: The two services have fewer replicas than they need, so the constraint rejects them.
   expect:
-    rejected: [batchKeptColdEnough]
+    rejected: [serviceHasEnoughReplicas]
 ```
 
 </td>
@@ -150,12 +150,12 @@ the message with the values of that match. A field with no value gives the
 words "not set":
 
 ```console
-$ of-lang run messages messages/tests/examples/two-warm-batches.of.yaml
+$ of-lang run messages messages/tests/examples/too-few-replicas.of.yaml
 derived:
   nothing
 rejected:
-  batchKeptColdEnough: batch/parmesan_monday on shelf B2 must be kept at 8 °C or colder, but it is at 12 °C.
-  batchKeptColdEnough: batch/cream_tuesday on shelf not set must be kept at 4 °C or colder, but it is at 6 °C.
+  serviceHasEnoughReplicas: service/checkout must have 3 replicas or more, but it has 2. On call: dana.
+  serviceHasEnoughReplicas: service/search must have 2 replicas or more, but it has 1. On call: not set.
 ```
 
 More about this: [messages](../../language/reference/constraint.md#messages).

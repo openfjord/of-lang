@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
+
+whichTeamsOwnWhichServices:
+  is: Question
+  asks: Which teams own which services?
+  given: file:../examples/services-and-owners.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Team, as: $team }
+
+    - link: ownedBy
+      from: $service
+      to:   $team
+
+  expect:
+    $service: [service/checkout]
+    $team: [team/payments]

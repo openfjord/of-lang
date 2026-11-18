@@ -13,20 +13,21 @@ holds.
 <tr>
 <td>
 
-Each dish has a name and a price.
+Each service has a name and a number of replicas. A replica is one copy of
+the service that runs.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    price:
+    replicas:
       type: integer
 ```
 
@@ -35,37 +36,37 @@ Dish:
 <tr>
 <td>
 
-A test file states three dishes with different prices.
+A test file states three services with different numbers of replicas.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/three-prices.of.yaml
+# tests/examples/three-services.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/orders:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    price: 12
+    name: orders
+    replicas: 2
 
-dish/fondue:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    price: 28
+    name: checkout
+    replicas: 4
 
-dish/lobster:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: lobster
-    price: 45
+    name: search
+    replicas: 12
 ```
 
 </td>
@@ -79,9 +80,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-threePrices:
+threeServices:
   is: Test
-  says: Three dishes with different prices are valid.
+  says: Three services with different numbers of replicas are valid.
   expect:
     rejected: []
 ```
@@ -91,23 +92,24 @@ threePrices:
 <tr>
 <td>
 
-A question asks about the prices. Its `match` finds each dish.
+A question asks about the numbers of replicas. Its `match` finds each
+service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-cost-12-or-more-but-less-than-45.of.yaml
+# tests/questions/which-services-have-2-or-more-replicas-but-fewer-than-12.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichDishesCost12OrMoreButLessThan45:
+whichServicesHave2OrMoreReplicasButFewerThan12:
   is: Question
-  asks: Which dishes cost 12 or more, but less than 45?
-  given: file:../examples/three-prices.of.yaml
+  asks: Which services have 2 or more replicas, but fewer than 12?
+  given: file:../examples/three-services.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -117,16 +119,35 @@ whichDishesCost12OrMoreButLessThan45:
 
 A condition names a `node` and a `field`. Then it gives a comparison word,
 and `value:` with a literal to compare with. `is at least` holds when the
-price is 12 or more.
+service has 2 or more replicas.
 
 </td>
 <td>
 
 ```yaml
   filter:
-    - node: $dish
-      field: price
+    - node: $service
+      field: replicas
       is at least:
+        value: 2
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+`is below` holds when the service has fewer than 12 replicas. The other
+comparison words that take `value:` are `equals`, `does not equal`, `is
+above` and `is at most`.
+
+</td>
+<td>
+
+```yaml
+    - node: $service
+      field: replicas
+      is below:
         value: 12
 ```
 
@@ -135,34 +156,16 @@ price is 12 or more.
 <tr>
 <td>
 
-`is below` holds when the price is less than 45. The other comparison words
-that take `value:` are `equals`, `does not equal`, `is above` and `is at
-most`.
-
-</td>
-<td>
-
-```yaml
-    - node: $dish
-      field: price
-      is below:
-        value: 45
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-The two conditions hold for the margherita and the fondue. The lobster costs
-45, so the second condition does not hold for it.
+The two conditions hold for the orders service and the checkout service. The
+search service has 12 replicas, so the second condition does not hold for
+it.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita, dish/fondue]
+    $service: [service/orders, service/checkout]
 ```
 
 </td>
@@ -173,8 +176,8 @@ The two conditions hold for the margherita and the fondue. The lobster costs
 
 ```console
 $ of-lang test filter
-pass  test threePrices  (filter/tests/examples/three-prices.of.yaml)
-pass  question whichDishesCost12OrMoreButLessThan45  (filter/tests/questions/which-dishes-cost-12-or-more-but-less-than-45.of.yaml)
+pass  test threeServices  (filter/tests/examples/three-services.of.yaml)
+pass  question whichServicesHave2OrMoreReplicasButFewerThan12  (filter/tests/questions/which-services-have-2-or-more-replicas-but-fewer-than-12.of.yaml)
 2 passed, 0 failed
 ```
 

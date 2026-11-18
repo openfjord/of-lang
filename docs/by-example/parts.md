@@ -12,25 +12,25 @@ A condition on an `object` field names one part of the value with `part`.
 <tr>
 <td>
 
-The field `plating` is an object with two parts. Each dish must have a
-`plate`. The `garnish` is optional.
+The field `runtime` is an object with two parts. Each service must have a
+`language`. The `version` is optional.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    plating:
+    runtime:
       type: object
       properties:
-        plate:   { type: string }
-        garnish: { type: string, optional: true }
+        language: { type: string }
+        version:  { type: string, optional: true }
 ```
 
 </td>
@@ -38,25 +38,25 @@ Dish:
 <tr>
 <td>
 
-A test file states a dish that cooks serve on a board.
+A test file states a service that is written in Go.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/three-platings.of.yaml
+# tests/examples/three-runtimes.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    plating:
-      plate: board
-      garnish: basil
+    name: checkout
+    runtime:
+      language: go
+      version: "1.24"
 ```
 
 </td>
@@ -64,27 +64,27 @@ dish/margherita:
 <tr>
 <td>
 
-Cooks serve the marinara on a board too, and the fondue in a pot.
+The orders service is written in Go too, and the search service in Python.
 
 </td>
 <td>
 
 ```yaml
-dish/marinara:
+service/orders:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: marinara
-    plating:
-      plate: board
+    name: orders
+    runtime:
+      language: go
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    plating:
-      plate: pot
+    name: search
+    runtime:
+      language: python
 ```
 
 </td>
@@ -98,9 +98,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-threePlatings:
+threeRuntimes:
   is: Test
-  says: Dishes on a board and in a pot are valid, with or without a garnish.
+  says: Services in Go and in Python are valid, with or without a version.
   expect:
     rejected: []
 ```
@@ -110,23 +110,23 @@ threePlatings:
 <tr>
 <td>
 
-A question asks which dishes cooks serve on a board.
+A question asks which services are written in Go.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-on-a-board.of.yaml
+# tests/questions/which-services-are-written-in-go.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichDishesAreOnABoard:
+whichServicesAreWrittenInGo:
   is: Question
-  asks: Which dishes do cooks serve on a board?
-  given: file:../examples/three-platings.of.yaml
+  asks: Which services are written in Go?
+  given: file:../examples/three-runtimes.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -134,8 +134,8 @@ whichDishesAreOnABoard:
 <tr>
 <td>
 
-`part` goes next to `field`. The condition compares the `plate` part of
-`plating`, not the whole object. For a part in a part, `part` is a list of
+`part` goes next to `field`. The condition compares the `language` part of
+`runtime`, not the whole object. For a part in a part, `part` is a list of
 the names.
 
 </td>
@@ -143,11 +143,11 @@ the names.
 
 ```yaml
   filter:
-    - node: $dish
-      field: plating
-      part: plate
+    - node: $service
+      field: runtime
+      part: language
       equals:
-        value: board
+        value: go
 ```
 
 </td>
@@ -155,14 +155,14 @@ the names.
 <tr>
 <td>
 
-The answer is the two dishes on a board.
+The answer is the two services that are written in Go.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita, dish/marinara]
+    $service: [service/checkout, service/orders]
 ```
 
 </td>
@@ -173,8 +173,8 @@ The answer is the two dishes on a board.
 
 ```console
 $ of-lang test parts
-pass  test threePlatings  (parts/tests/examples/three-platings.of.yaml)
-pass  question whichDishesAreOnABoard  (parts/tests/questions/which-dishes-are-on-a-board.of.yaml)
+pass  test threeRuntimes  (parts/tests/examples/three-runtimes.of.yaml)
+pass  question whichServicesAreWrittenInGo  (parts/tests/questions/which-services-are-written-in-go.of.yaml)
 2 passed, 0 failed
 ```
 

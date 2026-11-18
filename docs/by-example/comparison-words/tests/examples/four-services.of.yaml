@@ -1,0 +1,39 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+    stage: live
+    onCall: payments
+
+service/reports:
+  is: Fact
+  kind: Service
+  fields:
+    name: reports
+    stage: retired
+
+service/checkout:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: checkout
+    stage: beta
+    onCall: payments
+
+service/search:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: search
+    stage: live
+
+fourServices:
+  is: Test
+  says: Two services and two public services are valid, with or without a team to call.
+  expect:
+    rejected: []

@@ -1,0 +1,27 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Table, readsTable]
+
+whichServicesReadPersonalData:
+  is: Question
+  asks: Which services read a table that holds personal data?
+  given: file:../examples/two-tables.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - at least one:
+        match:
+          - kind: { name: Table, as: $table }
+          - link: readsTable
+            from: $service
+            to:   $table
+
+        filter:
+          - node: $table
+            field: personalData
+            equals:
+              value: true
+
+  expect:
+    $service: [service/checkout]

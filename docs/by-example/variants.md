@@ -13,21 +13,22 @@ the shapes, and each value matches exactly one of them.
 <tr>
 <td>
 
-A recipe tells how much food it makes. The kitchen counts some foods in
-portions, and it weighs other foods. Thus, `yield` has two shapes.
+A service tells how many replicas it runs. Some services always run the
+same number, and other services run more replicas when they get more
+requests. Thus, `scaling` has two shapes.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    yield:
+    scaling:
       oneOf:
 ```
 
@@ -36,8 +37,8 @@ Recipe:
 <tr>
 <td>
 
-Each choice is a schema. The first choice is an object with a number of
-portions. Its `variant` part has a fixed value, which `const` gives.
+Each choice is a schema. The first choice is an object with one number of
+replicas. Its `variant` part has a fixed value, which `const` gives.
 
 </td>
 <td>
@@ -46,8 +47,8 @@ portions. Its `variant` part has a fixed value, which `const` gives.
         - type: object
           properties:
             variant:
-              const: portions
-            count:
+              const: fixed
+            replicas:
               type: integer
 ```
 
@@ -56,8 +57,9 @@ portions. Its `variant` part has a fixed value, which `const` gives.
 <tr>
 <td>
 
-The second choice is an object with a weight. Its `variant` part has a
-different fixed value, so a reader can see which shape a value has.
+The second choice is an object with the smallest and the largest number
+of replicas. Its `variant` part has a different fixed value, so a reader
+can see which shape a value has.
 
 </td>
 <td>
@@ -66,8 +68,10 @@ different fixed value, so a reader can see which shape a value has.
         - type: object
           properties:
             variant:
-              const: weight
-            grams:
+              const: automatic
+            minReplicas:
+              type: integer
+            maxReplicas:
               type: integer
 ```
 
@@ -76,35 +80,36 @@ different fixed value, so a reader can see which shape a value has.
 <tr>
 <td>
 
-A test file states two recipes. The risotto gives its yield in portions,
-and the pizza dough gives it as a weight.
+A test file states two services. The database always runs three replicas,
+and the checkout service runs from two to ten.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-recipes.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-recipe/risotto:
+service/database:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: risotto
-    yield:
-      variant: portions
-      count: 4
+    name: database
+    scaling:
+      variant: fixed
+      replicas: 3
 
-recipe/pizza_dough:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: pizza_dough
-    yield:
-      variant: weight
-      grams: 900
+    name: checkout
+    scaling:
+      variant: automatic
+      minReplicas: 2
+      maxReplicas: 10
 ```
 
 </td>
@@ -113,15 +118,15 @@ recipe/pizza_dough:
 <td>
 
 A test passes only if every fact obeys its kind. This one passes, so each
-yield matches exactly one choice.
+value of `scaling` matches exactly one choice.
 
 </td>
 <td>
 
 ```yaml
-twoRecipes:
+twoServices:
   is: Test
-  says: A yield in portions and a yield as a weight are both valid.
+  says: A fixed number of replicas and an automatic number of replicas are both valid.
   expect:
     rejected: []
 ```
@@ -132,31 +137,31 @@ twoRecipes:
 <td>
 
 A condition reads a part of the value with `part`. This question uses the
-`variant` part to find the recipes that give portions.
+`variant` part to find the services with a fixed number of replicas.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-recipes-give-portions.of.yaml
+# tests/questions/which-services-have-fixed-replicas.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichRecipesGivePortions:
+whichServicesHaveFixedReplicas:
   is: Question
-  asks: Which recipes give their yield in portions?
-  given: file:../examples/two-recipes.of.yaml
+  asks: Which services have a fixed number of replicas?
+  given: file:../examples/two-services.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $recipe
-      field: yield
+    - node: $service
+      field: scaling
       part: variant
       equals:
-        value: portions
+        value: fixed
   expect:
-    $recipe: [recipe/risotto]
+    $service: [service/database]
 ```
 
 </td>
@@ -167,8 +172,8 @@ whichRecipesGivePortions:
 
 ```console
 $ of-lang test variants
-pass  test twoRecipes  (variants/tests/examples/two-recipes.of.yaml)
-pass  question whichRecipesGivePortions  (variants/tests/questions/which-recipes-give-portions.of.yaml)
+pass  test twoServices  (variants/tests/examples/two-services.of.yaml)
+pass  question whichServicesHaveFixedReplicas  (variants/tests/questions/which-services-have-fixed-replicas.of.yaml)
 2 passed, 0 failed
 ```
 

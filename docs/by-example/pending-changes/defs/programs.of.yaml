@@ -1,0 +1,25 @@
+Job:
+  is: Kind
+  pending: added
+  definition: A program that runs on a schedule.
+
+Script:
+  is: Kind
+  pending: removed
+  definition: A program that a person starts by hand.
+
+Service:
+  is: Kind
+  pending: updated
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    tier:
+      enum: [critical, standard]
+      default: standard
+  was:
+    definition: A program that runs in production and answers requests.
+    fields:
+      name:
+        type: string

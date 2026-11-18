@@ -13,20 +13,20 @@ of a literal.
 <tr>
 <td>
 
-Each dish has a name and a price.
+Each service has a name and a port.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    price:
+    port:
       type: integer
 ```
 
@@ -35,37 +35,37 @@ Dish:
 <tr>
 <td>
 
-A test file states three dishes. Two of them have the same price.
+A test file states three services. Two of them have the same port.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-equal-prices.of.yaml
+# tests/examples/two-equal-ports.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    price: 12
+    name: checkout
+    port: 8080
 
-dish/marinara:
+service/orders:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: marinara
-    price: 12
+    name: orders
+    port: 8080
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    price: 28
+    name: search
+    port: 9090
 ```
 
 </td>
@@ -79,9 +79,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-twoEqualPrices:
+twoEqualPorts:
   is: Test
-  says: Two dishes with the same price and a third dish are valid.
+  says: Two services with the same port and a third service are valid.
   expect:
     rejected: []
 ```
@@ -91,25 +91,25 @@ twoEqualPrices:
 <tr>
 <td>
 
-A question asks which dishes have the same price as another dish. It has two
-variables for dishes. `match` finds each combination of two dishes.
+A question asks which services have the same port as another service. It has
+two variables for services. `match` finds each combination of two services.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-share-a-price.of.yaml
+# tests/questions/which-services-share-a-port.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichDishesShareAPrice:
+whichServicesShareAPort:
   is: Question
-  asks: Which dishes have the same price as another dish?
-  given: file:../examples/two-equal-prices.of.yaml
+  asks: Which services have the same port as another service?
+  given: file:../examples/two-equal-ports.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Dish, as: $other }
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
 ```
 
 </td>
@@ -125,7 +125,7 @@ Two variables can represent the same thing. This condition prevents it:
 
 ```yaml
   filter:
-    - node: $dish
+    - node: $service
       does not equal:
         same as: $other
 ```
@@ -136,18 +136,18 @@ Two variables can represent the same thing. This condition prevents it:
 <td>
 
 `same as:` with a `node` and a `field` compares with the value of that
-field. The condition holds when the two prices are equal.
+field. The condition holds when the two ports are equal.
 
 </td>
 <td>
 
 ```yaml
-    - node: $dish
-      field: price
+    - node: $service
+      field: port
       equals:
         same as:
           node: $other
-          field: price
+          field: port
 ```
 
 </td>
@@ -155,15 +155,15 @@ field. The condition holds when the two prices are equal.
 <tr>
 <td>
 
-The margherita and the marinara cost the same. No other dish has the price
-of the fondue.
+The checkout service and the orders service have the same port. No other
+service has the port of the search service.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita, dish/marinara]
+    $service: [service/checkout, service/orders]
 ```
 
 </td>
@@ -174,8 +174,8 @@ of the fondue.
 
 ```console
 $ of-lang test same-as
-pass  test twoEqualPrices  (same-as/tests/examples/two-equal-prices.of.yaml)
-pass  question whichDishesShareAPrice  (same-as/tests/questions/which-dishes-share-a-price.of.yaml)
+pass  test twoEqualPorts  (same-as/tests/examples/two-equal-ports.of.yaml)
+pass  question whichServicesShareAPort  (same-as/tests/questions/which-services-share-a-port.of.yaml)
 2 passed, 0 failed
 ```
 

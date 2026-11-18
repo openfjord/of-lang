@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
+
+whichServicesDependOnMoreThanTwoServices:
+  is: Question
+  asks: Which services depend on more than two services?
+  given: file:../examples/three-and-two-dependencies.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - count:
+        match:
+          - link: dependsOn
+            from: $service
+            to:   Service
+
+      is above:
+        value: 2
+
+  expect:
+    $service: [service/checkout]

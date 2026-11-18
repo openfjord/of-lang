@@ -13,23 +13,23 @@ thing that nothing else refers to.
 <tr>
 <td>
 
-The package has dishes and stations.
+The package has services and teams.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/product.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make food.
+  definition: A group of people who build and run services.
   fields:
     name:
       type: string
@@ -40,18 +40,18 @@ Station:
 <tr>
 <td>
 
-The link `madeAtStation` goes from a dish to a station.
+The link `ownedBy` goes from a service to a team.
 
 </td>
 <td>
 
 ```yaml
-madeAtStation:
+ownedBy:
   is: Link
-  from: Dish
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the dish.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -59,37 +59,37 @@ madeAtStation:
 <tr>
 <td>
 
-A test file states two stations and one dish. Cooks make the dish at the
-pizza station.
+A test file states two teams and one service. The payments team owns the
+service.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/one-dish-two-stations.of.yaml
+# tests/examples/one-service-two-teams.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Station, madeAtStation]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-station/pizza:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: pizza
+    name: payments
 
-station/grill:
+team/discovery:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: grill
+    name: discovery
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
+    name: checkout
   links:
-    madeAtStation: station/pizza
+    ownedBy: team/payments
 ```
 
 </td>
@@ -103,9 +103,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-oneDishTwoStations:
+oneServiceTwoTeams:
   is: Test
-  says: A station that makes a dish and a station that makes no dish are both valid.
+  says: A team that owns a service and a team that owns no service are both valid.
   expect:
     rejected: []
 ```
@@ -115,24 +115,24 @@ oneDishTwoStations:
 <tr>
 <td>
 
-A question asks which stations make a dish. The stations have the variable
-`$station`.
+A question asks which teams own a service. The teams have the variable
+`$team`.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-stations-make-a-dish.of.yaml
+# tests/questions/which-teams-own-a-service.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Station, madeAtStation]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-whichStationsMakeADish:
+whichTeamsOwnAService:
   is: Question
-  asks: Which stations make a dish?
-  given: file:../examples/one-dish-two-stations.of.yaml
+  asks: Which teams own a service?
+  given: file:../examples/one-service-two-teams.of.yaml
   match:
-    - kind: { name: Station, as: $station }
+    - kind: { name: Team, as: $team }
 ```
 
 </td>
@@ -140,17 +140,17 @@ whichStationsMakeADish:
 <tr>
 <td>
 
-The question does not refer to the dish again, so the `from` end gives the
-kind alone. This end only has to exist. A variable that only one link end
-uses is an error.
+The question does not refer to the service again, so the `from` end gives
+the kind alone. This end only has to exist. A variable that only one link
+end uses is an error.
 
 </td>
 <td>
 
 ```yaml
-    - link: madeAtStation
-      from: Dish
-      to:   $station
+    - link: ownedBy
+      from: Service
+      to:   $team
 ```
 
 </td>
@@ -158,14 +158,15 @@ uses is an error.
 <tr>
 <td>
 
-The answer is the pizza station. No dish has a link to the grill station.
+The answer is the payments team. No service has a link to the discovery
+team.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $station: [station/pizza]
+    $team: [team/payments]
 ```
 
 </td>
@@ -176,8 +177,8 @@ The answer is the pizza station. No dish has a link to the grill station.
 
 ```console
 $ of-lang test kind-alone
-pass  test oneDishTwoStations  (kind-alone/tests/examples/one-dish-two-stations.of.yaml)
-pass  question whichStationsMakeADish  (kind-alone/tests/questions/which-stations-make-a-dish.of.yaml)
+pass  test oneServiceTwoTeams  (kind-alone/tests/examples/one-service-two-teams.of.yaml)
+pass  question whichTeamsOwnAService  (kind-alone/tests/questions/which-teams-own-a-service.of.yaml)
 2 passed, 0 failed
 ```
 

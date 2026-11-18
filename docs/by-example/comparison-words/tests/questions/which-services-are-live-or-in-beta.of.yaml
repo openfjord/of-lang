@@ -1,0 +1,17 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesAreLiveOrInBeta:
+  is: Question
+  asks: Which services are live or in beta?
+  given: file:../examples/four-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: stage
+      is one of:
+        values: [live, beta]
+  expect:
+    $service: [service/orders, service/checkout, service/search]

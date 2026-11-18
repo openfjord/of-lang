@@ -1,0 +1,16 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    port:
+      type: integer
+
+PublicService:
+  is: Kind
+  extends: Service
+  definition: A service that customers call.
+  fields:
+    domain:
+      type: string

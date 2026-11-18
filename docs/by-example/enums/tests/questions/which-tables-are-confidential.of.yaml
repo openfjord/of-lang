@@ -1,0 +1,17 @@
+import:
+  - from: file:../../defs/table.of.yaml
+    use: [Table]
+
+whichTablesAreConfidential:
+  is: Question
+  asks: Which tables are confidential?
+  given: file:../examples/two-tables.of.yaml
+  match:
+    - kind: { name: Table, as: $table }
+  filter:
+    - node: $table
+      field: sensitivity
+      equals:
+        value: confidential
+  expect:
+    $table: [table/customers]

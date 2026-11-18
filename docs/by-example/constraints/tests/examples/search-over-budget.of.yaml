@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceStaysInBudget]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    monthlyCost: 400
+    monthlyBudget: 500
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    monthlyCost: 900
+    monthlyBudget: 600
+
+searchOverBudget:
+  is: Test
+  says: The search service costs more than its budget, so the constraint rejects it.
+  expect:
+    rejected: [serviceStaysInBudget]

@@ -14,16 +14,16 @@ about it.
 <tr>
 <td>
 
-The package defines the kind `Allergen`.
+The package defines the kind `DataClass`.
 
 </td>
 <td>
 
 ```yaml
-# defs/allergen.of.yaml
-Allergen:
+# defs/data-class.of.yaml
+DataClass:
   is: Kind
-  definition: A substance in food that can cause a dangerous reaction in some persons.
+  definition: A sort of data that needs care, such as personal data or payment data.
 ```
 
 </td>
@@ -38,7 +38,7 @@ this package.
 <td>
 
 ```yaml
-  docs: [AllergenSafety]
+  docs: [PersonalDataCare]
 ```
 
 </td>
@@ -53,21 +53,23 @@ Markdown file in `docs/`, relative to this file.
 <td>
 
 ```yaml
-AllergenSafety:
+PersonalDataCare:
   is: Doc
-  path: file:../docs/allergens.md
+  path: file:../docs/personal-data.md
 ```
 
 </td>
 </tr>
 </table>
 
-The file `docs/allergens.md` is standard Markdown. It tells why the kitchen
-keeps a list of allergens. It embeds the definition of the kind with
-`![](../defs/allergen.of.yaml#Allergen)`, and it has a Markdown link to the
-kind: `[Allergen](../defs/allergen.of.yaml#Allergen)`. The part after `#` is
-the name of a statement. `check` makes sure that the Markdown file exists and
-that each Markdown link and each embed points to a statement that exists:
+The file `docs/personal-data.md` is standard Markdown. It tells why each
+team must know which tables hold personal data. It embeds the definition of
+the kind with `![](../defs/data-class.of.yaml#DataClass)`, and it has a
+Markdown link to the kind: `[DataClass](../defs/data-class.of.yaml#DataClass)`.
+The part after `#` is the name of a statement. Each Markdown file in `docs/`
+needs a `Doc`, unless a different doc refers to it. `check` makes sure that
+the Markdown file exists and that each Markdown link and each embed points
+to a statement that exists:
 
 ```console
 $ of-lang check docs

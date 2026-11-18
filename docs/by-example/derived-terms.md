@@ -14,25 +14,25 @@ information.
 <tr>
 <td>
 
-A dish extends a recipe.
+A public service extends a service.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Dish:
+PublicService:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
+  extends: Service
+  definition: A service that customers call.
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make recipes.
+  definition: A group of people who build and run services.
 ```
 
 </td>
@@ -46,20 +46,20 @@ One link has an inverse name, and one link chains.
 <td>
 
 ```yaml
-madeAtStation:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
-  inverse: makesRecipe
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
+  inverse: ownsService
 
-usesRecipe:
+dependsOn:
   is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"
-  definition: The first recipe needs the second recipe, directly or through other recipes.
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot do its work without the second service, directly or through other services.
   chains: true
 ```
 
@@ -74,13 +74,13 @@ One link is under another link.
 <td>
 
 ```yaml
-usesSauce:
+callsService:
   is: Link
-  from: Dish
-  to: Recipe
-  reads: "{from} is served with {to}"
-  definition: The cook puts the second recipe on the dish as its sauce.
-  under: usesRecipe
+  from: Service
+  to: Service
+  reads: "{from} calls {to}"
+  definition: The first service sends requests to the second service.
+  under: dependsOn
 ```
 
 </td>
@@ -95,16 +95,16 @@ that it names.
 <td>
 
 ```yaml
-# tests/terms/dish.of.yaml
+# tests/terms/public-service.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish, madeAtStation, makesRecipe, usesRecipe, usesSauce]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedBy, ownsService, dependsOn, callsService]
 
-dishIsARecipe:
+publicServiceIsAService:
   is: Test
   says: >
-    A dish is a recipe, so a dish can have a station. A sauce is one of the
-    recipes that a dish uses.
+    A public service is a service, so a public service can have an owner. A
+    service depends on each service that it calls.
   expect:
     derived:
 ```
@@ -115,17 +115,17 @@ dishIsARecipe:
 <td>
 
 A term about a kind starts with `kind`. `is a` comes from `extends`. `can
-have` tells that a thing of the kind can have the link: a dish gets
-`madeAtStation` from `Recipe`.
+have` tells that a thing of the kind can have the link: a public service
+gets `ownedBy` from `Service`.
 
 </td>
 <td>
 
 ```yaml
-      - kind: Dish
-        is a: Recipe
-      - kind: Dish
-        can have: madeAtStation
+      - kind: PublicService
+        is a: Service
+      - kind: PublicService
+        can have: ownedBy
 ```
 
 </td>
@@ -141,12 +141,12 @@ name.
 <td>
 
 ```yaml
-      - link: usesSauce
-        implies: usesRecipe
-      - link: usesRecipe
+      - link: callsService
+        implies: dependsOn
+      - link: dependsOn
         chains: true
-      - link: makesRecipe
-        inverse of: madeAtStation
+      - link: ownsService
+        inverse of: ownedBy
 ```
 
 </td>
@@ -154,18 +154,19 @@ name.
 <tr>
 <td>
 
-`notDerived` lists terms that must not hold. A recipe is not always a
-dish, and a recipe that a dish uses is not always its sauce.
+`notDerived` lists terms that must not hold. A service is not always a
+public service, and a service does not always call a service that it
+depends on.
 
 </td>
 <td>
 
 ```yaml
     notDerived:
-      - kind: Recipe
-        is a: Dish
-      - link: usesRecipe
-        implies: usesSauce
+      - kind: Service
+        is a: PublicService
+      - link: dependsOn
+        implies: callsService
 ```
 
 </td>
@@ -176,7 +177,7 @@ dish, and a recipe that a dish uses is not always its sauce.
 
 ```console
 $ of-lang test derived-terms
-pass  test dishIsARecipe  (derived-terms/tests/terms/dish.of.yaml)
+pass  test publicServiceIsAService  (derived-terms/tests/terms/public-service.of.yaml)
 1 passed, 0 failed
 ```
 

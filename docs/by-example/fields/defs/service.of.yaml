@@ -1,0 +1,15 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    monthlyCost:
+      type: number
+    replicas:
+      type: integer
+    public:
+      type: boolean
+    onCall:
+      type: string
+      optional: true

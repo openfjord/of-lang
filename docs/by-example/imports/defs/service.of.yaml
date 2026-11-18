@@ -1,0 +1,14 @@
+import:
+  - from: file:team.of.yaml
+    use: [Team]
+
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+ownedBy:
+  is: Link
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.

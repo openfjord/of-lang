@@ -1,0 +1,18 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesHaveFixedReplicas:
+  is: Question
+  asks: Which services have a fixed number of replicas?
+  given: file:../examples/two-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: scaling
+      part: variant
+      equals:
+        value: fixed
+  expect:
+    $service: [service/database]

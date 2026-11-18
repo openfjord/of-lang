@@ -1,0 +1,25 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+
+Table:
+  is: Kind
+  definition: A set of rows with the same columns, in a database.
+  fields:
+    name:
+      type: string
+
+Resource:
+  is: Kind
+  definition: Something that a service needs to do its work.
+  oneOf: [Service, Table]
+
+usesResource:
+  is: Link
+  from: Service
+  to: Resource
+  reads: "{from} uses {to}"
+  definition: The service needs the resource to do its work.

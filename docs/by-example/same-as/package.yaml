@@ -1,4 +1,4 @@
 package: "@by-example/same-as"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: same-as

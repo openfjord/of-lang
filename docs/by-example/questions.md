@@ -13,27 +13,27 @@ answer must be.
 <tr>
 <td>
 
-Cooks make each recipe at a station.
+A team owns a service.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make recipes.
+  definition: A group of people who build and run services.
 
-madeAtStation:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -41,35 +41,35 @@ madeAtStation:
 <tr>
 <td>
 
-An example gives the facts: two stations and one recipe. No recipe is made
-at the grill station.
+An example gives the facts: one team and two services. The search service
+has no owner.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-stations.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Station, madeAtStation]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy]
 
-station/sauce:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
 
-station/grill:
+service/checkout:
   is: Fact
-  kind: Station
-
-recipe/pesto:
-  is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    madeAtStation: station/sauce
+    ownedBy: team/payments
 
-twoStations:
+service/search:
+  is: Fact
+  kind: Service
+
+twoServices:
   is: Test
-  says: Cooks make the pesto at the sauce station, and nothing at the grill station.
+  says: The payments team owns the checkout service, and the search service has no owner.
   expect:
     rejected: []
 ```
@@ -86,14 +86,14 @@ plain words.
 <td>
 
 ```yaml
-# tests/questions/which-stations-make-a-recipe.of.yaml
+# tests/questions/which-services-have-an-owner.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Station, madeAtStation]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy]
 
-whichStationsMakeARecipe:
+whichServicesHaveAnOwner:
   is: Question
-  asks: Which stations make a recipe?
+  asks: Which services have an owner?
 ```
 
 </td>
@@ -107,7 +107,7 @@ whichStationsMakeARecipe:
 <td>
 
 ```yaml
-  given: file:../examples/two-stations.of.yaml
+  given: file:../examples/two-services.of.yaml
 ```
 
 </td>
@@ -116,14 +116,14 @@ whichStationsMakeARecipe:
 <td>
 
 `match` tells what to find. A kind item gives a variable to the things of a
-kind: `$station` represents each station in turn.
+kind: `$service` represents each service in turn.
 
 </td>
 <td>
 
 ```yaml
   match:
-    - kind: { name: Station, as: $station }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -131,16 +131,16 @@ kind: `$station` represents each station in turn.
 <tr>
 <td>
 
-A link item is one link that must exist. Its `from` end is a kind alone,
-so any recipe satisfies it.
+A link item is one link that must exist. Its `to` end is a kind alone, so
+any team satisfies it.
 
 </td>
 <td>
 
 ```yaml
-    - link: madeAtStation
-      from: Recipe
-      to:   $station
+    - link: ownedBy
+      from: $service
+      to:   Team
 ```
 
 </td>
@@ -149,14 +149,14 @@ so any recipe satisfies it.
 <td>
 
 `expect` lists the ids that the variable must represent. The answer is the
-sauce station only.
+checkout service only.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $station: [station/sauce]
+    $service: [service/checkout]
 ```
 
 </td>
@@ -167,8 +167,8 @@ sauce station only.
 
 ```console
 $ of-lang test questions
-pass  test twoStations  (questions/tests/examples/two-stations.of.yaml)
-pass  question whichStationsMakeARecipe  (questions/tests/questions/which-stations-make-a-recipe.of.yaml)
+pass  test twoServices  (questions/tests/examples/two-services.of.yaml)
+pass  question whichServicesHaveAnOwner  (questions/tests/questions/which-services-have-an-owner.of.yaml)
 2 passed, 0 failed
 ```
 

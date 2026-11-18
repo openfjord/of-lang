@@ -1,0 +1,8 @@
+DataClass:
+  is: Kind
+  definition: A sort of data that needs care, such as personal data or payment data.
+  docs: [PersonalDataCare]
+
+PersonalDataCare:
+  is: Doc
+  path: file:../docs/personal-data.md

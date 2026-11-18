@@ -1,0 +1,18 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    replicas:
+      type: integer
+
+serviceRuns:
+  is: Constraint
+  says: A service must have at least one replica.
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: replicas
+      equals:
+        value: 0
+  message: "{$service} must have at least one replica."

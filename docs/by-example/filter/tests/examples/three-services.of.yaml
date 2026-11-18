@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+    replicas: 2
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    replicas: 4
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+    replicas: 12
+
+threeServices:
+  is: Test
+  says: Three services with different numbers of replicas are valid.
+  expect:
+    rejected: []

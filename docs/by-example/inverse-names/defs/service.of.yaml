@@ -1,0 +1,15 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+Team:
+  is: Kind
+  definition: A group of people who build and run services.
+
+ownedBy:
+  is: Link
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
+  inverse: ownsService

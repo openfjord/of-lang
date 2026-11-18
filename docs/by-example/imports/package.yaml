@@ -1,4 +1,4 @@
 package: "@by-example/imports"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: imports

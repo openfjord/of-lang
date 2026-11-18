@@ -13,16 +13,16 @@ is for a link that does not chain.
 <tr>
 <td>
 
-The package has stations.
+The package has services.
 
 </td>
 <td>
 
 ```yaml
-# defs/station.of.yaml
-Station:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A place in the kitchen where cooks make food.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -33,19 +33,19 @@ Station:
 <tr>
 <td>
 
-A station can depend on another station. The link has no `chains: true`, so
+A service can depend on another service. The link has no `chains: true`, so
 a chain of the link does not imply the link.
 
 </td>
 <td>
 
 ```yaml
-dependsOnStation:
+dependsOn:
   is: Link
-  from: Station
-  to: Station
+  from: Service
+  to: Service
   reads: "{from} depends on {to}"
-  definition: The first station cannot work when the second station stops.
+  definition: The first service calls the second service to do its work.
 ```
 
 </td>
@@ -53,39 +53,58 @@ dependsOnStation:
 <tr>
 <td>
 
-A test file states three stations in a sequence. The pizza station depends
-on the sauce station, and the sauce station depends on the prep station.
+A test file states three services in a sequence. The checkout service
+depends on the orders service, and the orders service depends on the
+database.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/three-stations.of.yaml
+# tests/examples/four-services.of.yaml
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Station, dependsOnStation]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-station/pizza:
+service/checkout:
   is: Fact
-  kind: Station
+  kind: Service
   fields:
-    name: pizza
+    name: checkout
   links:
-    dependsOnStation: station/sauce
+    dependsOn: service/orders
 
-station/sauce:
+service/orders:
   is: Fact
-  kind: Station
+  kind: Service
   fields:
-    name: sauce
+    name: orders
   links:
-    dependsOnStation: station/prep
+    dependsOn: service/database
 
-station/prep:
+service/database:
   is: Fact
-  kind: Station
+  kind: Service
   fields:
-    name: prep
+    name: database
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+The search service depends on nothing.
+
+</td>
+<td>
+
+```yaml
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
 ```
 
 </td>
@@ -99,9 +118,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-threeStations:
+fourServices:
   is: Test
-  says: Three stations that depend on each other in a sequence are valid.
+  says: Three services that depend on each other in a sequence, and a fourth service, are valid.
   expect:
     rejected: []
 ```
@@ -111,25 +130,25 @@ threeStations:
 <tr>
 <td>
 
-A question asks which stations the pizza station depends on, directly or
-through other stations.
+A question asks which services depend on the database, directly or through
+other services.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-stations-does-pizza-depend-on.of.yaml
+# tests/questions/which-services-depend-on-the-database.of.yaml
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Station, dependsOnStation]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-whichStationsDoesPizzaDependOn:
+whichServicesDependOnTheDatabase:
   is: Question
-  asks: Which stations does the pizza station depend on, directly or through other stations?
-  given: file:../examples/three-stations.of.yaml
+  asks: Which services depend on the database, directly or through other services?
+  given: file:../examples/four-services.of.yaml
   match:
-    - kind: { name: Station, as: $station }
-    - kind: { name: Station, as: $other }
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
 ```
 
 </td>
@@ -138,14 +157,14 @@ whichStationsDoesPizzaDependOn:
 <td>
 
 With `repeated: true`, the link item matches the link one or more times in a
-sequence. The stations between the two ends have no names.
+sequence. The services between the two ends have no names.
 
 </td>
 <td>
 
 ```yaml
-    - link: dependsOnStation
-      from: $station
+    - link: dependsOn
+      from: $service
       to:   $other
       repeated: true
 ```
@@ -155,16 +174,16 @@ sequence. The stations between the two ends have no names.
 <tr>
 <td>
 
-A condition keeps the matches that start at the pizza station.
+A condition keeps the matches that end at the database.
 
 </td>
 <td>
 
 ```yaml
   filter:
-    - node: $station
+    - node: $other
       equals:
-        value: station/pizza
+        value: service/database
 ```
 
 </td>
@@ -172,15 +191,16 @@ A condition keeps the matches that start at the pizza station.
 <tr>
 <td>
 
-The answer has the sauce station, and also the prep station, which is two
-steps away. Without `repeated: true`, the answer has only the sauce station.
+The answer has the orders service, and also the checkout service, which is
+two steps away. Without `repeated: true`, the answer has only the orders
+service.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $other: [station/sauce, station/prep]
+    $service: [service/checkout, service/orders]
 ```
 
 </td>
@@ -191,8 +211,8 @@ steps away. Without `repeated: true`, the answer has only the sauce station.
 
 ```console
 $ of-lang test repeated
-pass  test threeStations  (repeated/tests/examples/three-stations.of.yaml)
-pass  question whichStationsDoesPizzaDependOn  (repeated/tests/questions/which-stations-does-pizza-depend-on.of.yaml)
+pass  test fourServices  (repeated/tests/examples/four-services.of.yaml)
+pass  question whichServicesDependOnTheDatabase  (repeated/tests/questions/which-services-depend-on-the-database.of.yaml)
 2 passed, 0 failed
 ```
 

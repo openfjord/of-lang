@@ -1,4 +1,4 @@
 package: "@by-example/docs"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: docs

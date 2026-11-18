@@ -1,0 +1,32 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
+
+service/database:
+  is: Fact
+  kind: Service
+
+service/orders:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/database
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/orders
+
+checkoutNeedsTheDatabase:
+  is: Test
+  says: Checkout depends on orders, which depends on the database. Thus, checkout depends on the database.
+  expect:
+    derived:
+      - link: dependsOn
+        from: service/checkout
+        to:   service/database
+    notDerived:
+      - link: dependsOn
+        from: service/database
+        to:   service/checkout

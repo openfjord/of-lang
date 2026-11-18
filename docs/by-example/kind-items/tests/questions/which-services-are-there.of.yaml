@@ -1,0 +1,14 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service]
+
+whichServicesAreThere:
+  is: Question
+  asks: Which services are there?
+  given: file:../examples/two-services-and-a-team.of.yaml
+
+  match:
+    - kind: { name: Service, as: $service }
+
+  expect:
+    $service: [service/checkout, service/search]

@@ -1,8 +1,0 @@
-Allergen:
-  is: Kind
-  definition: A substance in food that can cause a dangerous reaction in some persons.
-  docs: [AllergenSafety]
-
-AllergenSafety:
-  is: Doc
-  path: file:../docs/allergens.md

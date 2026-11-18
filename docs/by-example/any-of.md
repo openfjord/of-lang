@@ -13,23 +13,21 @@ when one or more of them hold.
 <tr>
 <td>
 
-Each dish has a price and a status.
+Each service has a tier.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    price:
-      type: integer
-    status:
-      enum: [active, retired]
+    tier:
+      enum: [critical, standard]
 ```
 
 </td>
@@ -37,41 +35,55 @@ Dish:
 <tr>
 <td>
 
-A test file states three dishes. The lobster is expensive, and the fondue is
-retired.
+A public service is a service that customers call.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/three-dishes.of.yaml
+PublicService:
+  is: Kind
+  extends: Service
+  definition: A service that customers call.
+```
+
+</td>
+</tr>
+<tr>
+<td>
+
+A test file states three services. The database is critical, and the search
+service is public.
+
+</td>
+<td>
+
+```yaml
+# tests/examples/three-services.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
 
-dish/margherita:
+service/database:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    price: 12
-    status: active
+    name: database
+    tier: critical
 
-dish/lobster:
+service/search:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: lobster
-    price: 45
-    status: active
+    name: search
+    tier: standard
 
-dish/fondue:
+service/reports:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    price: 28
-    status: retired
+    name: reports
+    tier: standard
 ```
 
 </td>
@@ -85,9 +97,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-threeDishes:
+threeServices:
   is: Test
-  says: Active dishes and a retired dish are valid.
+  says: A critical service, a public service and a standard service are valid.
   expect:
     rejected: []
 ```
@@ -97,24 +109,24 @@ threeDishes:
 <tr>
 <td>
 
-A question asks which dishes are retired or cost more than 30. Its `match`
-finds each dish.
+A question asks which services are critical or public. Its `match` finds
+each service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-retired-or-expensive.of.yaml
+# tests/questions/which-services-are-critical-or-public.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
 
-whichDishesAreRetiredOrExpensive:
+whichServicesAreCriticalOrPublic:
   is: Question
-  asks: Which dishes are retired or cost more than 30?
-  given: file:../examples/three-dishes.of.yaml
+  asks: Which services are critical or public?
+  given: file:../examples/three-services.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -123,7 +135,7 @@ whichDishesAreRetiredOrExpensive:
 <td>
 
 `any of` is one condition of the `filter`. Its first condition holds for a
-retired dish.
+critical service.
 
 </td>
 <td>
@@ -131,10 +143,10 @@ retired dish.
 ```yaml
   filter:
     - any of:
-        - node: $dish
-          field: status
+        - node: $service
+          field: tier
           equals:
-            value: retired
+            value: critical
 ```
 
 </td>
@@ -142,16 +154,14 @@ retired dish.
 <tr>
 <td>
 
-Its second condition holds for a dish that costs more than 30.
+Its second condition holds for a public service.
 
 </td>
 <td>
 
 ```yaml
-        - node: $dish
-          field: price
-          is above:
-            value: 30
+        - node: $service
+          is a: PublicService
 ```
 
 </td>
@@ -159,15 +169,15 @@ Its second condition holds for a dish that costs more than 30.
 <tr>
 <td>
 
-One condition holds for the fondue, and the other holds for the lobster. No
-condition holds for the margherita.
+One condition holds for the database, and the other holds for the search
+service. No condition holds for the reports service.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/lobster, dish/fondue]
+    $service: [service/database, service/search]
 ```
 
 </td>
@@ -178,8 +188,8 @@ condition holds for the margherita.
 
 ```console
 $ of-lang test any-of
-pass  test threeDishes  (any-of/tests/examples/three-dishes.of.yaml)
-pass  question whichDishesAreRetiredOrExpensive  (any-of/tests/questions/which-dishes-are-retired-or-expensive.of.yaml)
+pass  test threeServices  (any-of/tests/examples/three-services.of.yaml)
+pass  question whichServicesAreCriticalOrPublic  (any-of/tests/questions/which-services-are-critical-or-public.of.yaml)
 2 passed, 0 failed
 ```
 

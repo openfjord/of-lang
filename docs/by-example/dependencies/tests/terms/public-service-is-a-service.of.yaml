@@ -1,0 +1,13 @@
+import:
+  - from: pkg:@by-example/open-for
+    use: [Service]
+  - from: file:../../defs/public-service.of.yaml
+    use: [PublicService]
+
+publicServiceIsAService:
+  is: Test
+  says: A public service is a service.
+  expect:
+    derived:
+      - kind: PublicService
+        is a: Service

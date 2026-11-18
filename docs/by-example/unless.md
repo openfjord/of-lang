@@ -13,21 +13,21 @@ that satisfies them is not a violation.
 <tr>
 <td>
 
-Each dish states how many minutes the cooks need for it, and whether
-guests order it in advance.
+Each table states how many days it keeps a row, and whether the law
+requires the company to keep its rows.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/table.of.yaml
+Table:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A table in a database.
   fields:
-    prepMinutes:
+    retentionDays:
       type: integer
-    orderedInAdvance:
+    requiredByLaw:
       type: boolean
 ```
 
@@ -37,24 +37,24 @@ Dish:
 <td>
 
 `match` and `filter` select the matches that the constraint applies to:
-each dish that takes more than 30 minutes.
+each table that keeps a row for more than 90 days.
 
 </td>
 <td>
 
 ```yaml
-dishIsReadyInTime:
+tableDeletesOldRows:
   is: Constraint
   says: >
-    Cooks make a dish in 30 minutes or less, unless guests order it in
-    advance.
+    A table keeps a row for 90 days or less, unless the law requires the
+    company to keep its rows.
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Table, as: $table }
   filter:
-    - node:  $dish
-      field: prepMinutes
+    - node:  $table
+      field: retentionDays
       is above:
-        value: 30
+        value: 90
 ```
 
 </td>
@@ -71,8 +71,8 @@ its conditions hold.
 
 ```yaml
   unless:
-    - node:  $dish
-      field: orderedInAdvance
+    - node:  $table
+      field: requiredByLaw
       equals:
         value: true
 ```
@@ -88,7 +88,7 @@ The message is for the matches that `unless` does not excuse.
 <td>
 
 ```yaml
-  message: "{$dish} must take 30 minutes or less, or guests must order it in advance."
+  message: "{$table} must keep a row for 90 days or less, unless the law requires its rows."
 ```
 
 </td>
@@ -96,24 +96,24 @@ The message is for the matches that `unless` does not excuse.
 <tr>
 <td>
 
-A test file states two dishes that take more than 30 minutes. Guests
-order the roast in advance.
+A test file states two tables that keep a row for more than 90 days. The
+law requires the company to keep the rows of the invoices table.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-slow-dishes.of.yaml
+# tests/examples/two-old-tables.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish, dishIsReadyInTime]
+  - from: file:../../defs/table.of.yaml
+    use: [Table, tableDeletesOldRows]
 
-dish/roast:
+table/invoices:
   is: Fact
-  kind: Dish
+  kind: Table
   fields:
-    prepMinutes: 90
-    orderedInAdvance: true
+    retentionDays: 3650
+    requiredByLaw: true
 ```
 
 </td>
@@ -121,18 +121,18 @@ dish/roast:
 <tr>
 <td>
 
-Guests do not order the risotto in advance.
+The law does not require the rows of the customers table.
 
 </td>
 <td>
 
 ```yaml
-dish/risotto:
+table/customers:
   is: Fact
-  kind: Dish
+  kind: Table
   fields:
-    prepMinutes: 40
-    orderedInAdvance: false
+    retentionDays: 365
+    requiredByLaw: false
 ```
 
 </td>
@@ -140,33 +140,36 @@ dish/risotto:
 <tr>
 <td>
 
-The facts break the constraint, because the risotto is a violation.
+The facts break the constraint, because the customers table is a
+violation.
 
 </td>
 <td>
 
 ```yaml
-twoSlowDishes:
+twoOldTables:
   is: Test
   says: >
-    The roast and the risotto both take more than 30 minutes. Guests order
-    the roast in advance, so the constraint rejects only the risotto.
+    The invoices table and the customers table both keep a row for more
+    than 90 days. The law requires the rows of the invoices table, so the
+    constraint rejects only the customers table.
   expect:
-    rejected: [dishIsReadyInTime]
+    rejected: [tableDeletesOldRows]
 ```
 
 </td>
 </tr>
 </table>
 
-`run` reports one violation. The roast is a match, but `unless` excuses it:
+`run` reports one violation. The invoices table is a match, but `unless`
+excuses it:
 
 ```console
-$ of-lang run unless unless/tests/examples/two-slow-dishes.of.yaml
+$ of-lang run unless unless/tests/examples/two-old-tables.of.yaml
 derived:
   nothing
 rejected:
-  dishIsReadyInTime: dish/risotto must take 30 minutes or less, or guests must order it in advance.
+  tableDeletesOldRows: table/customers must keep a row for 90 days or less, unless the law requires its rows.
 ```
 
 More about this: [filter and unless](../../language/reference/constraint.md#filter-and-unless).

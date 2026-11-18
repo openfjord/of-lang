@@ -1,0 +1,22 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+
+Table:
+  is: Kind
+  definition: A table in a database.
+  fields:
+    name:
+      type: string
+    personalData:
+      type: boolean
+
+readsTable:
+  is: Link
+  from: Service
+  to: Table
+  reads: "{from} reads {to}"
+  definition: The service reads rows of the table.

@@ -1,0 +1,7 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  examples:
+    - the checkout service
+  notExamples:
+    - a script that a developer runs one time on a laptop

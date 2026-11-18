@@ -13,19 +13,20 @@ that its facts must break.
 <tr>
 <td>
 
-A dish has a price.
+A service has a number of replicas: the copies of the service that run at
+the same time.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
-    price:
-      type: number
+    replicas:
+      type: integer
 ```
 
 </td>
@@ -34,23 +35,23 @@ Dish:
 <td>
 
 A constraint finds things and reports each match as a violation. This one
-finds each dish with a price of 0.
+finds each service with 0 replicas.
 
 </td>
 <td>
 
 ```yaml
-dishIsNotFree:
+serviceRuns:
   is: Constraint
-  says: A dish must not be free.
+  says: A service must have at least one replica.
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $dish
-      field: price
+    - node: $service
+      field: replicas
       equals:
         value: 0
-  message: "{$dish} must have a price above 0."
+  message: "{$service} must have at least one replica."
 ```
 
 </td>
@@ -59,28 +60,28 @@ dishIsNotFree:
 <td>
 
 A test file imports each constraint that its test names. It states two
-dishes, and the bread is free.
+services, and the search service has 0 replicas.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/free-bread.of.yaml
+# tests/examples/search-does-not-run.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish, dishIsNotFree]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceRuns]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    price: 12
+    replicas: 3
 
-dish/bread:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    price: 0
+    replicas: 0
 ```
 
 </td>
@@ -96,22 +97,22 @@ with `rejected: []` expects that the facts break none.
 <td>
 
 ```yaml
-freeBread:
+searchDoesNotRun:
   is: Test
-  says: The bread has a price of 0, so the package rejects it.
+  says: The search service has 0 replicas, so the package rejects it.
   expect:
-    rejected: [dishIsNotFree]
+    rejected: [serviceRuns]
 ```
 
 </td>
 </tr>
 </table>
 
-`test` runs the test. The test passes because the constraint rejects the bread:
+`test` runs the test. The test passes because the constraint rejects the search service:
 
 ```console
 $ of-lang test expect-rejected
-pass  test freeBread  (expect-rejected/tests/examples/free-bread.of.yaml)
+pass  test searchDoesNotRun  (expect-rejected/tests/examples/search-does-not-run.of.yaml)
 1 passed, 0 failed
 ```
 

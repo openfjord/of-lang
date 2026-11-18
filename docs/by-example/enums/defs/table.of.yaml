@@ -1,0 +1,8 @@
+Table:
+  is: Kind
+  definition: A set of rows with the same columns, in a database.
+  fields:
+    name:
+      type: string
+    sensitivity:
+      enum: [public, internal, confidential]

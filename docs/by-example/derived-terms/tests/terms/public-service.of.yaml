@@ -1,0 +1,26 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService, ownedBy, ownsService, dependsOn, callsService]
+
+publicServiceIsAService:
+  is: Test
+  says: >
+    A public service is a service, so a public service can have an owner. A
+    service depends on each service that it calls.
+  expect:
+    derived:
+      - kind: PublicService
+        is a: Service
+      - kind: PublicService
+        can have: ownedBy
+      - link: callsService
+        implies: dependsOn
+      - link: dependsOn
+        chains: true
+      - link: ownsService
+        inverse of: ownedBy
+    notDerived:
+      - kind: Service
+        is a: PublicService
+      - link: dependsOn
+        implies: callsService

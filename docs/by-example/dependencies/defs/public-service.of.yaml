@@ -1,0 +1,8 @@
+import:
+  - from: pkg:@by-example/open-for
+    use: [Service]
+
+PublicService:
+  is: Kind
+  extends: Service
+  definition: A service that customers call.

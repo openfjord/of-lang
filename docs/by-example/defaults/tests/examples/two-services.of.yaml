@@ -1,0 +1,22 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    tier: critical
+
+twoServices:
+  is: Test
+  says: A service without a tier and a critical service are both valid.
+  expect:
+    rejected: []

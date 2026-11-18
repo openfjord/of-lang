@@ -1,0 +1,16 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesHaveNoTeamToCall:
+  is: Question
+  asks: Which services do not give a team to call?
+  given: file:../examples/four-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: onCall
+      is not set: true
+  expect:
+    $service: [service/reports, service/search]

@@ -37,7 +37,7 @@ Description Framework) uses `rdfNamespace`, and nothing else does.
 <td>
 
 ```yaml
-owner: kitchen
+owner: platform
 rdfNamespace: hello-kind
 ```
 
@@ -53,8 +53,8 @@ of each statement is its name. `is` tells what the statement is.
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
 ```
 
@@ -69,7 +69,7 @@ Every kind needs a `definition`: one sentence that tells what the kind is.
 <td>
 
 ```yaml
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
 ```
 
 </td>
@@ -85,9 +85,9 @@ and where it stops.
 
 ```yaml
   examples:
-    - the pizza margherita
+    - the checkout service
   notExamples:
-    - the tomato sauce, which is only a part of a dish
+    - a script that a developer runs one time on a laptop
 ```
 
 </td>

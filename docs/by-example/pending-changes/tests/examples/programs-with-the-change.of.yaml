@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/programs.of.yaml
+    use: [Job, Service]
+
+job/nightly_backup:
+  is: Fact
+  kind: Job
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    tier: critical
+
+programsWithTheChange:
+  is: Test
+  says: A job and a service with a tier are valid.
+  expect:
+    rejected: []

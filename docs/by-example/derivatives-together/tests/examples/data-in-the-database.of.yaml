@@ -1,0 +1,37 @@
+import:
+  - from: file:../../defs/data.of.yaml
+    use: [Service, DataClass, storesData, dependsOn, handlesData]
+
+data/personal:
+  is: Fact
+  kind: DataClass
+
+service/database:
+  is: Fact
+  kind: Service
+  links:
+    storesData: data/personal
+
+service/orders:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/database
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/orders
+
+dataInTheDatabase:
+  is: Test
+  says: >
+    The database stores personal data. The checkout service depends on the
+    orders service, which depends on the database. Thus, the checkout
+    service handles personal data.
+  expect:
+    derived:
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal

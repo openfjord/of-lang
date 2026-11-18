@@ -1,0 +1,25 @@
+import:
+  - from: file:../../defs/job.of.yaml
+    use: [Job]
+
+job/backup:
+  is: Fact
+  kind: Job
+  fields:
+    name: backup
+    everyMinutes: 1440
+    timeoutMinutes: 120
+
+job/report:
+  is: Fact
+  kind: Job
+  fields:
+    name: report
+    everyMinutes: 15
+    timeoutMinutes: 30
+
+twoJobs:
+  is: Test
+  says: The times of the backup job and of the report job are valid numbers of minutes.
+  expect:
+    rejected: []

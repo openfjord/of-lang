@@ -14,36 +14,36 @@ and questions.
 <tr>
 <td>
 
-The definitions tell what a fact can state. A dish has a name and a price,
-and it uses ingredients.
+The definitions tell what a fact can state. A service has a name and a
+number of replicas, and it reads tables.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    price:
-      type: number
+    replicas:
+      type: integer
 
-Ingredient:
+Table:
   is: Kind
-  definition: A raw food that the restaurant buys.
+  definition: A table in a database.
   fields:
     name:
       type: string
 
-usesIngredient:
+readsTable:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The dish needs the ingredient.
+  from: Service
+  to: Table
+  reads: "{from} reads {to}"
+  definition: The service gets rows from the table.
 ```
 
 </td>
@@ -58,10 +58,10 @@ link that its facts use. It does not import field names.
 <td>
 
 ```yaml
-# tests/examples/one-dish.of.yaml
+# tests/examples/one-service.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Table, readsTable]
 ```
 
 </td>
@@ -76,9 +76,9 @@ usually a path. `kind` names the kind of the thing.
 <td>
 
 ```yaml
-ingredient/tomatoes:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
 ```
 
 </td>
@@ -93,7 +93,7 @@ ingredient/tomatoes:
 
 ```yaml
   fields:
-    name: tomatoes
+    name: customers
 ```
 
 </td>
@@ -101,17 +101,17 @@ ingredient/tomatoes:
 <tr>
 <td>
 
-A second ingredient has the same form.
+A second table has the same form.
 
 </td>
 <td>
 
 ```yaml
-ingredient/mozzarella:
+table/orders:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: mozzarella
+    name: orders
 ```
 
 </td>
@@ -119,18 +119,19 @@ ingredient/mozzarella:
 <tr>
 <td>
 
-The dish must give its two fields, because a field is required by default.
+The service must give its two fields, because a field is required by
+default.
 
 </td>
 <td>
 
 ```yaml
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    price: 12
+    name: checkout
+    replicas: 3
 ```
 
 </td>
@@ -147,7 +148,7 @@ ends.
 
 ```yaml
   links:
-    usesIngredient: [ingredient/tomatoes, ingredient/mozzarella]
+    readsTable: [table/customers, table/orders]
 ```
 
 </td>
@@ -162,9 +163,9 @@ rejects nothing: each fact obeys its kind.
 <td>
 
 ```yaml
-oneDish:
+oneService:
   is: Test
-  says: The margherita uses tomatoes and mozzarella.
+  says: The checkout service reads the customers table and the orders table.
   expect:
     rejected: []
 ```
@@ -177,7 +178,7 @@ oneDish:
 
 ```console
 $ of-lang test facts
-pass  test oneDish  (facts/tests/examples/one-dish.of.yaml)
+pass  test oneService  (facts/tests/examples/one-service.of.yaml)
 1 passed, 0 failed
 ```
 

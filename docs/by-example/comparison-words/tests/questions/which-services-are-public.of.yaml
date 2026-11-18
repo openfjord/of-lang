@@ -1,0 +1,15 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
+
+whichServicesArePublic:
+  is: Question
+  asks: Which services are public services?
+  given: file:../examples/four-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      is a: PublicService
+  expect:
+    $service: [service/checkout, service/search]

@@ -13,20 +13,20 @@ violation.
 <tr>
 <td>
 
-Each dish has a price and a cost.
+Each service has a monthly cost and a monthly budget.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
-    price:
+    monthlyCost:
       type: integer
-    cost:
+    monthlyBudget:
       type: integer
 ```
 
@@ -41,9 +41,9 @@ A constraint has a `says` sentence that gives the rule, in plain words.
 <td>
 
 ```yaml
-dishSellsAboveCost:
+serviceStaysInBudget:
   is: Constraint
-  says: The price of a dish is above its cost.
+  says: A service does not cost more than its budget.
 ```
 
 </td>
@@ -51,15 +51,15 @@ dishSellsAboveCost:
 <tr>
 <td>
 
-`match` lists the things to find. Here the variable `$dish` represents
-each dish in turn.
+`match` lists the things to find. Here the variable `$service` represents
+each service in turn.
 
 </td>
 <td>
 
 ```yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -68,20 +68,20 @@ each dish in turn.
 <td>
 
 `filter` keeps the matches for which each condition holds. This condition
-holds when the price of the dish is its cost or less. Each match that stays
-is a violation, so `match` and `filter` describe what breaks the rule.
+holds when the cost of the service is above its budget. Each match that
+stays is a violation, so `match` and `filter` describe what breaks the rule.
 
 </td>
 <td>
 
 ```yaml
   filter:
-    - node:  $dish
-      field: price
-      is at most:
+    - node:  $service
+      field: monthlyCost
+      is above:
         same as:
-          node:  $dish
-          field: cost
+          node:  $service
+          field: monthlyBudget
 ```
 
 </td>
@@ -89,13 +89,14 @@ is a violation, so `match` and `filter` describe what breaks the rule.
 <tr>
 <td>
 
-`message` is what a violation says. `{$dish}` gives the id of the dish.
+`message` is what a violation says. `{$service}` gives the id of the
+service.
 
 </td>
 <td>
 
 ```yaml
-  message: "{$dish} must have a price above its cost."
+  message: "{$service} must not cost more than its budget."
 ```
 
 </td>
@@ -103,31 +104,31 @@ is a violation, so `match` and `filter` describe what breaks the rule.
 <tr>
 <td>
 
-A test file states two dishes. The price of the fondue is below its
-cost.
+A test file states two services. The cost of the search service is above
+its budget.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/cheap-fondue.of.yaml
+# tests/examples/search-over-budget.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish, dishSellsAboveCost]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceStaysInBudget]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    price: 12
-    cost: 4
+    monthlyCost: 400
+    monthlyBudget: 500
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    price: 9
-    cost: 11
+    monthlyCost: 900
+    monthlyBudget: 600
 ```
 
 </td>
@@ -142,11 +143,11 @@ imports each constraint that the test names.
 <td>
 
 ```yaml
-cheapFondue:
+searchOverBudget:
   is: Test
-  says: The fondue costs more than its price, so the constraint rejects it.
+  says: The search service costs more than its budget, so the constraint rejects it.
   expect:
-    rejected: [dishSellsAboveCost]
+    rejected: [serviceStaysInBudget]
 ```
 
 </td>
@@ -157,11 +158,11 @@ cheapFondue:
 message:
 
 ```console
-$ of-lang run constraints constraints/tests/examples/cheap-fondue.of.yaml
+$ of-lang run constraints constraints/tests/examples/search-over-budget.of.yaml
 derived:
   nothing
 rejected:
-  dishSellsAboveCost: dish/fondue must have a price above its cost.
+  serviceStaysInBudget: service/search must not cost more than its budget.
 ```
 
 More about this: [constraints](../../language/reference/constraint.md) and

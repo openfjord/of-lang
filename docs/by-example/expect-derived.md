@@ -13,36 +13,25 @@ must hold, and `notDerived` lists facts that must not hold.
 <tr>
 <td>
 
-The package needs something that derives a fact. Here, each `usesGarnish`
-is also a `usesIngredient`.
+The package needs something that derives a fact. Here, `dependsOn` chains:
+a service also depends on each service that its dependencies depend on.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Ingredient:
-  is: Kind
-  definition: A raw food that the restaurant buys.
-
-usesIngredient:
+dependsOn:
   is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The recipe needs the ingredient.
-
-usesGarnish:
-  is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} is garnished with {to}"
-  definition: The cook puts the ingredient on the food at the end.
-  under: usesIngredient
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot do its work without the second service, directly or through other services.
+  chains: true
 ```
 
 </td>
@@ -50,37 +39,38 @@ usesGarnish:
 <tr>
 <td>
 
-An example is a file of facts with one `Test` statement. The margherita
-has basil as a garnish. The marinara uses oregano, but not as a garnish.
+An example is a file of facts with one `Test` statement. The checkout
+service depends on the orders service, and the orders service depends on
+the database. The search service depends on nothing.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/garnish-and-ingredient.of.yaml
+# tests/examples/what-checkout-depends-on.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Ingredient, usesIngredient, usesGarnish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-ingredient/basil:
+service/database:
   is: Fact
-  kind: Ingredient
+  kind: Service
 
-ingredient/oregano:
+service/orders:
   is: Fact
-  kind: Ingredient
-
-recipe/margherita:
-  is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesGarnish: ingredient/basil
+    dependsOn: service/database
 
-recipe/marinara:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesIngredient: ingredient/oregano
+    dependsOn: service/orders
+
+service/search:
+  is: Fact
+  kind: Service
 ```
 
 </td>
@@ -95,11 +85,12 @@ example shows.
 <td>
 
 ```yaml
-garnishAndIngredient:
+whatCheckoutDependsOn:
   is: Test
   says: >
-    Basil is a garnish on the margherita, so the margherita uses basil. The
-    marinara uses oregano, but oregano is not a garnish on it.
+    Checkout depends on orders, which depends on the database. Thus,
+    checkout depends on the database. Search does not depend on the
+    database.
   expect:
 ```
 
@@ -117,9 +108,9 @@ ids of facts.
 
 ```yaml
     derived:
-      - link: usesIngredient
-        from: recipe/margherita
-        to:   ingredient/basil
+      - link: dependsOn
+        from: service/checkout
+        to:   service/database
 ```
 
 </td>
@@ -135,9 +126,9 @@ them holds.
 
 ```yaml
     notDerived:
-      - link: usesGarnish
-        from: recipe/marinara
-        to:   ingredient/oregano
+      - link: dependsOn
+        from: service/search
+        to:   service/database
 ```
 
 </td>
@@ -148,7 +139,7 @@ them holds.
 
 ```console
 $ of-lang test expect-derived
-pass  test garnishAndIngredient  (expect-derived/tests/examples/garnish-and-ingredient.of.yaml)
+pass  test whatCheckoutDependsOn  (expect-derived/tests/examples/what-checkout-depends-on.of.yaml)
 1 passed, 0 failed
 ```
 

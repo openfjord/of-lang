@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, SharedService, dependsOn]
+
+service/database:
+  is: Fact
+  kind: Service
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/database
+
+database:
+  is: Test
+  says: The checkout service depends on the database, so only the database is a shared service.
+  expect:
+    derived:
+      - node: service/database
+        becomes: SharedService
+    notDerived:
+      - node: service/checkout
+        becomes: SharedService

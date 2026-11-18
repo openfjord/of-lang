@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+    port: 8080
+
+service/checkout:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: checkout
+    port: 8443
+    domain: checkout.example.com
+
+aServiceAndAPublicService:
+  is: Test
+  says: A public service is a service, and it has the fields of a service.
+  expect:
+    derived:
+      - kind: PublicService
+        is a: Service
+    notDerived:
+      - kind: Service
+        is a: PublicService
+    rejected: []

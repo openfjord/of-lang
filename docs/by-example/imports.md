@@ -13,17 +13,17 @@ A file can use a name only if the file defines that name or imports it. The
 <tr>
 <td>
 
-This file defines the kind `Station`. It uses no other name, so it has no
+This file defines the kind `Team`. It uses no other name, so it has no
 `import` block.
 
 </td>
 <td>
 
 ```yaml
-# defs/station.of.yaml
-Station:
+# defs/team.of.yaml
+Team:
   is: Kind
-  definition: A part of the kitchen where a group of cooks makes some of the recipes.
+  definition: A group of people who build and run services.
 ```
 
 </td>
@@ -31,17 +31,17 @@ Station:
 <tr>
 <td>
 
-A second file uses `Station`, so it imports the name. `from` gives the
+A second file uses `Team`, so it imports the name. `from` gives the
 source: `file:`, then a path relative to this file. `use` lists the names.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
+# defs/service.of.yaml
 import:
-  - from: file:station.of.yaml
-    use: [Station]
+  - from: file:team.of.yaml
+    use: [Team]
 ```
 
 </td>
@@ -49,15 +49,15 @@ import:
 <tr>
 <td>
 
-The file defines `Recipe` itself, so it does not import that name.
+The file defines `Service` itself, so it does not import that name.
 
 </td>
 <td>
 
 ```yaml
-Recipe:
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A program that runs in production and answers requests.
 ```
 
 </td>
@@ -72,12 +72,12 @@ imports.
 <td>
 
 ```yaml
-madeAtStation:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where the cooks make the recipe.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -92,12 +92,12 @@ file. `../` goes to the parent folder.
 <td>
 
 ```yaml
-# tests/examples/sauce-at-a-station.of.yaml
+# tests/examples/checkout-has-an-owner.of.yaml
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Station]
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, madeAtStation]
+  - from: file:../../defs/team.of.yaml
+    use: [Team]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, ownedBy]
 ```
 
 </td>
@@ -112,19 +112,19 @@ names.
 <td>
 
 ```yaml
-station/sauce:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
 
-recipe/tomato_sauce:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    madeAtStation: station/sauce
+    ownedBy: team/payments
 
-sauceAtAStation:
+checkoutHasAnOwner:
   is: Test
-  says: A recipe that cooks make at a station is valid.
+  says: A service that a team owns is valid.
   expect:
     rejected: []
 ```
@@ -137,7 +137,7 @@ sauceAtAStation:
 
 ```console
 $ of-lang test imports
-pass  test sauceAtAStation  (imports/tests/examples/sauce-at-a-station.of.yaml)
+pass  test checkoutHasAnOwner  (imports/tests/examples/checkout-has-an-owner.of.yaml)
 1 passed, 0 failed
 ```
 

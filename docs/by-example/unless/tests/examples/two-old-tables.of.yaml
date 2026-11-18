@@ -1,0 +1,26 @@
+import:
+  - from: file:../../defs/table.of.yaml
+    use: [Table, tableDeletesOldRows]
+
+table/invoices:
+  is: Fact
+  kind: Table
+  fields:
+    retentionDays: 3650
+    requiredByLaw: true
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    retentionDays: 365
+    requiredByLaw: false
+
+twoOldTables:
+  is: Test
+  says: >
+    The invoices table and the customers table both keep a row for more
+    than 90 days. The law requires the rows of the invoices table, so the
+    constraint rejects only the customers table.
+  expect:
+    rejected: [tableDeletesOldRows]

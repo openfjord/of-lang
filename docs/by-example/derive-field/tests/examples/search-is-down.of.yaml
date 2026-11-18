@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 3
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 0
+
+searchIsDown:
+  is: Test
+  says: The search service has no replicas and the checkout service has three, so only the search service is not available.
+  expect:
+    derived:
+      - node:  service/search
+        field: available
+        set to:
+          value: false
+    notDerived:
+      - node:  service/checkout
+        field: available
+        set to:
+          value: false

@@ -1,0 +1,17 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesAreStandard:
+  is: Question
+  asks: Which services are standard?
+  given: file:../examples/two-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: tier
+      equals:
+        value: standard
+  expect:
+    $service: [service/search]

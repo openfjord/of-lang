@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesAreWrittenInGo:
+  is: Question
+  asks: Which services are written in Go?
+  given: file:../examples/three-runtimes.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - node: $service
+      field: runtime
+      part: language
+      equals:
+        value: go
+
+  expect:
+    $service: [service/checkout, service/orders]

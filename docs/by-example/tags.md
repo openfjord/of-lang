@@ -23,7 +23,7 @@ The manifest starts with the four required keys.
 # package.yaml
 package: "@by-example/tags"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: tags
 ```
 
@@ -40,8 +40,8 @@ tag has a `name` and a `description`.
 
 ```yaml
 tags:
-  - name: allergens
-    description: What an allergen app needs to tell guests which ingredients contain which allergens.
+  - name: privacy
+    description: What a privacy review needs to see which tables hold which sorts of data.
 ```
 
 </td>
@@ -56,11 +56,11 @@ a misspelled tag is an error.
 <td>
 
 ```yaml
-# defs/ingredient.of.yaml
-Ingredient:
+# defs/table.of.yaml
+Table:
   is: Kind
-  tags: [allergens]
-  definition: A food that the kitchen buys and does not make.
+  tags: [privacy]
+  definition: A set of rows in a database that all have the same columns.
 ```
 
 </td>
@@ -75,10 +75,10 @@ to a different definition.
 <td>
 
 ```yaml
-Allergen:
+DataClass:
   is: Kind
-  tags: [allergens]
-  definition: A substance in food that can cause a dangerous reaction in some persons.
+  tags: [privacy]
+  definition: A sort of data that needs care, such as personal data or payment data.
 ```
 
 </td>
@@ -93,13 +93,13 @@ to must have the same tag. Here, these are the `from` kind and the `to` kind.
 <td>
 
 ```yaml
-containsAllergen:
+holdsData:
   is: Link
-  tags: [allergens]
-  from: Ingredient
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The allergen is a part of the ingredient.
+  tags: [privacy]
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: Some columns of the table contain data of this sort.
 ```
 
 </td>
@@ -107,16 +107,16 @@ containsAllergen:
 <tr>
 <td>
 
-`tags` is optional. `Station` has no tag, so an export of the tag
-`allergens` does not include it.
+`tags` is optional. `Team` has no tag, so an export of the tag `privacy`
+does not include it.
 
 </td>
 <td>
 
 ```yaml
-Station:
+Team:
   is: Kind
-  definition: A part of the kitchen where a group of cooks makes some of the recipes.
+  definition: A group of people who build and run services.
 ```
 
 </td>

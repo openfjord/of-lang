@@ -23,7 +23,7 @@ A value type is a statement with `is: ValueType`. Like a kind, it needs a
 # defs/types.of.yaml
 Minutes:
   is: ValueType
-  definition: A number of minutes of work.
+  definition: A number of minutes.
 ```
 
 </td>
@@ -49,13 +49,13 @@ number of minutes is a whole number from 1 to 1440.
 <td>
 
 A file imports each name that it uses but does not define. The file of the
-recipe imports `Minutes`.
+job imports `Minutes`.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
+# defs/job.of.yaml
 import:
   - from: file:types.of.yaml
     use: [Minutes]
@@ -66,22 +66,23 @@ import:
 <tr>
 <td>
 
-A field names the value type as its `type`. Two fields of the recipe use
-`Minutes`.
+A field names the value type as its `type`. Two fields of the job use
+`Minutes`: the time between two starts, and the longest time that one run
+can take.
 
 </td>
 <td>
 
 ```yaml
-Recipe:
+Job:
   is: Kind
-  definition: The steps that make one food from ingredients.
+  definition: A program that runs on a schedule.
   fields:
     name:
       type: string
-    prepMinutes:
+    everyMinutes:
       type: Minutes
-    cookMinutes:
+    timeoutMinutes:
       type: Minutes
 ```
 
@@ -90,37 +91,37 @@ Recipe:
 <tr>
 <td>
 
-A test file states two recipes. Each value is a valid number of minutes,
-so the test passes.
+A test file states two jobs. Each value is a valid number of minutes, so
+the test passes.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-recipes.of.yaml
+# tests/examples/two-jobs.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/job.of.yaml
+    use: [Job]
 
-recipe/pesto:
+job/backup:
   is: Fact
-  kind: Recipe
+  kind: Job
   fields:
-    name: pesto
-    prepMinutes: 15
-    cookMinutes: 1
+    name: backup
+    everyMinutes: 1440
+    timeoutMinutes: 120
 
-recipe/ragu:
+job/report:
   is: Fact
-  kind: Recipe
+  kind: Job
   fields:
-    name: ragu
-    prepMinutes: 20
-    cookMinutes: 180
+    name: report
+    everyMinutes: 15
+    timeoutMinutes: 30
 
-twoRecipes:
+twoJobs:
   is: Test
-  says: The times of the pesto and of the ragu are valid numbers of minutes.
+  says: The times of the backup job and of the report job are valid numbers of minutes.
   expect:
     rejected: []
 ```
@@ -138,26 +139,26 @@ compare them.
 <td>
 
 ```yaml
-# tests/questions/which-recipes-cook-longer-than-they-prepare.of.yaml
+# tests/questions/which-jobs-can-run-into-their-next-start.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/job.of.yaml
+    use: [Job]
 
-whichRecipesCookLongerThanTheyPrepare:
+whichJobsCanRunIntoTheirNextStart:
   is: Question
-  asks: Which recipes take more time to cook than to prepare?
-  given: file:../examples/two-recipes.of.yaml
+  asks: Which jobs can run for longer than the time between two starts?
+  given: file:../examples/two-jobs.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Job, as: $job }
   filter:
-    - node: $recipe
-      field: cookMinutes
+    - node: $job
+      field: timeoutMinutes
       is above:
         same as:
-          node: $recipe
-          field: prepMinutes
+          node: $job
+          field: everyMinutes
   expect:
-    $recipe: [recipe/ragu]
+    $job: [job/report]
 ```
 
 </td>
@@ -168,8 +169,8 @@ whichRecipesCookLongerThanTheyPrepare:
 
 ```console
 $ of-lang test value-types
-pass  test twoRecipes  (value-types/tests/examples/two-recipes.of.yaml)
-pass  question whichRecipesCookLongerThanTheyPrepare  (value-types/tests/questions/which-recipes-cook-longer-than-they-prepare.of.yaml)
+pass  test twoJobs  (value-types/tests/examples/two-jobs.of.yaml)
+pass  question whichJobsCanRunIntoTheirNextStart  (value-types/tests/questions/which-jobs-can-run-into-their-next-start.of.yaml)
 2 passed, 0 failed
 ```
 

@@ -1,0 +1,37 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+  links:
+    dependsOn: [service/orders, service/search, service/database]
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+  links:
+    dependsOn: [service/search, service/database]
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+
+service/database:
+  is: Fact
+  kind: Service
+  fields:
+    name: database
+
+threeAndTwoDependencies:
+  is: Test
+  says: Services that depend on three, on two and on no services are valid.
+  expect:
+    rejected: []

@@ -1,7 +1,0 @@
-Dish:
-  is: Kind
-  definition: A food that the restaurant sells to guests.
-  examples:
-    - the pizza margherita
-  notExamples:
-    - the tomato sauce, which is only a part of a dish

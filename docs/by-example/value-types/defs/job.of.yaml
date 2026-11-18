@@ -1,0 +1,14 @@
+import:
+  - from: file:types.of.yaml
+    use: [Minutes]
+
+Job:
+  is: Kind
+  definition: A program that runs on a schedule.
+  fields:
+    name:
+      type: string
+    everyMinutes:
+      type: Minutes
+    timeoutMinutes:
+      type: Minutes

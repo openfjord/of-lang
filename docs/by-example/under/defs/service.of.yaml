@@ -1,0 +1,22 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+Table:
+  is: Kind
+  definition: A table in a database.
+
+usesTable:
+  is: Link
+  from: Service
+  to: Table
+  reads: "{from} uses {to}"
+  definition: The service reads the table, writes it, or does both.
+
+writesTable:
+  is: Link
+  from: Service
+  to: Table
+  reads: "{from} writes {to}"
+  definition: The service adds rows to the table or changes its rows.
+  under: usesTable

@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Table, readsTable]
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    name: customers
+
+table/orders:
+  is: Fact
+  kind: Table
+  fields:
+    name: orders
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    replicas: 3
+  links:
+    readsTable: [table/customers, table/orders]
+
+oneService:
+  is: Test
+  says: The checkout service reads the customers table and the orders table.
+  expect:
+    rejected: []

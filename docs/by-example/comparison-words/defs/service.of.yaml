@@ -1,0 +1,16 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    stage:
+      enum: [live, beta, retired]
+    onCall:
+      type: string
+      optional: true
+
+PublicService:
+  is: Kind
+  extends: Service
+  definition: A service that customers call.

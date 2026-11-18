@@ -13,22 +13,22 @@ the values that are correct for it.
 <tr>
 <td>
 
-`pattern` is a regular expression that the text must match. The code of a
-recipe starts with a lowercase letter. Then it has lowercase letters,
-digits and underscores.
+`pattern` is a regular expression that the text must match. The name of a
+service starts with a lowercase letter. Then it has lowercase letters,
+digits and hyphens.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients.
+  definition: A program that runs in production and answers requests.
   fields:
-    code:
+    name:
       type: string
-      pattern: "^[a-z][a-z0-9_]*$"
+      pattern: "^[a-z][a-z0-9-]*$"
 ```
 
 </td>
@@ -42,10 +42,10 @@ Recipe:
 <td>
 
 ```yaml
-    title:
+    summary:
       type: string
-      minLength: 3
-      maxLength: 40
+      minLength: 10
+      maxLength: 80
 ```
 
 </td>
@@ -59,10 +59,10 @@ Recipe:
 <td>
 
 ```yaml
-    servings:
+    port:
       type: integer
       minimum: 1
-      maximum: 12
+      maximum: 65535
 ```
 
 </td>
@@ -78,7 +78,7 @@ Recipe:
 <td>
 
 ```yaml
-    steps:
+    runbook:
       type: string
       format: uri
 ```
@@ -88,15 +88,14 @@ Recipe:
 <tr>
 <td>
 
-`const` allows exactly one value. Each recipe gives its amounts in metric
-units.
+`const` allows exactly one value. Each service runs in production.
 
 </td>
 <td>
 
 ```yaml
-    units:
-      const: metric
+    environment:
+      const: production
 ```
 
 </td>
@@ -104,27 +103,27 @@ units.
 <tr>
 <td>
 
-A test file states one recipe. Each value satisfies the keywords of its
+A test file states one service. Each value satisfies the keywords of its
 field.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/one-recipe.of.yaml
+# tests/examples/one-service.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-recipe/tomato_sauce:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    code: tomato_sauce
-    title: Tomato sauce
-    servings: 8
-    steps: https://recipes.example.com/tomato_sauce
-    units: metric
+    name: checkout
+    summary: Takes the payment for an order.
+    port: 8443
+    runbook: https://runbooks.example.com/checkout
+    environment: production
 ```
 
 </td>
@@ -139,9 +138,9 @@ fields allow all five values.
 <td>
 
 ```yaml
-oneRecipe:
+oneService:
   is: Test
-  says: Each value of the tomato sauce is a value that its field allows.
+  says: Each value of the checkout service is a value that its field allows.
   expect:
     rejected: []
 ```
@@ -154,7 +153,7 @@ oneRecipe:
 
 ```console
 $ of-lang test narrowing
-pass  test oneRecipe  (narrowing/tests/examples/one-recipe.of.yaml)
+pass  test oneService  (narrowing/tests/examples/one-service.of.yaml)
 1 passed, 0 failed
 ```
 

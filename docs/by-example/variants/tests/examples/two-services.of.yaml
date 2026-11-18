@@ -1,0 +1,28 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/database:
+  is: Fact
+  kind: Service
+  fields:
+    name: database
+    scaling:
+      variant: fixed
+      replicas: 3
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    scaling:
+      variant: automatic
+      minReplicas: 2
+      maxReplicas: 10
+
+twoServices:
+  is: Test
+  says: A fixed number of replicas and an automatic number of replicas are both valid.
+  expect:
+    rejected: []

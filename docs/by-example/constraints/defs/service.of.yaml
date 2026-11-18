@@ -1,0 +1,25 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    monthlyCost:
+      type: integer
+    monthlyBudget:
+      type: integer
+
+serviceStaysInBudget:
+  is: Constraint
+  says: A service does not cost more than its budget.
+
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - node:  $service
+      field: monthlyCost
+      is above:
+        same as:
+          node:  $service
+          field: monthlyBudget
+
+  message: "{$service} must not cost more than its budget."

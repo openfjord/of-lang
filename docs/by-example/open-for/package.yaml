@@ -1,10 +1,10 @@
 package: "@by-example/open-for"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: open-for
 exports:
-  kinds: [Recipe, Ingredient]
-  links: [usesIngredient]
+  kinds: [Service, Team]
+  links: [ownedBy]
 openFor:
-  - extend: Recipe
-  - under: usesIngredient
+  - extend: Service
+  - under: ownedBy

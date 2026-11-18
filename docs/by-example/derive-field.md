@@ -13,18 +13,19 @@ state that value.
 <tr>
 <td>
 
-Each dish must state how many portions the kitchen has.
+Each service must state how many replicas it has. A replica is one running
+copy of the service.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
-    portionsLeft:
+    replicas:
       type: integer
       minimum: 0
 ```
@@ -34,13 +35,13 @@ Dish:
 <tr>
 <td>
 
-`soldOut` is optional, so a fact can omit it.
+`available` is optional, so a fact can omit it.
 
 </td>
 <td>
 
 ```yaml
-    soldOut:
+    available:
       type: boolean
       optional: true
 ```
@@ -50,21 +51,21 @@ Dish:
 <tr>
 <td>
 
-The derivative finds each dish, and `filter` keeps the dishes with no
-portions.
+The derivative finds each service, and `filter` keeps the services with no
+replicas.
 
 </td>
 <td>
 
 ```yaml
-soldOutFromPortions:
+notAvailableFromReplicas:
   is: Derivative
-  says: A dish with no portions left is sold out.
+  says: A service with no replicas is not available.
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
   filter:
-    - node:  $dish
-      field: portionsLeft
+    - node:  $service
+      field: replicas
       equals:
         value: 0
 ```
@@ -82,10 +83,10 @@ gives a literal, which must be a value that the field allows.
 
 ```yaml
   derive:
-    - node:  $dish
-      field: soldOut
+    - node:  $service
+      field: available
       set to:
-        value: true
+        value: false
 ```
 
 </td>
@@ -93,28 +94,28 @@ gives a literal, which must be a value that the field allows.
 <tr>
 <td>
 
-A test file states two dishes. Neither fact states `soldOut`.
+A test file states two services. Neither fact states `available`.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/no-fondue-left.of.yaml
+# tests/examples/search-is-down.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    portionsLeft: 12
+    replicas: 3
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    portionsLeft: 0
+    replicas: 0
 ```
 
 </td>
@@ -122,27 +123,27 @@ dish/fondue:
 <tr>
 <td>
 
-The test expects that the fondue is sold out, and that the margherita is
-not.
+The test expects that the search service is not available. It also expects
+that the derivative does not set the field for the checkout service.
 
 </td>
 <td>
 
 ```yaml
-noFondueLeft:
+searchIsDown:
   is: Test
-  says: The kitchen has no fondue and twelve portions of margherita, so only the fondue is sold out.
+  says: The search service has no replicas and the checkout service has three, so only the search service is not available.
   expect:
     derived:
-      - node:  dish/fondue
-        field: soldOut
+      - node:  service/search
+        field: available
         set to:
-          value: true
+          value: false
     notDerived:
-      - node:  dish/margherita
-        field: soldOut
+      - node:  service/checkout
+        field: available
         set to:
-          value: true
+          value: false
 ```
 
 </td>
@@ -152,9 +153,9 @@ noFondueLeft:
 `run` shows the field value that the derivative sets:
 
 ```console
-$ of-lang run derive-field derive-field/tests/examples/no-fondue-left.of.yaml
+$ of-lang run derive-field derive-field/tests/examples/search-is-down.of.yaml
 derived:
-  dish/fondue has soldOut true  (derivative soldOutFromPortions)
+  service/search has available false  (derivative notAvailableFromReplicas)
 rejected:
   nothing
 ```

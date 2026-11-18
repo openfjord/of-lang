@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    summary: Takes the payment for an order.
+    port: 8443
+    runbook: https://runbooks.example.com/checkout
+    environment: production
+
+oneService:
+  is: Test
+  says: Each value of the checkout service is a value that its field allows.
+  expect:
+    rejected: []

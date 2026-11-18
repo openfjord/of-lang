@@ -1,0 +1,28 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+dependsOn:
+  is: Link
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service needs the second service to do its work.
+
+SharedService:
+  is: Kind
+  extends: Service
+  definition: A service that other services depend on.
+
+sharedServiceFromUse:
+  is: Derivative
+  says: A service that another service depends on is a shared service.
+  match:
+    - kind: { name: Service, as: $service }
+    - link: dependsOn
+      from: Service
+      to:   $service
+
+  derive:
+    - node: $service
+      becomes: SharedService

@@ -1,0 +1,36 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+PublicService:
+  is: Kind
+  extends: Service
+  definition: A service that customers call.
+
+Team:
+  is: Kind
+  definition: A group of people who build and run services.
+
+ownedBy:
+  is: Link
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
+  inverse: ownsService
+
+dependsOn:
+  is: Link
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot do its work without the second service, directly or through other services.
+  chains: true
+
+callsService:
+  is: Link
+  from: Service
+  to: Service
+  reads: "{from} calls {to}"
+  definition: The first service sends requests to the second service.
+  under: dependsOn

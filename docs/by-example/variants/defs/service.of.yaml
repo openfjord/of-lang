@@ -1,0 +1,22 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    scaling:
+      oneOf:
+        - type: object
+          properties:
+            variant:
+              const: fixed
+            replicas:
+              type: integer
+        - type: object
+          properties:
+            variant:
+              const: automatic
+            minReplicas:
+              type: integer
+            maxReplicas:
+              type: integer

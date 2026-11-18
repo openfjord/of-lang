@@ -14,23 +14,24 @@ field.
 <tr>
 <td>
 
-A recipe has a status, and can have a number of minutes of work.
+A service has a stage. It can have `onCall`, the team to call when the
+service fails.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    status:
-      enum: [active, seasonal, retired]
-    prepMinutes:
-      type: integer
+    stage:
+      enum: [live, beta, retired]
+    onCall:
+      type: string
       optional: true
 ```
 
@@ -39,16 +40,16 @@ Recipe:
 <tr>
 <td>
 
-A dish is a recipe.
+A public service is a service.
 
 </td>
 <td>
 
 ```yaml
-Dish:
+PublicService:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
+  extends: Service
+  definition: A service that customers call.
 ```
 
 </td>
@@ -56,32 +57,32 @@ Dish:
 <tr>
 <td>
 
-A test file states two recipes that are not dishes. The stock gives no
-`prepMinutes`.
+A test file states two services that are not public. The reports service
+gives no `onCall`.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/four-recipes.of.yaml
+# tests/examples/four-services.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
 
-recipe/pesto:
+service/orders:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: pesto
-    status: active
-    prepMinutes: 15
+    name: orders
+    stage: live
+    onCall: payments
 
-recipe/stock:
+service/reports:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: stock
-    status: retired
+    name: reports
+    stage: retired
 ```
 
 </td>
@@ -89,26 +90,26 @@ recipe/stock:
 <tr>
 <td>
 
-It also states two dishes. The fondue gives no `prepMinutes`.
+It also states two public services. The search service gives no `onCall`.
 
 </td>
 <td>
 
 ```yaml
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: margherita
-    status: seasonal
-    prepMinutes: 20
+    name: checkout
+    stage: beta
+    onCall: payments
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: fondue
-    status: active
+    name: search
+    stage: live
 ```
 
 </td>
@@ -122,9 +123,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-fourRecipes:
+fourServices:
   is: Test
-  says: Two recipes and two dishes are valid, with or without a number of minutes.
+  says: Two services and two public services are valid, with or without a team to call.
   expect:
     rejected: []
 ```
@@ -135,30 +136,30 @@ fourRecipes:
 <td>
 
 `is one of` takes `values:` with a list. It holds when the field equals one
-of the values. Only the stock has a different status.
+of the values. Only the reports service has a different stage.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-recipes-are-active-or-seasonal.of.yaml
+# tests/questions/which-services-are-live-or-in-beta.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichRecipesAreActiveOrSeasonal:
+whichServicesAreLiveOrInBeta:
   is: Question
-  asks: Which recipes are active or seasonal?
-  given: file:../examples/four-recipes.of.yaml
+  asks: Which services are live or in beta?
+  given: file:../examples/four-services.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $recipe
-      field: status
+    - node: $service
+      field: stage
       is one of:
-        values: [active, seasonal]
+        values: [live, beta]
   expect:
-    $recipe: [recipe/pesto, dish/margherita, dish/fondue]
+    $service: [service/orders, service/checkout, service/search]
 ```
 
 </td>
@@ -173,22 +174,22 @@ whichRecipesAreActiveOrSeasonal:
 <td>
 
 ```yaml
-# tests/questions/which-recipes-are-dishes.of.yaml
+# tests/questions/which-services-are-public.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
 
-whichRecipesAreDishes:
+whichServicesArePublic:
   is: Question
-  asks: Which recipes are dishes?
-  given: file:../examples/four-recipes.of.yaml
+  asks: Which services are public services?
+  given: file:../examples/four-services.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $recipe
-      is a: Dish
+    - node: $service
+      is a: PublicService
   expect:
-    $recipe: [dish/margherita, dish/fondue]
+    $service: [service/checkout, service/search]
 ```
 
 </td>
@@ -203,23 +204,23 @@ field has a value. The two words compare with nothing.
 <td>
 
 ```yaml
-# tests/questions/which-recipes-have-no-minutes.of.yaml
+# tests/questions/which-services-have-no-team-to-call.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichRecipesHaveNoMinutes:
+whichServicesHaveNoTeamToCall:
   is: Question
-  asks: Which recipes do not give a number of minutes?
-  given: file:../examples/four-recipes.of.yaml
+  asks: Which services do not give a team to call?
+  given: file:../examples/four-services.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $recipe
-      field: prepMinutes
+    - node: $service
+      field: onCall
       is not set: true
   expect:
-    $recipe: [recipe/stock, dish/fondue]
+    $service: [service/reports, service/search]
 ```
 
 </td>
@@ -230,10 +231,10 @@ whichRecipesHaveNoMinutes:
 
 ```console
 $ of-lang test comparison-words
-pass  test fourRecipes  (comparison-words/tests/examples/four-recipes.of.yaml)
-pass  question whichRecipesAreActiveOrSeasonal  (comparison-words/tests/questions/which-recipes-are-active-or-seasonal.of.yaml)
-pass  question whichRecipesAreDishes  (comparison-words/tests/questions/which-recipes-are-dishes.of.yaml)
-pass  question whichRecipesHaveNoMinutes  (comparison-words/tests/questions/which-recipes-have-no-minutes.of.yaml)
+pass  test fourServices  (comparison-words/tests/examples/four-services.of.yaml)
+pass  question whichServicesAreLiveOrInBeta  (comparison-words/tests/questions/which-services-are-live-or-in-beta.of.yaml)
+pass  question whichServicesArePublic  (comparison-words/tests/questions/which-services-are-public.of.yaml)
+pass  question whichServicesHaveNoTeamToCall  (comparison-words/tests/questions/which-services-have-no-team-to-call.of.yaml)
 4 passed, 0 failed
 ```
 

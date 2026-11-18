@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesHave2OrMoreReplicasButFewerThan12:
+  is: Question
+  asks: Which services have 2 or more replicas, but fewer than 12?
+  given: file:../examples/three-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - node: $service
+      field: replicas
+      is at least:
+        value: 2
+
+    - node: $service
+      field: replicas
+      is below:
+        value: 12
+
+  expect:
+    $service: [service/orders, service/checkout]

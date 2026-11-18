@@ -6,7 +6,7 @@ title: Fields — The OpenFjord modeling language by example
 
 > Part of [the language by example](README.md).
 
-A field is a value of the thing itself, for example a name or a price. A
+A field is a value of the thing itself, for example a name or a port. A
 kind lists its fields, and each field has a type.
 
 <table>
@@ -20,10 +20,10 @@ the value. A `string` is text.
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -41,11 +41,11 @@ A `number` can have decimals, and an `integer` is a whole number. A
 <td>
 
 ```yaml
-    price:
+    monthlyCost:
       type: number
-    servings:
+    replicas:
       type: integer
-    vegetarian:
+    public:
       type: boolean
 ```
 
@@ -61,7 +61,7 @@ a fact can omit the field.
 <td>
 
 ```yaml
-    chefNote:
+    onCall:
       type: string
       optional: true
 ```
@@ -71,27 +71,27 @@ a fact can omit the field.
 <tr>
 <td>
 
-A test file states two dishes. The first one gives a value for each
+A test file states two services. The first one gives a value for each
 field.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-dishes.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/fondue:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    price: 24.5
-    servings: 2
-    vegetarian: true
-    chefNote: Stir the cheese until the guests come.
+    name: checkout
+    monthlyCost: 1250.5
+    replicas: 3
+    public: true
+    onCall: payments
 ```
 
 </td>
@@ -99,20 +99,20 @@ dish/fondue:
 <tr>
 <td>
 
-The second one omits `chefNote`, which is the only optional field.
+The second one omits `onCall`, which is the only optional field.
 
 </td>
 <td>
 
 ```yaml
-dish/carbonara:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: carbonara
-    price: 14
-    servings: 1
-    vegetarian: false
+    name: search
+    monthlyCost: 400
+    replicas: 2
+    public: false
 ```
 
 </td>
@@ -121,15 +121,16 @@ dish/carbonara:
 <td>
 
 A test passes only if every fact obeys its kind. This one passes, so each
-dish has every required field, and each value has the type of its field.
+service has every required field, and each value has the type of its
+field.
 
 </td>
 <td>
 
 ```yaml
-twoDishes:
+twoServices:
   is: Test
-  says: A dish with a note from the chef and a dish without one are both valid.
+  says: A service with a team on call and a service without one are both valid.
   expect:
     rejected: []
 ```
@@ -142,7 +143,7 @@ twoDishes:
 
 ```console
 $ of-lang test fields
-pass  test twoDishes  (fields/tests/examples/two-dishes.of.yaml)
+pass  test twoServices  (fields/tests/examples/two-services.of.yaml)
 1 passed, 0 failed
 ```
 

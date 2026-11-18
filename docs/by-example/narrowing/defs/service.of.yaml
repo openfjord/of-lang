@@ -1,0 +1,20 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+      pattern: "^[a-z][a-z0-9-]*$"
+    summary:
+      type: string
+      minLength: 10
+      maxLength: 80
+    port:
+      type: integer
+      minimum: 1
+      maximum: 65535
+    runbook:
+      type: string
+      format: uri
+    environment:
+      const: production

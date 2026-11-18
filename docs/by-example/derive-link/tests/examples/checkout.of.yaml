@@ -1,0 +1,28 @@
+import:
+  - from: file:../../defs/data.of.yaml
+    use: [Service, Table, DataClass, readsTable, holdsData, handlesData]
+
+data/personal:
+  is: Fact
+  kind: DataClass
+
+table/customers:
+  is: Fact
+  kind: Table
+  links:
+    holdsData: data/personal
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    readsTable: table/customers
+
+checkout:
+  is: Test
+  says: The checkout service reads the customers table, which holds personal data. Thus, the checkout service handles personal data.
+  expect:
+    derived:
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal

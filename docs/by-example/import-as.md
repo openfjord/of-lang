@@ -12,16 +12,16 @@ An import can give a name a different name in the file that imports it.
 <tr>
 <td>
 
-This file defines the kind `Ingredient`.
+This file defines the kind `Table`.
 
 </td>
 <td>
 
 ```yaml
-# defs/ingredient.of.yaml
-Ingredient:
+# defs/table.of.yaml
+Table:
   is: Kind
-  definition: A food that the kitchen buys and does not make.
+  definition: A set of rows in a database that all have the same columns.
 ```
 
 </td>
@@ -29,17 +29,17 @@ Ingredient:
 <tr>
 <td>
 
-A second file imports `Ingredient`, but calls it `Product`. An item in `use`
-can be a name, or `name` and `as` together.
+A second file imports `Table`, but calls it `DatabaseTable`. An item in
+`use` can be a name, or `name` and `as` together.
 
 </td>
 <td>
 
 ```yaml
-# defs/buying.of.yaml
+# defs/service.of.yaml
 import:
-  - from: file:ingredient.of.yaml
-    use: [{ name: Ingredient, as: Product }]
+  - from: file:table.of.yaml
+    use: [{ name: Table, as: DatabaseTable }]
 ```
 
 </td>
@@ -47,32 +47,32 @@ import:
 <tr>
 <td>
 
-The rest of the file uses the name `Product`. In this file, the name
-`Ingredient` does not exist.
+The rest of the file uses the name `DatabaseTable`. In this file, the name
+`Table` does not exist.
 
 </td>
 <td>
 
 ```yaml
-Supplier:
+Service:
   is: Kind
-  definition: A company that sells food to the restaurant.
+  definition: A program that runs in production and answers requests.
 
-soldBy:
+readsTable:
   is: Link
-  from: Product
-  to: Supplier
-  reads: "{from} is sold by {to}"
-  definition: The supplier that sells the ingredient to the kitchen.
+  from: Service
+  to: DatabaseTable
+  reads: "{from} reads {to}"
+  definition: The service gets rows from the table.
 ```
 
 </td>
 </tr>
 </table>
 
-The kind keeps its name `Ingredient` in all other files. Two names in one
-file must not be the same. Thus, `as` is necessary when a file imports the
-same name from two sources. `check` accepts the package:
+The kind keeps its name `Table` in all other files. Two names in one file
+must not be the same. Thus, `as` is necessary when a file imports the same
+name from two sources. `check` accepts the package:
 
 ```console
 $ of-lang check import-as

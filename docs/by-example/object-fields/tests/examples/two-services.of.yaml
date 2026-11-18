@@ -1,0 +1,28 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    onCall:
+      team: payments
+      phone: "+31 20 555 0100"
+    ports: [8443, 9090]
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+    onCall:
+      team: discovery
+    ports: [8080]
+
+twoServices:
+  is: Test
+  says: A service with a phone number for the team on call and a service without one are both valid.
+  expect:
+    rejected: []

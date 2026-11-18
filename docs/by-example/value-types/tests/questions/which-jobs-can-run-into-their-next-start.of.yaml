@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/job.of.yaml
+    use: [Job]
+
+whichJobsCanRunIntoTheirNextStart:
+  is: Question
+  asks: Which jobs can run for longer than the time between two starts?
+  given: file:../examples/two-jobs.of.yaml
+  match:
+    - kind: { name: Job, as: $job }
+  filter:
+    - node: $job
+      field: timeoutMinutes
+      is above:
+        same as:
+          node: $job
+          field: everyMinutes
+  expect:
+    $job: [job/report]

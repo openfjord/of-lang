@@ -1,0 +1,28 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    replicas:
+      type: integer
+      minimum: 0
+
+    available:
+      type: boolean
+      optional: true
+
+notAvailableFromReplicas:
+  is: Derivative
+  says: A service with no replicas is not available.
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node:  $service
+      field: replicas
+      equals:
+        value: 0
+
+  derive:
+    - node:  $service
+      field: available
+      set to:
+        value: false

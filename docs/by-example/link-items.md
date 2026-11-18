@@ -12,23 +12,23 @@ A link item in `match` is one link that must exist between two things.
 <tr>
 <td>
 
-The package has dishes and stations.
+The package has services and teams.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/product.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make food.
+  definition: A group of people who build and run services.
   fields:
     name:
       type: string
@@ -39,18 +39,18 @@ Station:
 <tr>
 <td>
 
-The link `madeAtStation` goes from a dish to a station.
+The link `ownedBy` goes from a service to a team.
 
 </td>
 <td>
 
 ```yaml
-madeAtStation:
+ownedBy:
   is: Link
-  from: Dish
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the dish.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -58,28 +58,28 @@ madeAtStation:
 <tr>
 <td>
 
-A test file states two stations.
+A test file states two teams.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/dishes-at-stations.of.yaml
+# tests/examples/services-and-owners.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Station, madeAtStation]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-station/pizza:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: pizza
+    name: payments
 
-station/grill:
+team/discovery:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: grill
+    name: discovery
 ```
 
 </td>
@@ -87,25 +87,26 @@ station/grill:
 <tr>
 <td>
 
-Cooks make the margherita at the pizza station. The fondue has no station.
+The payments team owns the checkout service. The search service has no
+owner.
 
 </td>
 <td>
 
 ```yaml
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
+    name: checkout
   links:
-    madeAtStation: station/pizza
+    ownedBy: team/payments
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
+    name: search
 ```
 
 </td>
@@ -119,9 +120,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-dishesAtStations:
+servicesAndOwners:
   is: Test
-  says: A dish with a station and a dish without a station are both valid.
+  says: A service with an owner and a service without an owner are both valid.
   expect:
     rejected: []
 ```
@@ -131,25 +132,25 @@ dishesAtStations:
 <tr>
 <td>
 
-A question asks which dishes cooks make at which stations. Each variable has
-a kind item.
+A question asks which teams own which services. Each variable has a kind
+item.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-made-where.of.yaml
+# tests/questions/which-teams-own-which-services.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Station, madeAtStation]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-whichDishesAreMadeWhere:
+whichTeamsOwnWhichServices:
   is: Question
-  asks: Which dishes do cooks make at which stations?
-  given: file:../examples/dishes-at-stations.of.yaml
+  asks: Which teams own which services?
+  given: file:../examples/services-and-owners.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Station, as: $station }
+    - kind: { name: Service, as: $service }
+    - kind: { name: Team, as: $team }
 ```
 
 </td>
@@ -158,15 +159,15 @@ whichDishesAreMadeWhere:
 <td>
 
 The link item has `link`, `from` and `to`. `match` finds each combination of
-a dish and a station for which the `madeAtStation` link exists.
+a service and a team for which the `ownedBy` link exists.
 
 </td>
 <td>
 
 ```yaml
-    - link: madeAtStation
-      from: $dish
-      to:   $station
+    - link: ownedBy
+      from: $service
+      to:   $team
 ```
 
 </td>
@@ -174,16 +175,17 @@ a dish and a station for which the `madeAtStation` link exists.
 <tr>
 <td>
 
-There is one match: the margherita and the pizza station. The fondue and the
-grill station have no such link, so they are not in the answer.
+There is one match: the checkout service and the payments team. The search
+service and the discovery team have no such link, so they are not in the
+answer.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita]
-    $station: [station/pizza]
+    $service: [service/checkout]
+    $team: [team/payments]
 ```
 
 </td>
@@ -194,8 +196,8 @@ grill station have no such link, so they are not in the answer.
 
 ```console
 $ of-lang test link-items
-pass  test dishesAtStations  (link-items/tests/examples/dishes-at-stations.of.yaml)
-pass  question whichDishesAreMadeWhere  (link-items/tests/questions/which-dishes-are-made-where.of.yaml)
+pass  test servicesAndOwners  (link-items/tests/examples/services-and-owners.of.yaml)
+pass  question whichTeamsOwnWhichServices  (link-items/tests/questions/which-teams-own-which-services.of.yaml)
 2 passed, 0 failed
 ```
 

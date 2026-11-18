@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy]
+
+team/payments:
+  is: Fact
+  kind: Team
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    ownedBy: team/payments
+
+checkoutHasAnOwner:
+  is: Test
+  says: The payments team owns the checkout service.
+  expect:
+    rejected: []

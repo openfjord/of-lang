@@ -13,27 +13,27 @@ link: it is the same link, read the other way.
 <tr>
 <td>
 
-The link `madeAtStation` goes from a recipe to a station.
+The link `ownedBy` goes from a service to a team.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make recipes.
+  definition: A group of people who build and run services.
 
-madeAtStation:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -41,15 +41,15 @@ madeAtStation:
 <tr>
 <td>
 
-`inverse` gives the name `makesRecipe` to the opposite direction, from a
-station to a recipe. An inverse name follows the same rules as the name of
+`inverse` gives the name `ownsService` to the opposite direction, from a
+team to a service. An inverse name follows the same rules as the name of
 a link.
 
 </td>
 <td>
 
 ```yaml
-  inverse: makesRecipe
+  inverse: ownsService
 ```
 
 </td>
@@ -57,31 +57,31 @@ a link.
 <tr>
 <td>
 
-A test file states two stations and two recipes. The pesto gives the link
-by its own name.
+A test file states two teams and two services. The checkout service gives
+the link by its own name.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-stations.of.yaml
+# tests/examples/two-teams.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Station, madeAtStation, makesRecipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy, ownsService]
 
-station/sauce:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
 
-recipe/pesto:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    madeAtStation: station/sauce
+    ownedBy: team/payments
 
-recipe/margherita:
+service/search:
   is: Fact
-  kind: Recipe
+  kind: Service
 ```
 
 </td>
@@ -89,18 +89,18 @@ recipe/margherita:
 <tr>
 <td>
 
-A fact can use the inverse name. This link on the pizza station states the
-same fact as `madeAtStation: station/pizza` on the margherita.
+A fact can use the inverse name. This link on the catalog team states the
+same fact as `ownedBy: team/catalog` on the search service.
 
 </td>
 <td>
 
 ```yaml
-station/pizza:
+team/catalog:
   is: Fact
-  kind: Station
+  kind: Team
   links:
-    makesRecipe: recipe/margherita
+    ownsService: service/search
 ```
 
 </td>
@@ -108,21 +108,21 @@ station/pizza:
 <tr>
 <td>
 
-The test expects that the link holds from the margherita to the pizza
-station, although no fact states it in that direction.
+The test expects that the link holds from the search service to the
+catalog team, although no fact states it in that direction.
 
 </td>
 <td>
 
 ```yaml
-twoStations:
+twoTeams:
   is: Test
-  says: Each of the two stations makes one recipe.
+  says: Each of the two teams owns one service.
   expect:
     derived:
-      - link: madeAtStation
-        from: recipe/margherita
-        to:   station/pizza
+      - link: ownedBy
+        from: service/search
+        to:   team/catalog
 ```
 
 </td>
@@ -130,26 +130,26 @@ twoStations:
 <tr>
 <td>
 
-A question can also use the inverse name. This one starts at the station.
+A question can also use the inverse name. This one starts at the team.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-stations-make-a-recipe.of.yaml
+# tests/questions/which-teams-own-a-service.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Station, makesRecipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownsService]
 
-whichStationsMakeARecipe:
+whichTeamsOwnAService:
   is: Question
-  asks: Which stations make a recipe?
-  given: file:../examples/two-stations.of.yaml
+  asks: Which teams own a service?
+  given: file:../examples/two-teams.of.yaml
   match:
-    - kind: { name: Station, as: $station }
-    - link: makesRecipe
-      from: $station
-      to:   Recipe
+    - kind: { name: Team, as: $team }
+    - link: ownsService
+      from: $team
+      to:   Service
 ```
 
 </td>
@@ -157,7 +157,7 @@ whichStationsMakeARecipe:
 <tr>
 <td>
 
-The answer has the two stations. It does not matter which name the fact
+The answer has the two teams. It does not matter which name the fact
 uses.
 
 </td>
@@ -165,7 +165,7 @@ uses.
 
 ```yaml
   expect:
-    $station: [station/sauce, station/pizza]
+    $team: [team/payments, team/catalog]
 ```
 
 </td>
@@ -176,8 +176,8 @@ uses.
 
 ```console
 $ of-lang test inverse-names
-pass  test twoStations  (inverse-names/tests/examples/two-stations.of.yaml)
-pass  question whichStationsMakeARecipe  (inverse-names/tests/questions/which-stations-make-a-recipe.of.yaml)
+pass  test twoTeams  (inverse-names/tests/examples/two-teams.of.yaml)
+pass  question whichTeamsOwnAService  (inverse-names/tests/questions/which-teams-own-a-service.of.yaml)
 2 passed, 0 failed
 ```
 

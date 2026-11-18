@@ -13,35 +13,35 @@ derivative can match a link that a derivative adds.
 <tr>
 <td>
 
-A recipe is made at a station, and a recipe can use another recipe. Facts
-state these two links.
+A service can store a data class, and a service can depend on another
+service. Facts state these two links.
 
 </td>
 <td>
 
 ```yaml
-# defs/station.of.yaml
-Recipe:
+# defs/data.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A program that runs in production and answers requests.
 
-Station:
+DataClass:
   is: Kind
-  definition: A place in the kitchen where cooks make food.
+  definition: A sort of data that needs care, such as personal data or payment data.
 
-madeAtStation:
+storesData:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} is made at {to}"
-  definition: The station where cooks make the recipe.
+  from: Service
+  to: DataClass
+  reads: "{from} stores {to}"
+  definition: The service keeps data of the data class.
 
-usesRecipe:
+dependsOn:
   is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"
-  definition: The first recipe needs the second recipe directly.
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service calls the second service directly.
 ```
 
 </td>
@@ -49,18 +49,18 @@ usesRecipe:
 <tr>
 <td>
 
-No fact states `needsStation`. Two derivatives add it.
+No fact states `handlesData`. Two derivatives add it.
 
 </td>
 <td>
 
 ```yaml
-needsStation:
+handlesData:
   is: Link
-  from: Recipe
-  to: Station
-  reads: "{from} needs {to}"
-  definition: The kitchen cannot make the recipe when the station stops.
+  from: Service
+  to: DataClass
+  reads: "{from} handles {to}"
+  definition: Data of the data class passes through the service.
 ```
 
 </td>
@@ -74,19 +74,19 @@ The first derivative matches only stated facts.
 <td>
 
 ```yaml
-stationFromRecipe:
+dataFromStore:
   is: Derivative
-  says: A recipe needs the station where cooks make it.
+  says: A service handles each data class that it stores.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Station, as: $station }
-    - link: madeAtStation
-      from: $recipe
-      to:   $station
+    - kind: { name: Service, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: storesData
+      from: $service
+      to:   $data
   derive:
-    - link: needsStation
-      from: $recipe
-      to:   $station
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
 </td>
@@ -94,26 +94,26 @@ stationFromRecipe:
 <tr>
 <td>
 
-The second derivative matches `needsStation`, the link that the first
+The second derivative matches `handlesData`, the link that the first
 derivative adds.
 
 </td>
 <td>
 
 ```yaml
-stationFromPart:
+dataFromDependency:
   is: Derivative
-  says: A recipe needs each station that one of its recipes needs.
+  says: A service handles each data class that one of the services it depends on handles.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Recipe, as: $part }
-    - kind: { name: Station, as: $station }
-    - link: usesRecipe
-      from: $recipe
-      to:   $part
-    - link: needsStation
-      from: $part
-      to:   $station
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
+    - kind: { name: DataClass, as: $data }
+    - link: dependsOn
+      from: $service
+      to:   $other
+    - link: handlesData
+      from: $other
+      to:   $data
 ```
 
 </td>
@@ -121,7 +121,7 @@ stationFromPart:
 <tr>
 <td>
 
-It also adds `needsStation`. Thus one pass can add a fact that the same
+It also adds `handlesData`. Thus one pass can add a fact that the same
 derivative matches in the pass after it.
 
 </td>
@@ -129,9 +129,9 @@ derivative matches in the pass after it.
 
 ```yaml
   derive:
-    - link: needsStation
-      from: $recipe
-      to:   $station
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
 </td>
@@ -139,40 +139,40 @@ derivative matches in the pass after it.
 <tr>
 <td>
 
-A test file states a chain of three recipes. The margherita uses the
-tomato sauce, the tomato sauce uses the stock, and cooks make the stock at the
-stove.
+A test file states a chain of three services. The checkout service depends
+on the orders service, the orders service depends on the database, and the
+database stores personal data.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/stock-on-the-stove.of.yaml
+# tests/examples/data-in-the-database.of.yaml
 import:
-  - from: file:../../defs/station.of.yaml
-    use: [Recipe, Station, madeAtStation, usesRecipe, needsStation]
+  - from: file:../../defs/data.of.yaml
+    use: [Service, DataClass, storesData, dependsOn, handlesData]
 
-station/stove:
+data/personal:
   is: Fact
-  kind: Station
+  kind: DataClass
 
-recipe/stock:
+service/database:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    madeAtStation: station/stove
+    storesData: data/personal
 
-recipe/tomato_sauce:
+service/orders:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesRecipe: recipe/stock
+    dependsOn: service/database
 
-recipe/margherita:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesRecipe: recipe/tomato_sauce
+    dependsOn: service/orders
 ```
 
 </td>
@@ -180,23 +180,25 @@ recipe/margherita:
 <tr>
 <td>
 
-The test expects a link that no single pass can add. The tomato sauce must
-need the stove before the derivative can find that the margherita needs it.
+The test expects a link that no single pass can add. The orders service
+must handle personal data before the derivative can find that the checkout
+service handles it.
 
 </td>
 <td>
 
 ```yaml
-stockOnTheStove:
+dataInTheDatabase:
   is: Test
   says: >
-    Cooks make the stock at the stove. The margherita uses the tomato sauce,
-    which uses the stock. Thus, the margherita needs the stove.
+    The database stores personal data. The checkout service depends on the
+    orders service, which depends on the database. Thus, the checkout
+    service handles personal data.
   expect:
     derived:
-      - link: needsStation
-        from: recipe/margherita
-        to:   station/stove
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal
 ```
 
 </td>
@@ -206,22 +208,22 @@ stockOnTheStove:
 `explain` shows why a fact holds, down to the facts that the file states:
 
 ```console
-$ of-lang explain derivatives-together derivatives-together/tests/examples/stock-on-the-stove.of.yaml recipe/margherita needsStation station/stove
-recipe/margherita needs station/stove  (derivative stationFromPart)
-  A recipe needs each station that one of its recipes needs.
-  with $part = recipe/tomato_sauce, $recipe = recipe/margherita, $station = station/stove
+$ of-lang explain derivatives-together derivatives-together/tests/examples/data-in-the-database.of.yaml service/checkout handlesData data/personal
+service/checkout handles data/personal  (derivative dataFromDependency)
+  A service handles each data class that one of the services it depends on handles.
+  with $data = data/personal, $other = service/orders, $service = service/checkout
   because:
-    recipe/margherita uses recipe/tomato_sauce  (written at derivatives-together/tests/examples/stock-on-the-stove.of.yaml:25:5)
-    recipe/tomato_sauce needs station/stove  (derivative stationFromPart)
-      A recipe needs each station that one of its recipes needs.
-      with $part = recipe/stock, $recipe = recipe/tomato_sauce, $station = station/stove
+    service/checkout depends on service/orders  (written at derivatives-together/tests/examples/data-in-the-database.of.yaml:25:5)
+    service/orders handles data/personal  (derivative dataFromDependency)
+      A service handles each data class that one of the services it depends on handles.
+      with $data = data/personal, $other = service/database, $service = service/orders
       because:
-        recipe/tomato_sauce uses recipe/stock  (written at derivatives-together/tests/examples/stock-on-the-stove.of.yaml:19:5)
-        recipe/stock needs station/stove  (derivative stationFromRecipe)
-          A recipe needs the station where cooks make it.
-          with $recipe = recipe/stock, $station = station/stove
+        service/orders depends on service/database  (written at derivatives-together/tests/examples/data-in-the-database.of.yaml:19:5)
+        service/database handles data/personal  (derivative dataFromStore)
+          A service handles each data class that it stores.
+          with $data = data/personal, $service = service/database
           because:
-            recipe/stock is made at station/stove  (written at derivatives-together/tests/examples/stock-on-the-stove.of.yaml:13:5)
+            service/database stores data/personal  (written at derivatives-together/tests/examples/data-in-the-database.of.yaml:13:5)
 ```
 
 More about this: [how derivatives run](../../language/reference/derivative.md#how-derivatives-run)

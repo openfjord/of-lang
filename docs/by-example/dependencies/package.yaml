@@ -1,6 +1,6 @@
 package: "@by-example/dependencies"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: dependencies
 dependsOn:
   "@by-example/open-for": ^0.1

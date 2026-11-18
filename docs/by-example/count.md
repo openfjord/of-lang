@@ -13,23 +13,16 @@ number.
 <tr>
 <td>
 
-The package has dishes and ingredients.
+The package has services.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
-  fields:
-    name:
-      type: string
-
-Ingredient:
-  is: Kind
-  definition: A food that the kitchen buys and does not make.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -40,18 +33,18 @@ Ingredient:
 <tr>
 <td>
 
-A dish uses ingredients.
+A service depends on other services.
 
 </td>
 <td>
 
 ```yaml
-usesIngredient:
+dependsOn:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The dish has the ingredient in it.
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service calls the second service to do its work.
 ```
 
 </td>
@@ -59,34 +52,33 @@ usesIngredient:
 <tr>
 <td>
 
-A test file states three ingredients.
+A test file states four services. The checkout service depends on three
+services, and the orders service depends on two.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-and-three-ingredients.of.yaml
+# tests/examples/three-and-two-dependencies.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-ingredient/tomatoes:
+service/checkout:
   is: Fact
-  kind: Ingredient
+  kind: Service
   fields:
-    name: tomatoes
+    name: checkout
+  links:
+    dependsOn: [service/orders, service/search, service/database]
 
-ingredient/mozzarella:
+service/orders:
   is: Fact
-  kind: Ingredient
+  kind: Service
   fields:
-    name: mozzarella
-
-ingredient/basil:
-  is: Fact
-  kind: Ingredient
-  fields:
-    name: basil
+    name: orders
+  links:
+    dependsOn: [service/search, service/database]
 ```
 
 </td>
@@ -94,27 +86,23 @@ ingredient/basil:
 <tr>
 <td>
 
-The margherita uses three ingredients, and the marinara uses two.
+The search service and the database depend on nothing.
 
 </td>
 <td>
 
 ```yaml
-dish/margherita:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-  links:
-    usesIngredient: [ingredient/tomatoes, ingredient/mozzarella, ingredient/basil]
+    name: search
 
-dish/marinara:
+service/database:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: marinara
-  links:
-    usesIngredient: [ingredient/tomatoes, ingredient/basil]
+    name: database
 ```
 
 </td>
@@ -128,9 +116,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-twoAndThreeIngredients:
+threeAndTwoDependencies:
   is: Test
-  says: A dish with three ingredients and a dish with two ingredients are both valid.
+  says: Services that depend on three, on two and on no services are valid.
   expect:
     rejected: []
 ```
@@ -140,24 +128,24 @@ twoAndThreeIngredients:
 <tr>
 <td>
 
-A question asks which dishes use more than two ingredients. Its `match`
-finds each dish.
+A question asks which services depend on more than two services. Its `match`
+finds each service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-use-more-than-two-ingredients.of.yaml
+# tests/questions/which-services-depend-on-more-than-two-services.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-whichDishesUseMoreThanTwoIngredients:
+whichServicesDependOnMoreThanTwoServices:
   is: Question
-  asks: Which dishes use more than two ingredients?
-  given: file:../examples/two-and-three-ingredients.of.yaml
+  asks: Which services depend on more than two services?
+  given: file:../examples/three-and-two-dependencies.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -165,8 +153,8 @@ whichDishesUseMoreThanTwoIngredients:
 <tr>
 <td>
 
-The nested block runs one time for each dish. It has one match for each
-ingredient that `$dish` uses.
+The nested block runs one time for each service. It has one match for each
+service that `$service` depends on.
 
 </td>
 <td>
@@ -175,9 +163,9 @@ ingredient that `$dish` uses.
   filter:
     - count:
         match:
-          - link: usesIngredient
-            from: $dish
-            to:   Ingredient
+          - link: dependsOn
+            from: $service
+            to:   Service
 ```
 
 </td>
@@ -201,14 +189,14 @@ number. The condition holds when the number of matches is above 2.
 <tr>
 <td>
 
-The answer is the margherita. The count for the marinara is 2.
+The answer is the checkout service. The count for the orders service is 2.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita]
+    $service: [service/checkout]
 ```
 
 </td>
@@ -219,8 +207,8 @@ The answer is the margherita. The count for the marinara is 2.
 
 ```console
 $ of-lang test count
-pass  test twoAndThreeIngredients  (count/tests/examples/two-and-three-ingredients.of.yaml)
-pass  question whichDishesUseMoreThanTwoIngredients  (count/tests/questions/which-dishes-use-more-than-two-ingredients.of.yaml)
+pass  test threeAndTwoDependencies  (count/tests/examples/three-and-two-dependencies.of.yaml)
+pass  question whichServicesDependOnMoreThanTwoServices  (count/tests/questions/which-services-depend-on-more-than-two-services.of.yaml)
 2 passed, 0 failed
 ```
 

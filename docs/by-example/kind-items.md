@@ -12,16 +12,16 @@ A kind item in `match` gives a variable to the things of a kind.
 <tr>
 <td>
 
-The package has two kinds. The first kind is `Dish`.
+The package has two kinds. The first kind is `Service`.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/product.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -32,15 +32,15 @@ Dish:
 <tr>
 <td>
 
-The second kind is `Station`.
+The second kind is `Team`.
 
 </td>
 <td>
 
 ```yaml
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make food.
+  definition: A group of people who build and run services.
   fields:
     name:
       type: string
@@ -51,34 +51,34 @@ Station:
 <tr>
 <td>
 
-A test file states two dishes and one station.
+A test file states two services and one team.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-dishes-and-a-station.of.yaml
+# tests/examples/two-services-and-a-team.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Station]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
+    name: checkout
 
-dish/fondue:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
+    name: search
 
-station/pizza:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
   fields:
-    name: pizza
+    name: payments
 ```
 
 </td>
@@ -93,9 +93,9 @@ rejects nothing.
 <td>
 
 ```yaml
-twoDishesAndAStation:
+twoServicesAndATeam:
   is: Test
-  says: Two dishes and a station are valid.
+  says: Two services and a team are valid.
   expect:
     rejected: []
 ```
@@ -105,21 +105,21 @@ twoDishesAndAStation:
 <tr>
 <td>
 
-A question asks which dishes there are, given those facts.
+A question asks which services there are, given those facts.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-there.of.yaml
+# tests/questions/which-services-are-there.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish]
+  - from: file:../../defs/product.of.yaml
+    use: [Service]
 
-whichDishesAreThere:
+whichServicesAreThere:
   is: Question
-  asks: Which dishes are there?
-  given: file:../examples/two-dishes-and-a-station.of.yaml
+  asks: Which services are there?
+  given: file:../examples/two-services-and-a-team.of.yaml
 ```
 
 </td>
@@ -127,16 +127,16 @@ whichDishesAreThere:
 <tr>
 <td>
 
-The kind item names the kind `Dish` and gives it the variable `$dish`. The
-variable represents each dish in turn. Each variable has exactly one kind
-item.
+The kind item names the kind `Service` and gives it the variable `$service`.
+The variable represents each service in turn. Each variable has exactly one
+kind item.
 
 </td>
 <td>
 
 ```yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -144,15 +144,15 @@ item.
 <tr>
 <td>
 
-The answer is the two dishes. The station is not a dish, so `$dish` never
-represents it.
+The answer is the two services. The team is not a service, so `$service`
+never represents it.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita, dish/fondue]
+    $service: [service/checkout, service/search]
 ```
 
 </td>
@@ -163,8 +163,8 @@ represents it.
 
 ```console
 $ of-lang test kind-items
-pass  test twoDishesAndAStation  (kind-items/tests/examples/two-dishes-and-a-station.of.yaml)
-pass  question whichDishesAreThere  (kind-items/tests/questions/which-dishes-are-there.of.yaml)
+pass  test twoServicesAndATeam  (kind-items/tests/examples/two-services-and-a-team.of.yaml)
+pass  question whichServicesAreThere  (kind-items/tests/questions/which-services-are-there.of.yaml)
 2 passed, 0 failed
 ```
 

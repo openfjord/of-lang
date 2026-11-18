@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceHasEnoughReplicas]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 2
+    minReplicas: 3
+    onCall: dana
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 1
+    minReplicas: 2
+
+tooFewReplicas:
+  is: Test
+  says: The two services have fewer replicas than they need, so the constraint rejects them.
+  expect:
+    rejected: [serviceHasEnoughReplicas]

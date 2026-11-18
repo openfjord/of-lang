@@ -13,24 +13,24 @@ Sometimes a kind is exactly one of a fixed list of kinds, and nothing else.
 <tr>
 <td>
 
-The kitchen has recipes and ingredients. A recipe uses the two of them to
-make its food.
+The product has services and tables. A service uses the two of them to do
+its work.
 
 </td>
 <td>
 
 ```yaml
-# defs/food.of.yaml
-Recipe:
+# defs/resource.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
 
-Ingredient:
+Table:
   is: Kind
-  definition: A food that the restaurant buys and does not make.
+  definition: A set of rows with the same columns, in a database.
   fields:
     name:
       type: string
@@ -41,18 +41,18 @@ Ingredient:
 <tr>
 <td>
 
-`oneOf` lists the kinds that together make up `Food`. Each food is a recipe
-or an ingredient, and never both. A union has no fields. The listed kinds
-keep their own fields.
+`oneOf` lists the kinds that together make up `Resource`. Each resource is
+a service or a table, and never both. A union has no fields. The listed
+kinds keep their own fields.
 
 </td>
 <td>
 
 ```yaml
-Food:
+Resource:
   is: Kind
-  definition: Something that a recipe uses to make its food.
-  oneOf: [Recipe, Ingredient]
+  definition: Something that a service needs to do its work.
+  oneOf: [Service, Table]
 ```
 
 </td>
@@ -60,19 +60,18 @@ Food:
 <tr>
 <td>
 
-A link can end at the union. Then it can end at a recipe or at an
-ingredient.
+A link can end at the union. Then it can end at a service or at a table.
 
 </td>
 <td>
 
 ```yaml
-usesFood:
+usesResource:
   is: Link
-  from: Recipe
-  to: Food
+  from: Service
+  to: Resource
   reads: "{from} uses {to}"
-  definition: The recipe needs the food.
+  definition: The service needs the resource to do its work.
 ```
 
 </td>
@@ -80,29 +79,29 @@ usesFood:
 <tr>
 <td>
 
-A test file states one ingredient and two recipes. A fact names a listed
-kind as its `kind`, and never the union.
+A test file states one table and two services. A fact names a listed kind
+as its `kind`, and never the union.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/a-pizza.of.yaml
+# tests/examples/a-checkout.of.yaml
 import:
-  - from: file:../../defs/food.of.yaml
-    use: [Recipe, Ingredient, Food, usesFood]
+  - from: file:../../defs/resource.of.yaml
+    use: [Service, Table, Resource, usesResource]
 
-ingredient/mozzarella:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: mozzarella
+    name: customers
 
-recipe/tomato_sauce:
+service/orders:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: tomato_sauce
+    name: orders
 ```
 
 </td>
@@ -110,19 +109,19 @@ recipe/tomato_sauce:
 <tr>
 <td>
 
-The margherita uses a recipe and an ingredient through the same link.
+The checkout service uses a service and a table through the same link.
 
 </td>
 <td>
 
 ```yaml
-recipe/margherita:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: margherita
+    name: checkout
   links:
-    usesFood: [recipe/tomato_sauce, ingredient/mozzarella]
+    usesResource: [service/orders, table/customers]
 ```
 
 </td>
@@ -130,22 +129,22 @@ recipe/margherita:
 <tr>
 <td>
 
-The test expects what the definitions derive about the kinds: a recipe is
-a food, and a recipe is never an ingredient.
+The test expects what the definitions derive about the kinds: a service is
+a resource, and a service is never a table.
 
 </td>
 <td>
 
 ```yaml
-aPizza:
+aCheckout:
   is: Test
-  says: The margherita uses a recipe and an ingredient, and each one is a food.
+  says: The checkout service uses a service and a table, and each one is a resource.
   expect:
     derived:
-      - kind: Recipe
-        is a: Food
-      - kind: Recipe
-        never is: Ingredient
+      - kind: Service
+        is a: Resource
+      - kind: Service
+        never is: Table
     rejected: []
 ```
 
@@ -154,34 +153,34 @@ aPizza:
 <tr>
 <td>
 
-A question can match the union. It asks for each food that the margherita
-uses, and the answer has a recipe and an ingredient.
+A question can match the union. It asks for each resource that the
+checkout service uses, and the answer has a service and a table.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-foods-does-the-margherita-use.of.yaml
+# tests/questions/which-resources-does-checkout-use.of.yaml
 import:
-  - from: file:../../defs/food.of.yaml
-    use: [Recipe, Food, usesFood]
+  - from: file:../../defs/resource.of.yaml
+    use: [Service, Resource, usesResource]
 
-whichFoodsDoesTheMargheritaUse:
+whichResourcesDoesCheckoutUse:
   is: Question
-  asks: Which foods does the margherita use?
-  given: file:../examples/a-pizza.of.yaml
+  asks: Which resources does the checkout service use?
+  given: file:../examples/a-checkout.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - kind: { name: Food, as: $food }
-    - link: usesFood
-      from: $recipe
-      to:   $food
+    - kind: { name: Service, as: $service }
+    - kind: { name: Resource, as: $resource }
+    - link: usesResource
+      from: $service
+      to:   $resource
   filter:
-    - node: $recipe
+    - node: $service
       equals:
-        value: recipe/margherita
+        value: service/checkout
   expect:
-    $food: [recipe/tomato_sauce, ingredient/mozzarella]
+    $resource: [service/orders, table/customers]
 ```
 
 </td>
@@ -192,8 +191,8 @@ whichFoodsDoesTheMargheritaUse:
 
 ```console
 $ of-lang test unions
-pass  test aPizza  (unions/tests/examples/a-pizza.of.yaml)
-pass  question whichFoodsDoesTheMargheritaUse  (unions/tests/questions/which-foods-does-the-margherita-use.of.yaml)
+pass  test aCheckout  (unions/tests/examples/a-checkout.of.yaml)
+pass  question whichResourcesDoesCheckoutUse  (unions/tests/questions/which-resources-does-checkout-use.of.yaml)
 2 passed, 0 failed
 ```
 

@@ -1,0 +1,21 @@
+Table:
+  is: Kind
+  tags: [privacy]
+  definition: A set of rows in a database that all have the same columns.
+
+DataClass:
+  is: Kind
+  tags: [privacy]
+  definition: A sort of data that needs care, such as personal data or payment data.
+
+holdsData:
+  is: Link
+  tags: [privacy]
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: Some columns of the table contain data of this sort.
+
+Team:
+  is: Kind
+  definition: A group of people who build and run services.

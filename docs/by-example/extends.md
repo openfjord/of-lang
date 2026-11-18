@@ -13,21 +13,20 @@ and each of its things is also a thing of the broader kind.
 <tr>
 <td>
 
-`Recipe` is the broader kind. Each recipe has a name and a preparation
-time.
+`Service` is the broader kind. Each service has a name and a port.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
-    prepMinutes:
+    port:
       type: integer
 ```
 
@@ -36,16 +35,17 @@ Recipe:
 <tr>
 <td>
 
-`extends` names the broader kind. A dish is a narrower sort of recipe.
+`extends` names the broader kind. A public service is a narrower sort of
+service.
 
 </td>
 <td>
 
 ```yaml
-Dish:
+PublicService:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
+  extends: Service
+  definition: A service that customers call.
 ```
 
 </td>
@@ -53,16 +53,16 @@ Dish:
 <tr>
 <td>
 
-A dish has the fields of a recipe, and it adds a field of its own. It
-cannot declare `name` or `prepMinutes` again.
+A public service has the fields of a service, and it adds a field of its
+own. It cannot declare `name` or `port` again.
 
 </td>
 <td>
 
 ```yaml
   fields:
-    price:
-      type: number
+    domain:
+      type: string
 ```
 
 </td>
@@ -70,32 +70,32 @@ cannot declare `name` or `prepMinutes` again.
 <tr>
 <td>
 
-A test file states one recipe and one dish. The dish gives the two fields
-of a recipe, and also its price.
+A test file states one service and one public service. The public service
+gives the two fields of a service, and also its domain.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/a-recipe-and-a-dish.of.yaml
+# tests/examples/a-service-and-a-public-service.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
 
-recipe/tomato_sauce:
+service/orders:
   is: Fact
-  kind: Recipe
+  kind: Service
   fields:
-    name: tomato_sauce
-    prepMinutes: 40
+    name: orders
+    port: 8080
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: PublicService
   fields:
-    name: margherita
-    prepMinutes: 12
-    price: 12
+    name: checkout
+    port: 8443
+    domain: checkout.example.com
 ```
 
 </td>
@@ -103,23 +103,23 @@ dish/margherita:
 <tr>
 <td>
 
-The test expects what the definitions derive about the two kinds: a dish
-is a recipe, but a recipe is not a dish.
+The test expects what the definitions derive about the two kinds: a
+public service is a service, but a service is not a public service.
 
 </td>
 <td>
 
 ```yaml
-aRecipeAndADish:
+aServiceAndAPublicService:
   is: Test
-  says: A dish is a recipe, and it has the fields of a recipe.
+  says: A public service is a service, and it has the fields of a service.
   expect:
     derived:
-      - kind: Dish
-        is a: Recipe
+      - kind: PublicService
+        is a: Service
     notDerived:
-      - kind: Recipe
-        is a: Dish
+      - kind: Service
+        is a: PublicService
     rejected: []
 ```
 
@@ -128,26 +128,26 @@ aRecipeAndADish:
 <tr>
 <td>
 
-A question asks for each recipe, given those facts. The answer includes
-the margherita, because each dish is also a recipe.
+A question asks for each service, given those facts. The answer includes
+the checkout service, because each public service is also a service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-recipes-are-there.of.yaml
+# tests/questions/which-services-are-there.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichRecipesAreThere:
+whichServicesAreThere:
   is: Question
-  asks: Which recipes are there?
-  given: file:../examples/a-recipe-and-a-dish.of.yaml
+  asks: Which services are there?
+  given: file:../examples/a-service-and-a-public-service.of.yaml
   match:
-    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Service, as: $service }
   expect:
-    $recipe: [recipe/tomato_sauce, dish/margherita]
+    $service: [service/orders, service/checkout]
 ```
 
 </td>
@@ -158,8 +158,8 @@ whichRecipesAreThere:
 
 ```console
 $ of-lang test extends
-pass  test aRecipeAndADish  (extends/tests/examples/a-recipe-and-a-dish.of.yaml)
-pass  question whichRecipesAreThere  (extends/tests/questions/which-recipes-are-there.of.yaml)
+pass  test aServiceAndAPublicService  (extends/tests/examples/a-service-and-a-public-service.of.yaml)
+pass  question whichServicesAreThere  (extends/tests/questions/which-services-are-there.of.yaml)
 2 passed, 0 failed
 ```
 

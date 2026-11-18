@@ -1,0 +1,34 @@
+import:
+  - from: file:../../defs/resource.of.yaml
+    use: [Service, Table, Resource, usesResource]
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    name: customers
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+  links:
+    usesResource: [service/orders, table/customers]
+
+aCheckout:
+  is: Test
+  says: The checkout service uses a service and a table, and each one is a resource.
+  expect:
+    derived:
+      - kind: Service
+        is a: Resource
+      - kind: Service
+        never is: Table
+    rejected: []

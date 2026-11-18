@@ -13,27 +13,27 @@ broader link.
 <tr>
 <td>
 
-A recipe uses ingredients. `usesIngredient` is the broader link.
+A service uses tables. `usesTable` is the broader link.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Ingredient:
+Table:
   is: Kind
-  definition: A raw food that the restaurant buys.
+  definition: A table in a database.
 
-usesIngredient:
+usesTable:
   is: Link
-  from: Recipe
-  to: Ingredient
+  from: Service
+  to: Table
   reads: "{from} uses {to}"
-  definition: The recipe needs the ingredient.
+  definition: The service reads the table, writes it, or does both.
 ```
 
 </td>
@@ -41,19 +41,19 @@ usesIngredient:
 <tr>
 <td>
 
-A garnish is one way to use an ingredient. `usesGarnish` is a narrower sort
-of `usesIngredient`.
+To write a table is one way to use it. `writesTable` is a narrower sort of
+`usesTable`.
 
 </td>
 <td>
 
 ```yaml
-usesGarnish:
+writesTable:
   is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} is garnished with {to}"
-  definition: The cook puts the ingredient on the food at the end.
+  from: Service
+  to: Table
+  reads: "{from} writes {to}"
+  definition: The service adds rows to the table or changes its rows.
 ```
 
 </td>
@@ -68,7 +68,7 @@ the kinds of the broader link, or kinds that extend them.
 <td>
 
 ```yaml
-  under: usesIngredient
+  under: usesTable
 ```
 
 </td>
@@ -76,27 +76,27 @@ the kinds of the broader link, or kinds that extend them.
 <tr>
 <td>
 
-A test file states that the margherita has basil as a garnish. It states
-no `usesIngredient`.
+A test file states that the checkout service writes the customers table.
+It states no `usesTable`.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/basil-on-the-margherita.of.yaml
+# tests/examples/checkout-writes-customers.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Ingredient, usesIngredient, usesGarnish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Table, usesTable, writesTable]
 
-ingredient/basil:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
 
-recipe/margherita:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesGarnish: ingredient/basil
+    writesTable: table/customers
 ```
 
 </td>
@@ -104,21 +104,21 @@ recipe/margherita:
 <tr>
 <td>
 
-The test expects the broader link as a derived fact: the margherita uses
-basil.
+The test expects the broader link as a derived fact: the checkout service
+uses the customers table.
 
 </td>
 <td>
 
 ```yaml
-basilOnTheMargherita:
+checkoutWritesCustomers:
   is: Test
-  says: Basil is a garnish on the margherita, so the margherita uses basil.
+  says: The checkout service writes the customers table, so it uses that table.
   expect:
     derived:
-      - link: usesIngredient
-        from: recipe/margherita
-        to:   ingredient/basil
+      - link: usesTable
+        from: service/checkout
+        to:   table/customers
 ```
 
 </td>
@@ -129,7 +129,7 @@ basilOnTheMargherita:
 
 ```console
 $ of-lang test under
-pass  test basilOnTheMargherita  (under/tests/examples/basil-on-the-margherita.of.yaml)
+pass  test checkoutWritesCustomers  (under/tests/examples/checkout-writes-customers.of.yaml)
 1 passed, 0 failed
 ```
 

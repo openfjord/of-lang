@@ -1,0 +1,14 @@
+import:
+  - from: file:table.of.yaml
+    use: [{ name: Table, as: DatabaseTable }]
+
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+readsTable:
+  is: Link
+  from: Service
+  to: DatabaseTable
+  reads: "{from} reads {to}"
+  definition: The service gets rows from the table.

@@ -1,7 +1,7 @@
 package: "@by-example/tags"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: tags
 tags:
-  - name: allergens
-    description: What an allergen app needs to tell guests which ingredients contain which allergens.
+  - name: privacy
+    description: What a privacy review needs to see which tables hold which sorts of data.

@@ -1,0 +1,21 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, serviceRuns]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 3
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    replicas: 0
+
+searchDoesNotRun:
+  is: Test
+  says: The search service has 0 replicas, so the package rejects it.
+  expect:
+    rejected: [serviceRuns]

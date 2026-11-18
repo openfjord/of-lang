@@ -1,0 +1,3 @@
+Table:
+  is: Kind
+  definition: A set of rows in a database that all have the same columns.

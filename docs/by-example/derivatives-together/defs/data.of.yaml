@@ -1,0 +1,61 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+DataClass:
+  is: Kind
+  definition: A sort of data that needs care, such as personal data or payment data.
+
+storesData:
+  is: Link
+  from: Service
+  to: DataClass
+  reads: "{from} stores {to}"
+  definition: The service keeps data of the data class.
+
+dependsOn:
+  is: Link
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service calls the second service directly.
+
+handlesData:
+  is: Link
+  from: Service
+  to: DataClass
+  reads: "{from} handles {to}"
+  definition: Data of the data class passes through the service.
+
+dataFromStore:
+  is: Derivative
+  says: A service handles each data class that it stores.
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: DataClass, as: $data }
+    - link: storesData
+      from: $service
+      to:   $data
+  derive:
+    - link: handlesData
+      from: $service
+      to:   $data
+
+dataFromDependency:
+  is: Derivative
+  says: A service handles each data class that one of the services it depends on handles.
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
+    - kind: { name: DataClass, as: $data }
+    - link: dependsOn
+      from: $service
+      to:   $other
+    - link: handlesData
+      from: $other
+      to:   $data
+
+  derive:
+    - link: handlesData
+      from: $service
+      to:   $data

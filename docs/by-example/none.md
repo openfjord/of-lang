@@ -12,28 +12,26 @@ title: None — The OpenFjord modeling language by example
 <tr>
 <td>
 
-An ingredient is fresh or frozen.
+The package has services and teams.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/product.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
 
-Ingredient:
+Team:
   is: Kind
-  definition: A food that the kitchen buys and does not make.
+  definition: A group of people who build and run services.
   fields:
     name:
       type: string
-    storage:
-      enum: [fresh, frozen]
 ```
 
 </td>
@@ -41,18 +39,18 @@ Ingredient:
 <tr>
 <td>
 
-A dish uses ingredients.
+A team owns a service.
 
 </td>
 <td>
 
 ```yaml
-usesIngredient:
+ownedBy:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The dish has the ingredient in it.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -60,84 +58,37 @@ usesIngredient:
 <tr>
 <td>
 
-A test file states two fresh ingredients and one frozen ingredient.
+A test file states one team and two services. The payments team owns the
+checkout service. The search service states no owner.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/three-dishes.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-ingredient/tomatoes:
+team/payments:
   is: Fact
-  kind: Ingredient
+  kind: Team
   fields:
-    name: tomatoes
-    storage: fresh
+    name: payments
 
-ingredient/basil:
+service/checkout:
   is: Fact
-  kind: Ingredient
+  kind: Service
   fields:
-    name: basil
-    storage: fresh
-
-ingredient/shrimp:
-  is: Fact
-  kind: Ingredient
-  fields:
-    name: shrimp
-    storage: frozen
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-The margherita uses only fresh ingredients. The scampi uses shrimp, which is
-frozen.
-
-</td>
-<td>
-
-```yaml
-dish/margherita:
-  is: Fact
-  kind: Dish
-  fields:
-    name: margherita
+    name: checkout
   links:
-    usesIngredient: [ingredient/tomatoes, ingredient/basil]
+    ownedBy: team/payments
 
-dish/scampi:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: scampi
-  links:
-    usesIngredient: [ingredient/tomatoes, ingredient/shrimp]
-```
-
-</td>
-</tr>
-<tr>
-<td>
-
-The bread states no ingredients.
-
-</td>
-<td>
-
-```yaml
-dish/bread:
-  is: Fact
-  kind: Dish
-  fields:
-    name: bread
+    name: search
 ```
 
 </td>
@@ -151,9 +102,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-threeDishes:
+twoServices:
   is: Test
-  says: Dishes with fresh ingredients, with a frozen ingredient and with no ingredients are valid.
+  says: A service with an owner and a service without an owner are both valid.
   expect:
     rejected: []
 ```
@@ -163,24 +114,24 @@ threeDishes:
 <tr>
 <td>
 
-A question asks which dishes use no frozen ingredient. Its `match` finds
-each dish.
+A question asks which services have no owner. Its `match` finds each
+service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-use-no-frozen-ingredient.of.yaml
+# tests/questions/which-services-have-no-owner.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
 
-whichDishesUseNoFrozenIngredient:
+whichServicesHaveNoOwner:
   is: Question
-  asks: Which dishes use no frozen ingredient?
-  given: file:../examples/three-dishes.of.yaml
+  asks: Which services have no owner?
+  given: file:../examples/two-services.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -188,9 +139,9 @@ whichDishesUseNoFrozenIngredient:
 <tr>
 <td>
 
-The nested block runs one time for each dish. It finds the frozen
-ingredients that `$dish` uses. `none` holds when there are no such
-ingredients.
+The nested block runs one time for each service. It finds the teams that own
+`$service`. `none` holds when there are no such teams. A nested block can
+also have a `filter`.
 
 </td>
 <td>
@@ -199,15 +150,9 @@ ingredients.
   filter:
     - none:
         match:
-          - kind: { name: Ingredient, as: $ingredient }
-          - link: usesIngredient
-            from: $dish
-            to:   $ingredient
-        filter:
-          - node: $ingredient
-            field: storage
-            equals:
-              value: frozen
+          - link: ownedBy
+            from: $service
+            to:   Team
 ```
 
 </td>
@@ -215,15 +160,15 @@ ingredients.
 <tr>
 <td>
 
-The answer has the margherita, and also the bread. A link that is not stated
-does not exist, so the nested block has no matches for the bread.
+The answer is the search service. A link that is not stated does not exist,
+so the nested block has no matches for it.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita, dish/bread]
+    $service: [service/search]
 ```
 
 </td>
@@ -234,8 +179,8 @@ does not exist, so the nested block has no matches for the bread.
 
 ```console
 $ of-lang test none
-pass  test threeDishes  (none/tests/examples/three-dishes.of.yaml)
-pass  question whichDishesUseNoFrozenIngredient  (none/tests/questions/which-dishes-use-no-frozen-ingredient.of.yaml)
+pass  test twoServices  (none/tests/examples/two-services.of.yaml)
+pass  question whichServicesHaveNoOwner  (none/tests/questions/which-services-have-no-owner.of.yaml)
 2 passed, 0 failed
 ```
 

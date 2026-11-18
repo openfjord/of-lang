@@ -1,0 +1,35 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
+
+team/payments:
+  is: Fact
+  kind: Team
+  fields:
+    name: payments
+
+team/discovery:
+  is: Fact
+  kind: Team
+  fields:
+    name: discovery
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+  links:
+    ownedBy: team/payments
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+
+servicesAndOwners:
+  is: Test
+  says: A service with an owner and a service without an owner are both valid.
+  expect:
+    rejected: []

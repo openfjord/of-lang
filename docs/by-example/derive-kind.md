@@ -13,23 +13,23 @@ and also becomes a thing of the narrower kind.
 <tr>
 <td>
 
-A recipe can use other recipes.
+A service can depend on other services.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A program that runs in production and answers requests.
 
-usesRecipe:
+dependsOn:
   is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"
-  definition: The first recipe needs the second recipe.
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service needs the second service to do its work.
 ```
 
 </td>
@@ -37,17 +37,17 @@ usesRecipe:
 <tr>
 <td>
 
-A base recipe is a narrower sort of recipe: `BaseRecipe` extends `Recipe`.
-No fact states that a recipe is a base recipe.
+A shared service is a narrower sort of service: `SharedService` extends
+`Service`. No fact states that a service is a shared service.
 
 </td>
 <td>
 
 ```yaml
-BaseRecipe:
+SharedService:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the kitchen makes as a part of other recipes.
+  extends: Service
+  definition: A service that other services depend on.
 ```
 
 </td>
@@ -55,22 +55,22 @@ BaseRecipe:
 <tr>
 <td>
 
-The derivative finds each recipe that some recipe uses. The end
-`from: Recipe` gives a kind alone, because nothing else refers to the recipe
-at that end.
+The derivative finds each service that some service depends on. The end
+`from: Service` gives a kind alone, because nothing else refers to the
+service at that end.
 
 </td>
 <td>
 
 ```yaml
-baseRecipeFromUse:
+sharedServiceFromUse:
   is: Derivative
-  says: A recipe that another recipe uses is a base recipe.
+  says: A service that another service depends on is a shared service.
   match:
-    - kind: { name: Recipe, as: $recipe }
-    - link: usesRecipe
-      from: Recipe
-      to:   $recipe
+    - kind: { name: Service, as: $service }
+    - link: dependsOn
+      from: Service
+      to:   $service
 ```
 
 </td>
@@ -86,8 +86,8 @@ extend the kind of the variable.
 
 ```yaml
   derive:
-    - node: $recipe
-      becomes: BaseRecipe
+    - node: $service
+      becomes: SharedService
 ```
 
 </td>
@@ -95,26 +95,27 @@ extend the kind of the variable.
 <tr>
 <td>
 
-A test file states two recipes. The margherita uses the tomato sauce.
+A test file states two services. The checkout service depends on the
+database.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/tomato-sauce.of.yaml
+# tests/examples/database.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, BaseRecipe, usesRecipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, SharedService, dependsOn]
 
-recipe/tomato_sauce:
+service/database:
   is: Fact
-  kind: Recipe
+  kind: Service
 
-recipe/margherita:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesRecipe: recipe/tomato_sauce
+    dependsOn: service/database
 ```
 
 </td>
@@ -122,23 +123,24 @@ recipe/margherita:
 <tr>
 <td>
 
-The test expects that the tomato sauce becomes a base recipe. No recipe
-uses the margherita, so `notDerived` expects that the margherita does not.
+The test expects that the database becomes a shared service. No service
+depends on the checkout service, so `notDerived` expects that the checkout
+service does not.
 
 </td>
 <td>
 
 ```yaml
-tomatoSauce:
+database:
   is: Test
-  says: The margherita uses the tomato sauce, so only the tomato sauce is a base recipe.
+  says: The checkout service depends on the database, so only the database is a shared service.
   expect:
     derived:
-      - node: recipe/tomato_sauce
-        becomes: BaseRecipe
+      - node: service/database
+        becomes: SharedService
     notDerived:
-      - node: recipe/margherita
-        becomes: BaseRecipe
+      - node: service/checkout
+        becomes: SharedService
 ```
 
 </td>
@@ -148,9 +150,9 @@ tomatoSauce:
 `run` shows the kind that the derivative adds:
 
 ```console
-$ of-lang run derive-kind derive-kind/tests/examples/tomato-sauce.of.yaml
+$ of-lang run derive-kind derive-kind/tests/examples/database.of.yaml
 derived:
-  recipe/tomato_sauce is a BaseRecipe  (derivative baseRecipeFromUse)
+  service/database is a SharedService  (derivative sharedServiceFromUse)
 rejected:
   nothing
 ```

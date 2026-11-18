@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
+
+service/database:
+  is: Fact
+  kind: Service
+  fields:
+    name: database
+    tier: critical
+
+service/search:
+  is: Fact
+  kind: PublicService
+  fields:
+    name: search
+    tier: standard
+
+service/reports:
+  is: Fact
+  kind: Service
+  fields:
+    name: reports
+    tier: standard
+
+threeServices:
+  is: Test
+  says: A critical service, a public service and a standard service are valid.
+  expect:
+    rejected: []

@@ -1,0 +1,29 @@
+Table:
+  is: Kind
+  definition: A table in a database.
+  fields:
+    retentionDays:
+      type: integer
+    requiredByLaw:
+      type: boolean
+
+tableDeletesOldRows:
+  is: Constraint
+  says: >
+    A table keeps a row for 90 days or less, unless the law requires the
+    company to keep its rows.
+  match:
+    - kind: { name: Table, as: $table }
+  filter:
+    - node:  $table
+      field: retentionDays
+      is above:
+        value: 90
+
+  unless:
+    - node:  $table
+      field: requiredByLaw
+      equals:
+        value: true
+
+  message: "{$table} must keep a row for 90 days or less, unless the law requires its rows."

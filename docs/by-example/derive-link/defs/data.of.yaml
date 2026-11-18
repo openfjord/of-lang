@@ -1,0 +1,52 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+Table:
+  is: Kind
+  definition: A table in a database.
+
+DataClass:
+  is: Kind
+  definition: A sort of data that needs care, such as personal data or payment data.
+
+readsTable:
+  is: Link
+  from: Service
+  to: Table
+  reads: "{from} reads {to}"
+  definition: The service gets rows from the table.
+
+holdsData:
+  is: Link
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: The rows of the table contain data of the data class.
+
+handlesData:
+  is: Link
+  from: Service
+  to: DataClass
+  reads: "{from} handles {to}"
+  definition: Data of the data class passes through the service.
+
+dataFromTable:
+  is: Derivative
+  says: A service handles each data class that one of the tables it reads holds.
+
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Table, as: $table }
+    - kind: { name: DataClass, as: $data }
+    - link: readsTable
+      from: $service
+      to:   $table
+    - link: holdsData
+      from: $table
+      to:   $data
+
+  derive:
+    - link: handlesData
+      from: $service
+      to:   $data

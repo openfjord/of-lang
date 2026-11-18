@@ -14,24 +14,24 @@ thing has it to the third thing.
 <tr>
 <td>
 
-A recipe can use another recipe. The link starts and ends at the same
-kind.
+A service can depend on another service. The link starts and ends at the
+same kind.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-usesRecipe:
+dependsOn:
   is: Link
-  from: Recipe
-  to: Recipe
-  reads: "{from} uses {to}"
-  definition: The first recipe needs the second recipe, directly or through other recipes.
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot do its work without the second service, directly or through other services.
 ```
 
 </td>
@@ -55,33 +55,33 @@ it.
 <tr>
 <td>
 
-A test file states three recipes. The lasagne uses the ragu, and the ragu
-uses the stock.
+A test file states three services. The checkout service depends on the
+orders service, and the orders service depends on the database.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/stock-in-the-lasagne.of.yaml
+# tests/examples/checkout-needs-the-database.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, usesRecipe]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
 
-recipe/stock:
+service/database:
   is: Fact
-  kind: Recipe
+  kind: Service
 
-recipe/ragu:
+service/orders:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesRecipe: recipe/stock
+    dependsOn: service/database
 
-recipe/lasagne:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    usesRecipe: recipe/ragu
+    dependsOn: service/orders
 ```
 
 </td>
@@ -89,21 +89,21 @@ recipe/lasagne:
 <tr>
 <td>
 
-No fact states that the lasagne uses the stock. The test expects it as a
-derived fact.
+No fact states that the checkout service depends on the database. The test
+expects it as a derived fact.
 
 </td>
 <td>
 
 ```yaml
-stockInTheLasagne:
+checkoutNeedsTheDatabase:
   is: Test
-  says: The lasagne uses the ragu, which uses the stock. Thus, the lasagne uses the stock.
+  says: Checkout depends on orders, which depends on the database. Thus, checkout depends on the database.
   expect:
     derived:
-      - link: usesRecipe
-        from: recipe/lasagne
-        to:   recipe/stock
+      - link: dependsOn
+        from: service/checkout
+        to:   service/database
 ```
 
 </td>
@@ -111,16 +111,17 @@ stockInTheLasagne:
 <tr>
 <td>
 
-The link stays in one direction: the stock does not use the lasagne.
+The link stays in one direction: the database does not depend on the
+checkout service.
 
 </td>
 <td>
 
 ```yaml
     notDerived:
-      - link: usesRecipe
-        from: recipe/stock
-        to:   recipe/lasagne
+      - link: dependsOn
+        from: service/database
+        to:   service/checkout
 ```
 
 </td>
@@ -131,7 +132,7 @@ The link stays in one direction: the stock does not use the lasagne.
 
 ```console
 $ of-lang test chains
-pass  test stockInTheLasagne  (chains/tests/examples/stock-in-the-lasagne.of.yaml)
+pass  test checkoutNeedsTheDatabase  (chains/tests/examples/checkout-needs-the-database.of.yaml)
 1 passed, 0 failed
 ```
 

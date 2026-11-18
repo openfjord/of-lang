@@ -13,20 +13,20 @@ under a link of this package, only where the manifest opens it in `openFor`.
 <tr>
 <td>
 
-The package defines a kind for recipes and a kind for ingredients.
+The package defines a kind for services and a kind for teams.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food from ingredients and other recipes.
+  definition: A program that runs in production and answers requests.
 
-Ingredient:
+Team:
   is: Kind
-  definition: A food that the kitchen buys and does not make.
+  definition: A group of people who build and run services.
 ```
 
 </td>
@@ -40,12 +40,12 @@ It also defines a link between them.
 <td>
 
 ```yaml
-usesIngredient:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The recipe needs the ingredient.
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -62,7 +62,7 @@ The manifest starts with the four required keys.
 # package.yaml
 package: "@by-example/open-for"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: open-for
 ```
 
@@ -78,8 +78,8 @@ rdfNamespace: open-for
 
 ```yaml
 exports:
-  kinds: [Recipe, Ingredient]
-  links: [usesIngredient]
+  kinds: [Service, Team]
+  links: [ownedBy]
 ```
 
 </td>
@@ -88,14 +88,14 @@ exports:
 <td>
 
 `openFor` lists the extension points. `extend` identifies a kind: a
-different package can declare a kind that extends `Recipe`.
+different package can declare a kind that extends `Service`.
 
 </td>
 <td>
 
 ```yaml
 openFor:
-  - extend: Recipe
+  - extend: Service
 ```
 
 </td>
@@ -104,14 +104,13 @@ openFor:
 <td>
 
 `under` identifies a link: a different package can declare a link under
-`usesIngredient`. `Ingredient` is not in the list, so no other package can
-extend it.
+`ownedBy`. `Team` is not in the list, so no other package can extend it.
 
 </td>
 <td>
 
 ```yaml
-  - under: usesIngredient
+  - under: ownedBy
 ```
 
 </td>
@@ -119,8 +118,8 @@ extend it.
 </table>
 
 The package of the page [Dependencies](dependencies.md) depends on this
-package and declares `Dish`, a kind that extends `Recipe`. `check` accepts
-the two packages:
+package and declares `PublicService`, a kind that extends `Service`. `check`
+accepts the two packages:
 
 ```console
 $ of-lang check open-for dependencies

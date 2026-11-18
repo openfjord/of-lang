@@ -23,7 +23,7 @@ The manifest starts with the four required keys.
 # package.yaml
 package: "@by-example/dependencies"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: dependencies
 ```
 
@@ -50,16 +50,16 @@ dependsOn:
 <td>
 
 A `pkg:` import gives the full name of the other package. The file can use
-only the names that the other package exports. `Recipe` is one of them.
+only the names that the other package exports. `Service` is one of them.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
+# defs/public-service.of.yaml
 import:
   - from: pkg:@by-example/open-for
-    use: [Recipe]
+    use: [Service]
 ```
 
 </td>
@@ -67,17 +67,17 @@ import:
 <tr>
 <td>
 
-The file then uses `Recipe` as it uses a name of its own package. The other
-package lets this package extend `Recipe`.
+The file then uses `Service` as it uses a name of its own package. The
+other package lets this package extend `Service`.
 
 </td>
 <td>
 
 ```yaml
-Dish:
+PublicService:
   is: Kind
-  extends: Recipe
-  definition: A recipe that the restaurant sells to guests.
+  extends: Service
+  definition: A service that customers call.
 ```
 
 </td>
@@ -86,26 +86,26 @@ Dish:
 <td>
 
 A test file also imports the name from the other package. The test
-expects that a dish is a recipe.
+expects that a public service is a service.
 
 </td>
 <td>
 
 ```yaml
-# tests/terms/dish-is-a-recipe.of.yaml
+# tests/terms/public-service-is-a-service.of.yaml
 import:
   - from: pkg:@by-example/open-for
-    use: [Recipe]
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+    use: [Service]
+  - from: file:../../defs/public-service.of.yaml
+    use: [PublicService]
 
-dishIsARecipe:
+publicServiceIsAService:
   is: Test
-  says: A dish is a recipe.
+  says: A public service is a service.
   expect:
     derived:
-      - kind: Dish
-        is a: Recipe
+      - kind: PublicService
+        is a: Service
 ```
 
 </td>
@@ -117,7 +117,7 @@ folder `open-for` is next to the folder `dependencies`, so `test` finds it:
 
 ```console
 $ of-lang test dependencies
-pass  test dishIsARecipe  (dependencies/tests/terms/dish-is-a-recipe.of.yaml)
+pass  test publicServiceIsAService  (dependencies/tests/terms/public-service-is-a-service.of.yaml)
 1 passed, 0 failed
 ```
 

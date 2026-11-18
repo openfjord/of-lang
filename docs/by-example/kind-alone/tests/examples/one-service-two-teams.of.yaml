@@ -1,0 +1,29 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team, ownedBy]
+
+team/payments:
+  is: Fact
+  kind: Team
+  fields:
+    name: payments
+
+team/discovery:
+  is: Fact
+  kind: Team
+  fields:
+    name: discovery
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+  links:
+    ownedBy: team/payments
+
+oneServiceTwoTeams:
+  is: Test
+  says: A team that owns a service and a team that owns no service are both valid.
+  expect:
+    rejected: []

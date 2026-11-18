@@ -12,17 +12,17 @@ A field with a `default` has that value when a fact does not give one.
 <tr>
 <td>
 
-A field is required, unless it says something else. Each dish must have a
-`name`.
+A field is required, unless it says something else. Each service must have
+a `name`.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -33,15 +33,15 @@ Dish:
 <tr>
 <td>
 
-`status` has a default. A dish that gives no status is `active`.
+`tier` has a default. A service that gives no tier is `standard`.
 
 </td>
 <td>
 
 ```yaml
-    status:
-      enum: [active, retired]
-      default: active
+    tier:
+      enum: [critical, standard]
+      default: standard
 ```
 
 </td>
@@ -49,23 +49,23 @@ Dish:
 <tr>
 <td>
 
-To see the default at work, a test file states two dishes. The first one
-gives no status.
+To see the default at work, a test file states two services. The first one
+gives no tier.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-dishes.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
+    name: search
 ```
 
 </td>
@@ -73,18 +73,18 @@ dish/margherita:
 <tr>
 <td>
 
-The second one gives a status of its own.
+The second one gives a tier of its own.
 
 </td>
 <td>
 
 ```yaml
-dish/fondue:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: fondue
-    status: retired
+    name: checkout
+    tier: critical
 ```
 
 </td>
@@ -93,15 +93,15 @@ dish/fondue:
 <td>
 
 A file of facts holds exactly one test. This one expects that the package
-rejects nothing: a dish without a status is valid.
+rejects nothing: a service without a tier is valid.
 
 </td>
 <td>
 
 ```yaml
-twoDishes:
+twoServices:
   is: Test
-  says: A dish without a status and a retired dish are both valid.
+  says: A service without a tier and a critical service are both valid.
   expect:
     rejected: []
 ```
@@ -111,28 +111,28 @@ twoDishes:
 <tr>
 <td>
 
-A question asks which dishes are active, given those facts.
+A question asks which services are standard, given those facts.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-are-active.of.yaml
+# tests/questions/which-services-are-standard.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichDishesAreActive:
+whichServicesAreStandard:
   is: Question
-  asks: Which dishes are active?
-  given: file:../examples/two-dishes.of.yaml
+  asks: Which services are standard?
+  given: file:../examples/two-services.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $dish
-      field: status
+    - node: $service
+      field: tier
       equals:
-        value: active
+        value: standard
 ```
 
 </td>
@@ -140,14 +140,14 @@ whichDishesAreActive:
 <tr>
 <td>
 
-The answer is the margherita, although its fact does not state a status.
+The answer is the search service, although its fact does not state a tier.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/margherita]
+    $service: [service/search]
 ```
 
 </td>
@@ -158,8 +158,8 @@ The answer is the margherita, although its fact does not state a status.
 
 ```console
 $ of-lang test defaults
-pass  test twoDishes  (defaults/tests/examples/two-dishes.of.yaml)
-pass  question whichDishesAreActive  (defaults/tests/questions/which-dishes-are-active.of.yaml)
+pass  test twoServices  (defaults/tests/examples/two-services.of.yaml)
+pass  question whichServicesAreStandard  (defaults/tests/questions/which-services-are-standard.of.yaml)
 2 passed, 0 failed
 ```
 

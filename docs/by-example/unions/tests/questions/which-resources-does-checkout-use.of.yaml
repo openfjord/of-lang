@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/resource.of.yaml
+    use: [Service, Resource, usesResource]
+
+whichResourcesDoesCheckoutUse:
+  is: Question
+  asks: Which resources does the checkout service use?
+  given: file:../examples/a-checkout.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Resource, as: $resource }
+    - link: usesResource
+      from: $service
+      to:   $resource
+  filter:
+    - node: $service
+      equals:
+        value: service/checkout
+  expect:
+    $resource: [service/orders, table/customers]

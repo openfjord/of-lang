@@ -1,0 +1,26 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesShareAPort:
+  is: Question
+  asks: Which services have the same port as another service?
+  given: file:../examples/two-equal-ports.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
+
+  filter:
+    - node: $service
+      does not equal:
+        same as: $other
+
+    - node: $service
+      field: port
+      equals:
+        same as:
+          node: $other
+          field: port
+
+  expect:
+    $service: [service/checkout, service/orders]

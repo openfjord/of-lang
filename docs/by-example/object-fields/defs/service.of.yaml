@@ -1,0 +1,18 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    name:
+      type: string
+    onCall:
+      type: object
+      properties:
+        team:
+          type: string
+        phone:
+          type: string
+          optional: true
+    ports:
+      type: array
+      items:
+        type: integer

@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/table.of.yaml
+    use: [Table]
+
+table/products:
+  is: Fact
+  kind: Table
+  fields:
+    name: products
+    sensitivity: public
+
+table/customers:
+  is: Fact
+  kind: Table
+  fields:
+    name: customers
+    sensitivity: confidential
+
+twoTables:
+  is: Test
+  says: A public table and a confidential table are both valid.
+  expect:
+    rejected: []

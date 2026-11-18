@@ -14,28 +14,28 @@ matches.
 <tr>
 <td>
 
-An ingredient is fresh or frozen.
+A table holds personal data or does not.
 
 </td>
 <td>
 
 ```yaml
-# defs/kitchen.of.yaml
-Dish:
+# defs/product.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
 
-Ingredient:
+Table:
   is: Kind
-  definition: A food that the kitchen buys and does not make.
+  definition: A table in a database.
   fields:
     name:
       type: string
-    storage:
-      enum: [fresh, frozen]
+    personalData:
+      type: boolean
 ```
 
 </td>
@@ -43,18 +43,18 @@ Ingredient:
 <tr>
 <td>
 
-A dish uses ingredients.
+A service reads tables.
 
 </td>
 <td>
 
 ```yaml
-usesIngredient:
+readsTable:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The dish has the ingredient in it.
+  from: Service
+  to: Table
+  reads: "{from} reads {to}"
+  definition: The service reads rows of the table.
 ```
 
 </td>
@@ -62,37 +62,30 @@ usesIngredient:
 <tr>
 <td>
 
-A test file states two fresh ingredients and one frozen ingredient.
+A test file states two tables. Only the customers table holds personal data.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/fresh-and-frozen.of.yaml
+# tests/examples/two-tables.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Table, readsTable]
 
-ingredient/tomatoes:
+table/products:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: tomatoes
-    storage: fresh
+    name: products
+    personalData: false
 
-ingredient/basil:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
   fields:
-    name: basil
-    storage: fresh
-
-ingredient/shrimp:
-  is: Fact
-  kind: Ingredient
-  fields:
-    name: shrimp
-    storage: frozen
+    name: customers
+    personalData: true
 ```
 
 </td>
@@ -100,28 +93,28 @@ ingredient/shrimp:
 <tr>
 <td>
 
-The margherita uses only fresh ingredients. The scampi uses shrimp, which is
-frozen.
+The search service reads only the products table. The checkout service also
+reads the customers table.
 
 </td>
 <td>
 
 ```yaml
-dish/margherita:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
+    name: search
   links:
-    usesIngredient: [ingredient/tomatoes, ingredient/basil]
+    readsTable: table/products
 
-dish/scampi:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: scampi
+    name: checkout
   links:
-    usesIngredient: [ingredient/tomatoes, ingredient/shrimp]
+    readsTable: [table/products, table/customers]
 ```
 
 </td>
@@ -135,9 +128,9 @@ A file of facts holds exactly one test.
 <td>
 
 ```yaml
-freshAndFrozen:
+twoTables:
   is: Test
-  says: A dish with fresh ingredients and a dish with a frozen ingredient are both valid.
+  says: A service that reads personal data and a service that reads none are both valid.
   expect:
     rejected: []
 ```
@@ -147,24 +140,24 @@ freshAndFrozen:
 <tr>
 <td>
 
-A question asks which dishes use a frozen ingredient. Its `match` finds each
-dish.
+A question asks which services read a table that holds personal data. Its
+`match` finds each service.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-use-a-frozen-ingredient.of.yaml
+# tests/questions/which-services-read-personal-data.of.yaml
 import:
-  - from: file:../../defs/kitchen.of.yaml
-    use: [Dish, Ingredient, usesIngredient]
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Table, readsTable]
 
-whichDishesUseAFrozenIngredient:
+whichServicesReadPersonalData:
   is: Question
-  asks: Which dishes use a frozen ingredient?
-  given: file:../examples/fresh-and-frozen.of.yaml
+  asks: Which services read a table that holds personal data?
+  given: file:../examples/two-tables.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
 ```
 
 </td>
@@ -172,9 +165,9 @@ whichDishesUseAFrozenIngredient:
 <tr>
 <td>
 
-The nested block runs one time for each dish. Its `match` finds the
-ingredients that `$dish` uses. The variable `$ingredient` belongs to the
-nested block, and nothing outside the block can use it.
+The nested block runs one time for each service. Its `match` finds the
+tables that `$service` reads. The variable `$table` belongs to the nested
+block, and nothing outside the block can use it.
 
 </td>
 <td>
@@ -183,10 +176,10 @@ nested block, and nothing outside the block can use it.
   filter:
     - at least one:
         match:
-          - kind: { name: Ingredient, as: $ingredient }
-          - link: usesIngredient
-            from: $dish
-            to:   $ingredient
+          - kind: { name: Table, as: $table }
+          - link: readsTable
+            from: $service
+            to:   $table
 ```
 
 </td>
@@ -194,17 +187,17 @@ nested block, and nothing outside the block can use it.
 <tr>
 <td>
 
-The `filter` of the nested block keeps the frozen ingredients.
+The `filter` of the nested block keeps the tables that hold personal data.
 
 </td>
 <td>
 
 ```yaml
         filter:
-          - node: $ingredient
-            field: storage
+          - node: $table
+            field: personalData
             equals:
-              value: frozen
+              value: true
 ```
 
 </td>
@@ -212,15 +205,15 @@ The `filter` of the nested block keeps the frozen ingredients.
 <tr>
 <td>
 
-For the scampi, the nested block has one match. For the margherita, it has
-no matches.
+For the checkout service, the nested block has one match. For the search
+service, it has no matches.
 
 </td>
 <td>
 
 ```yaml
   expect:
-    $dish: [dish/scampi]
+    $service: [service/checkout]
 ```
 
 </td>
@@ -231,8 +224,8 @@ no matches.
 
 ```console
 $ of-lang test at-least-one
-pass  test freshAndFrozen  (at-least-one/tests/examples/fresh-and-frozen.of.yaml)
-pass  question whichDishesUseAFrozenIngredient  (at-least-one/tests/questions/which-dishes-use-a-frozen-ingredient.of.yaml)
+pass  test twoTables  (at-least-one/tests/examples/two-tables.of.yaml)
+pass  question whichServicesReadPersonalData  (at-least-one/tests/questions/which-services-read-personal-data.of.yaml)
 2 passed, 0 failed
 ```
 

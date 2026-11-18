@@ -13,24 +13,24 @@ between two things.
 <tr>
 <td>
 
-The package has three kinds: a dish, an ingredient and an allergen.
+The package has three kinds: a service, a table and a data class.
 
 </td>
 <td>
 
 ```yaml
-# defs/allergens.of.yaml
-Dish:
+# defs/data.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
 
-Ingredient:
+Table:
   is: Kind
-  definition: A food that the kitchen buys and uses in dishes.
+  definition: A table in a database.
 
-Allergen:
+DataClass:
   is: Kind
-  definition: A substance in food that can make a guest ill.
+  definition: A sort of data that needs care, such as personal data or payment data.
 ```
 
 </td>
@@ -38,26 +38,26 @@ Allergen:
 <tr>
 <td>
 
-Facts state two links: a dish uses an ingredient, and an ingredient
-contains an allergen.
+Facts state two links: a service reads a table, and a table holds a data
+class.
 
 </td>
 <td>
 
 ```yaml
-usesIngredient:
+readsTable:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The cooks put the ingredient in the dish.
+  from: Service
+  to: Table
+  reads: "{from} reads {to}"
+  definition: The service gets rows from the table.
 
-containsAllergen:
+holdsData:
   is: Link
-  from: Ingredient
-  to: Allergen
-  reads: "{from} contains {to}"
-  definition: The ingredient has the allergen in it.
+  from: Table
+  to: DataClass
+  reads: "{from} holds {to}"
+  definition: The rows of the table contain data of the data class.
 ```
 
 </td>
@@ -71,12 +71,12 @@ No fact states the third link. A derivative adds it.
 <td>
 
 ```yaml
-hasAllergen:
+handlesData:
   is: Link
-  from: Dish
-  to: Allergen
-  reads: "{from} has {to}"
-  definition: The dish has the allergen in it.
+  from: Service
+  to: DataClass
+  reads: "{from} handles {to}"
+  definition: Data of the data class passes through the service.
 ```
 
 </td>
@@ -91,9 +91,9 @@ words.
 <td>
 
 ```yaml
-allergenFromIngredient:
+dataFromTable:
   is: Derivative
-  says: A dish has each allergen that one of its ingredients contains.
+  says: A service handles each data class that one of the tables it reads holds.
 ```
 
 </td>
@@ -101,23 +101,23 @@ allergenFromIngredient:
 <tr>
 <td>
 
-`match` finds each dish that uses an ingredient that contains an allergen.
-A variable, such as `$dish`, represents each thing of its kind in turn.
+`match` finds each service that reads a table that holds a data class.
+A variable, such as `$service`, represents each thing of its kind in turn.
 
 </td>
 <td>
 
 ```yaml
   match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Ingredient, as: $ingredient }
-    - kind: { name: Allergen, as: $allergen }
-    - link: usesIngredient
-      from: $dish
-      to:   $ingredient
-    - link: containsAllergen
-      from: $ingredient
-      to:   $allergen
+    - kind: { name: Service, as: $service }
+    - kind: { name: Table, as: $table }
+    - kind: { name: DataClass, as: $data }
+    - link: readsTable
+      from: $service
+      to:   $table
+    - link: holdsData
+      from: $table
+      to:   $data
 ```
 
 </td>
@@ -133,9 +133,9 @@ and `to` adds a link.
 
 ```yaml
   derive:
-    - link: hasAllergen
-      from: $dish
-      to:   $allergen
+    - link: handlesData
+      from: $service
+      to:   $data
 ```
 
 </td>
@@ -143,33 +143,33 @@ and `to` adds a link.
 <tr>
 <td>
 
-A test file states the facts. The margherita uses parmesan, and parmesan
-contains milk.
+A test file states the facts. The checkout service reads the customers
+table, and the customers table holds personal data.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/margherita.of.yaml
+# tests/examples/checkout.of.yaml
 import:
-  - from: file:../../defs/allergens.of.yaml
-    use: [Dish, Ingredient, Allergen, usesIngredient, containsAllergen, hasAllergen]
+  - from: file:../../defs/data.of.yaml
+    use: [Service, Table, DataClass, readsTable, holdsData, handlesData]
 
-allergen/milk:
+data/personal:
   is: Fact
-  kind: Allergen
+  kind: DataClass
 
-ingredient/parmesan:
+table/customers:
   is: Fact
-  kind: Ingredient
+  kind: Table
   links:
-    containsAllergen: allergen/milk
+    holdsData: data/personal
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   links:
-    usesIngredient: ingredient/parmesan
+    readsTable: table/customers
 ```
 
 </td>
@@ -185,14 +185,14 @@ variables.
 <td>
 
 ```yaml
-margherita:
+checkout:
   is: Test
-  says: The margherita uses parmesan, which contains milk. Thus, the margherita has milk.
+  says: The checkout service reads the customers table, which holds personal data. Thus, the checkout service handles personal data.
   expect:
     derived:
-      - link: hasAllergen
-        from: dish/margherita
-        to:   allergen/milk
+      - link: handlesData
+        from: service/checkout
+        to:   data/personal
 ```
 
 </td>
@@ -203,9 +203,9 @@ margherita:
 derivative that added it:
 
 ```console
-$ of-lang run derive-link derive-link/tests/examples/margherita.of.yaml
+$ of-lang run derive-link derive-link/tests/examples/checkout.of.yaml
 derived:
-  dish/margherita has allergen/milk  (derivative allergenFromIngredient)
+  service/checkout handles data/personal  (derivative dataFromTable)
 rejected:
   nothing
 ```

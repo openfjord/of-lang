@@ -1,4 +1,4 @@
 package: "@by-example/inverse-names"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: inverse-names

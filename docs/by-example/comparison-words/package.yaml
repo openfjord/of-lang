@@ -1,4 +1,4 @@
 package: "@by-example/comparison-words"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: comparison-words

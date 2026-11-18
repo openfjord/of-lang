@@ -1,0 +1,28 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+  fields:
+    replicas:
+      type: integer
+    minReplicas:
+      type: integer
+    onCall:
+      type: string
+      optional: true
+
+serviceHasEnoughReplicas:
+  is: Constraint
+  says: Each service has the number of replicas that it needs, or more.
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node:  $service
+      field: replicas
+      is below:
+        same as:
+          node:  $service
+          field: minReplicas
+
+  message: >-
+    {$service} must have {$service: minReplicas} replicas or more, but it
+    has {$service: replicas}. On call: {$service: onCall}.

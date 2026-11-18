@@ -1,0 +1,27 @@
+import:
+  - from: file:../../defs/product.of.yaml
+    use: [Service, Team]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+
+team/payments:
+  is: Fact
+  kind: Team
+  fields:
+    name: payments
+
+twoServicesAndATeam:
+  is: Test
+  says: Two services and a team are valid.
+  expect:
+    rejected: []

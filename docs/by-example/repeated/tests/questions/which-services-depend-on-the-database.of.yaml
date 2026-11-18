@@ -1,0 +1,24 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, dependsOn]
+
+whichServicesDependOnTheDatabase:
+  is: Question
+  asks: Which services depend on the database, directly or through other services?
+  given: file:../examples/four-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+    - kind: { name: Service, as: $other }
+
+    - link: dependsOn
+      from: $service
+      to:   $other
+      repeated: true
+
+  filter:
+    - node: $other
+      equals:
+        value: service/database
+
+  expect:
+    $service: [service/checkout, service/orders]

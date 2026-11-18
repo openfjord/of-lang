@@ -1,0 +1,18 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+whichServicesHavePaymentsOnCall:
+  is: Question
+  asks: Which services have the payments team on call?
+  given: file:../examples/two-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+  filter:
+    - node: $service
+      field: onCall
+      part: team
+      equals:
+        value: payments
+  expect:
+    $service: [service/checkout]

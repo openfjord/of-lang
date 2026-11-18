@@ -13,16 +13,16 @@ A field can hold more than one value. An `object` has named parts, and an
 <tr>
 <td>
 
-Each dish has a `name`, which is one value.
+Each service has a `name`, which is one value.
 
 </td>
 <td>
 
 ```yaml
-# defs/dish.of.yaml
-Dish:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
     name:
       type: string
@@ -40,12 +40,12 @@ schema, like a field. A part is required, unless it has `optional: true`.
 <td>
 
 ```yaml
-    plating:
+    onCall:
       type: object
       properties:
-        plate:
+        team:
           type: string
-        garnish:
+        phone:
           type: string
           optional: true
 ```
@@ -56,16 +56,16 @@ schema, like a field. A part is required, unless it has `optional: true`.
 <td>
 
 `items` gives the schema of each value of an `array`. Here, each value is
-text.
+a whole number.
 
 </td>
 <td>
 
 ```yaml
-    allergens:
+    ports:
       type: array
       items:
-        type: string
+        type: integer
 ```
 
 </td>
@@ -73,27 +73,27 @@ text.
 <tr>
 <td>
 
-A test file states two dishes. The first one gives the two parts of
-`plating`, and a list of two allergens.
+A test file states two services. The first one gives the two parts of
+`onCall`, and a list of two ports.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/two-dishes.of.yaml
+# tests/examples/two-services.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: margherita
-    plating:
-      plate: wooden board
-      garnish: basil
-    allergens: [gluten, milk]
+    name: checkout
+    onCall:
+      team: payments
+      phone: "+31 20 555 0100"
+    ports: [8443, 9090]
 ```
 
 </td>
@@ -101,24 +101,24 @@ dish/margherita:
 <tr>
 <td>
 
-The second one omits the optional part, and its list is empty.
+The second one omits the optional part, and its list has one port.
 
 </td>
 <td>
 
 ```yaml
-dish/minestrone:
+service/search:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    name: minestrone
-    plating:
-      plate: deep bowl
-    allergens: []
+    name: search
+    onCall:
+      team: discovery
+    ports: [8080]
 
-twoDishes:
+twoServices:
   is: Test
-  says: A dish with a garnish and a dish without one are both valid.
+  says: A service with a phone number for the team on call and a service without one are both valid.
   expect:
     rejected: []
 ```
@@ -129,31 +129,31 @@ twoDishes:
 <td>
 
 A condition names one part of an `object` field with `part`. This question
-asks which dishes have a deep bowl as their plate.
+asks which services have the payments team on call.
 
 </td>
 <td>
 
 ```yaml
-# tests/questions/which-dishes-go-in-a-deep-bowl.of.yaml
+# tests/questions/which-services-have-payments-on-call.of.yaml
 import:
-  - from: file:../../defs/dish.of.yaml
-    use: [Dish]
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
 
-whichDishesGoInADeepBowl:
+whichServicesHavePaymentsOnCall:
   is: Question
-  asks: Which dishes go in a deep bowl?
-  given: file:../examples/two-dishes.of.yaml
+  asks: Which services have the payments team on call?
+  given: file:../examples/two-services.of.yaml
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
   filter:
-    - node: $dish
-      field: plating
-      part: plate
+    - node: $service
+      field: onCall
+      part: team
       equals:
-        value: deep bowl
+        value: payments
   expect:
-    $dish: [dish/minestrone]
+    $service: [service/checkout]
 ```
 
 </td>
@@ -164,8 +164,8 @@ whichDishesGoInADeepBowl:
 
 ```console
 $ of-lang test object-fields
-pass  test twoDishes  (object-fields/tests/examples/two-dishes.of.yaml)
-pass  question whichDishesGoInADeepBowl  (object-fields/tests/questions/which-dishes-go-in-a-deep-bowl.of.yaml)
+pass  test twoServices  (object-fields/tests/examples/two-services.of.yaml)
+pass  question whichServicesHavePaymentsOnCall  (object-fields/tests/questions/which-services-have-payments-on-call.of.yaml)
 2 passed, 0 failed
 ```
 

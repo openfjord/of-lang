@@ -1,0 +1,23 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, PublicService]
+
+whichServicesAreCriticalOrPublic:
+  is: Question
+  asks: Which services are critical or public?
+  given: file:../examples/three-services.of.yaml
+  match:
+    - kind: { name: Service, as: $service }
+
+  filter:
+    - any of:
+        - node: $service
+          field: tier
+          equals:
+            value: critical
+
+        - node: $service
+          is a: PublicService
+
+  expect:
+    $service: [service/database, service/search]

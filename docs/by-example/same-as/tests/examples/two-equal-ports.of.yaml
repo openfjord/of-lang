@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    name: checkout
+    port: 8080
+
+service/orders:
+  is: Fact
+  kind: Service
+  fields:
+    name: orders
+    port: 8080
+
+service/search:
+  is: Fact
+  kind: Service
+  fields:
+    name: search
+    port: 9090
+
+twoEqualPorts:
+  is: Test
+  says: Two services with the same port and a third service are valid.
+  expect:
+    rejected: []

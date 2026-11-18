@@ -1,0 +1,32 @@
+import:
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy, ownsService]
+
+team/payments:
+  is: Fact
+  kind: Team
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    ownedBy: team/payments
+
+service/search:
+  is: Fact
+  kind: Service
+
+team/catalog:
+  is: Fact
+  kind: Team
+  links:
+    ownsService: service/search
+
+twoTeams:
+  is: Test
+  says: Each of the two teams owns one service.
+  expect:
+    derived:
+      - link: ownedBy
+        from: service/search
+        to:   team/catalog

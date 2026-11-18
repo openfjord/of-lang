@@ -12,20 +12,20 @@ A link is a named relationship from a kind to a kind, in one direction.
 <tr>
 <td>
 
-A link connects two kinds. This package has recipes and stations.
+A link connects two kinds. This package has services and teams.
 
 </td>
 <td>
 
 ```yaml
-# defs/recipe.of.yaml
-Recipe:
+# defs/service.of.yaml
+Service:
   is: Kind
-  definition: The steps that make one food.
+  definition: A program that runs in production and answers requests.
 
-Station:
+Team:
   is: Kind
-  definition: A place in the kitchen where cooks make recipes.
+  definition: A group of people who build and run services.
 ```
 
 </td>
@@ -41,10 +41,10 @@ where the link ends.
 <td>
 
 ```yaml
-madeAtStation:
+ownedBy:
   is: Link
-  from: Recipe
-  to: Station
+  from: Service
+  to: Team
 ```
 
 </td>
@@ -59,7 +59,7 @@ and `{to}`.
 <td>
 
 ```yaml
-  reads: "{from} is made at {to}"
+  reads: "{from} is owned by {to}"
 ```
 
 </td>
@@ -74,7 +74,7 @@ means.
 <td>
 
 ```yaml
-  definition: The station where cooks make the recipe.
+  definition: The team that builds and runs the service.
 ```
 
 </td>
@@ -82,27 +82,27 @@ means.
 <tr>
 <td>
 
-To see the link at work, a test file states a station and a recipe. The
-recipe gives the link under `links`, with the id of the station.
+To see the link at work, a test file states a team and a service. The
+service gives the link under `links`, with the id of the team.
 
 </td>
 <td>
 
 ```yaml
-# tests/examples/pesto-at-the-sauce-station.of.yaml
+# tests/examples/checkout-has-an-owner.of.yaml
 import:
-  - from: file:../../defs/recipe.of.yaml
-    use: [Recipe, Station, madeAtStation]
+  - from: file:../../defs/service.of.yaml
+    use: [Service, Team, ownedBy]
 
-station/sauce:
+team/payments:
   is: Fact
-  kind: Station
+  kind: Team
 
-recipe/pesto:
+service/checkout:
   is: Fact
-  kind: Recipe
+  kind: Service
   links:
-    madeAtStation: station/sauce
+    ownedBy: team/payments
 ```
 
 </td>
@@ -111,15 +111,15 @@ recipe/pesto:
 <td>
 
 The test expects that the package rejects nothing: the link starts at a
-recipe and ends at a station.
+service and ends at a team.
 
 </td>
 <td>
 
 ```yaml
-pestoAtTheSauceStation:
+checkoutHasAnOwner:
   is: Test
-  says: Cooks make the pesto at the sauce station.
+  says: The payments team owns the checkout service.
   expect:
     rejected: []
 ```
@@ -132,7 +132,7 @@ pestoAtTheSauceStation:
 
 ```console
 $ of-lang test links
-pass  test pestoAtTheSauceStation  (links/tests/examples/pesto-at-the-sauce-station.of.yaml)
+pass  test checkoutHasAnOwner  (links/tests/examples/checkout-has-an-owner.of.yaml)
 1 passed, 0 failed
 ```
 
