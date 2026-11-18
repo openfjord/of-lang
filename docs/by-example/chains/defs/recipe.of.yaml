@@ -1,0 +1,12 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food.
+
+usesRecipe:
+  is: Link
+  from: Recipe
+  to: Recipe
+  reads: "{from} uses {to}"
+  definition: The first recipe needs the second recipe, directly or through other recipes.
+
+  chains: true

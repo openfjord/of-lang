@@ -1,0 +1,20 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+
+Station:
+  is: Kind
+  definition: A place in the kitchen where cooks make food.
+  fields:
+    name:
+      type: string
+
+madeAtStation:
+  is: Link
+  from: Dish
+  to: Station
+  reads: "{from} is made at {to}"
+  definition: The station where cooks make the dish.

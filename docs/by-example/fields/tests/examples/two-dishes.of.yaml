@@ -1,0 +1,28 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+dish/fondue:
+  is: Fact
+  kind: Dish
+  fields:
+    name: fondue
+    price: 24.5
+    servings: 2
+    vegetarian: true
+    chefNote: Stir the cheese until the guests come.
+
+dish/carbonara:
+  is: Fact
+  kind: Dish
+  fields:
+    name: carbonara
+    price: 14
+    servings: 1
+    vegetarian: false
+
+twoDishes:
+  is: Test
+  says: A dish with a note from the chef and a dish without one are both valid.
+  expect:
+    rejected: []

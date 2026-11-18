@@ -1,0 +1,30 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish]
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: tomato_sauce
+    prepMinutes: 40
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    prepMinutes: 12
+    price: 12
+
+aRecipeAndADish:
+  is: Test
+  says: A dish is a recipe, and it has the fields of a recipe.
+  expect:
+    derived:
+      - kind: Dish
+        is a: Recipe
+    notDerived:
+      - kind: Recipe
+        is a: Dish
+    rejected: []

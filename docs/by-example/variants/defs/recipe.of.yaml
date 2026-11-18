@@ -1,0 +1,22 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients.
+  fields:
+    name:
+      type: string
+    yield:
+      oneOf:
+
+        - type: object
+          properties:
+            variant:
+              const: portions
+            count:
+              type: integer
+
+        - type: object
+          properties:
+            variant:
+              const: weight
+            grams:
+              type: integer

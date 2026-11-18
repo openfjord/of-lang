@@ -1,0 +1,4 @@
+package: "@by-example/derivatives-together"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: derivatives-together

@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/menu.of.yaml
+    use: [Drink, Dish]
+
+drink/lemonade:
+  is: Fact
+  kind: Drink
+
+dish/tiramisu:
+  is: Fact
+  kind: Dish
+  fields:
+    name: tiramisu
+    course: dessert
+
+menuWithTheChange:
+  is: Test
+  says: A drink and a dish with a course are valid.
+  expect:
+    rejected: []

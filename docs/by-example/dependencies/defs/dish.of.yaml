@@ -1,0 +1,8 @@
+import:
+  - from: pkg:@by-example/open-for
+    use: [Recipe]
+
+Dish:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.

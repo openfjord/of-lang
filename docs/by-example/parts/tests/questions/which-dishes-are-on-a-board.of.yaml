@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+whichDishesAreOnABoard:
+  is: Question
+  asks: Which dishes do cooks serve on a board?
+  given: file:../examples/three-platings.of.yaml
+  match:
+    - kind: { name: Dish, as: $dish }
+
+  filter:
+    - node: $dish
+      field: plating
+      part: plate
+      equals:
+        value: board
+
+  expect:
+    $dish: [dish/margherita, dish/marinara]

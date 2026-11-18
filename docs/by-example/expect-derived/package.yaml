@@ -1,0 +1,4 @@
+package: "@by-example/expect-derived"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: expect-derived

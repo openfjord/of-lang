@@ -1,0 +1,13 @@
+Station:
+  is: Kind
+  definition: A place in the kitchen where cooks make food.
+  fields:
+    name:
+      type: string
+
+dependsOnStation:
+  is: Link
+  from: Station
+  to: Station
+  reads: "{from} depends on {to}"
+  definition: The first station cannot work when the second station stops.

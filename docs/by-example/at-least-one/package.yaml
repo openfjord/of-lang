@@ -1,0 +1,4 @@
+package: "@by-example/at-least-one"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: at-least-one

@@ -1,0 +1,16 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Station, makesRecipe]
+
+whichStationsMakeARecipe:
+  is: Question
+  asks: Which stations make a recipe?
+  given: file:../examples/two-stations.of.yaml
+  match:
+    - kind: { name: Station, as: $station }
+    - link: makesRecipe
+      from: $station
+      to:   Recipe
+
+  expect:
+    $station: [station/sauce, station/pizza]

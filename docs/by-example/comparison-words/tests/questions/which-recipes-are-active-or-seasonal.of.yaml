@@ -1,0 +1,17 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe]
+
+whichRecipesAreActiveOrSeasonal:
+  is: Question
+  asks: Which recipes are active or seasonal?
+  given: file:../examples/four-recipes.of.yaml
+  match:
+    - kind: { name: Recipe, as: $recipe }
+  filter:
+    - node: $recipe
+      field: status
+      is one of:
+        values: [active, seasonal]
+  expect:
+    $recipe: [recipe/pesto, dish/margherita, dish/fondue]

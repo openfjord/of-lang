@@ -1,0 +1,17 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients.
+  fields:
+    name:
+      type: string
+    prepMinutes:
+      type: integer
+
+Dish:
+  is: Kind
+  extends: Recipe
+  definition: A recipe that the restaurant sells to guests.
+
+  fields:
+    price:
+      type: number

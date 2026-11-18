@@ -1,0 +1,21 @@
+Ingredient:
+  is: Kind
+  tags: [allergens]
+  definition: A food that the kitchen buys and does not make.
+
+Allergen:
+  is: Kind
+  tags: [allergens]
+  definition: A substance in food that can cause a dangerous reaction in some persons.
+
+containsAllergen:
+  is: Link
+  tags: [allergens]
+  from: Ingredient
+  to: Allergen
+  reads: "{from} contains {to}"
+  definition: The allergen is a part of the ingredient.
+
+Station:
+  is: Kind
+  definition: A part of the kitchen where a group of cooks makes some of the recipes.

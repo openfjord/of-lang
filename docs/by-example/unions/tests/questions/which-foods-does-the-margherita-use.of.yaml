@@ -1,0 +1,20 @@
+import:
+  - from: file:../../defs/food.of.yaml
+    use: [Recipe, Food, usesFood]
+
+whichFoodsDoesTheMargheritaUse:
+  is: Question
+  asks: Which foods does the margherita use?
+  given: file:../examples/a-pizza.of.yaml
+  match:
+    - kind: { name: Recipe, as: $recipe }
+    - kind: { name: Food, as: $food }
+    - link: usesFood
+      from: $recipe
+      to:   $food
+  filter:
+    - node: $recipe
+      equals:
+        value: recipe/margherita
+  expect:
+    $food: [recipe/tomato_sauce, ingredient/mozzarella]

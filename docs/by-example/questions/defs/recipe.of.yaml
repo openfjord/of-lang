@@ -1,0 +1,14 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food.
+
+Station:
+  is: Kind
+  definition: A place in the kitchen where cooks make recipes.
+
+madeAtStation:
+  is: Link
+  from: Recipe
+  to: Station
+  reads: "{from} is made at {to}"
+  definition: The station where cooks make the recipe.

@@ -1,0 +1,4 @@
+package: "@by-example/link-items"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: link-items

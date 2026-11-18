@@ -1,0 +1,7 @@
+Minutes:
+  is: ValueType
+  definition: A number of minutes of work.
+
+  type: integer
+  minimum: 1
+  maximum: 1440

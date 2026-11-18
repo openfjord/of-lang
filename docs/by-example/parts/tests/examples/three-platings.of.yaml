@@ -1,0 +1,34 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    plating:
+      plate: board
+      garnish: basil
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  fields:
+    name: marinara
+    plating:
+      plate: board
+
+dish/fondue:
+  is: Fact
+  kind: Dish
+  fields:
+    name: fondue
+    plating:
+      plate: pot
+
+threePlatings:
+  is: Test
+  says: Dishes on a board and in a pot are valid, with or without a garnish.
+  expect:
+    rejected: []

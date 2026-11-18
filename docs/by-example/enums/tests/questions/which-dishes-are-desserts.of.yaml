@@ -1,0 +1,18 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+whichDishesAreDesserts:
+  is: Question
+  asks: Which dishes are desserts?
+  given: file:../examples/two-dishes.of.yaml
+  match:
+    - kind: { name: Dish, as: $dish }
+  filter:
+    - node: $dish
+      field: course
+      equals:
+        value: dessert
+
+  expect:
+    $dish: [dish/tiramisu]

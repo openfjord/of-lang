@@ -1,0 +1,43 @@
+import:
+  - from: file:../../defs/kitchen.of.yaml
+    use: [Dish, Ingredient, usesIngredient]
+
+ingredient/tomatoes:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: tomatoes
+
+ingredient/mozzarella:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: mozzarella
+
+ingredient/basil:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: basil
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+  links:
+    usesIngredient: [ingredient/tomatoes, ingredient/mozzarella, ingredient/basil]
+
+dish/marinara:
+  is: Fact
+  kind: Dish
+  fields:
+    name: marinara
+  links:
+    usesIngredient: [ingredient/tomatoes, ingredient/basil]
+
+twoAndThreeIngredients:
+  is: Test
+  says: A dish with three ingredients and a dish with two ingredients are both valid.
+  expect:
+    rejected: []

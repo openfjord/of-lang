@@ -1,0 +1,14 @@
+import:
+  - from: file:ingredient.of.yaml
+    use: [{ name: Ingredient, as: Product }]
+
+Supplier:
+  is: Kind
+  definition: A company that sells food to the restaurant.
+
+soldBy:
+  is: Link
+  from: Product
+  to: Supplier
+  reads: "{from} is sold by {to}"
+  definition: The supplier that sells the ingredient to the kitchen.

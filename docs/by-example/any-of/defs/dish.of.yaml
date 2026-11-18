@@ -1,0 +1,10 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+    price:
+      type: integer
+    status:
+      enum: [active, retired]

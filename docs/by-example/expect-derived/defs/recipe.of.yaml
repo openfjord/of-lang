@@ -1,0 +1,22 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food.
+
+Ingredient:
+  is: Kind
+  definition: A raw food that the restaurant buys.
+
+usesIngredient:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The recipe needs the ingredient.
+
+usesGarnish:
+  is: Link
+  from: Recipe
+  to: Ingredient
+  reads: "{from} is garnished with {to}"
+  definition: The cook puts the ingredient on the food at the end.
+  under: usesIngredient

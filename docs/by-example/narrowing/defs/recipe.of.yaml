@@ -1,0 +1,24 @@
+Recipe:
+  is: Kind
+  definition: The steps that make one food from ingredients.
+  fields:
+    code:
+      type: string
+      pattern: "^[a-z][a-z0-9_]*$"
+
+    title:
+      type: string
+      minLength: 3
+      maxLength: 40
+
+    servings:
+      type: integer
+      minimum: 1
+      maximum: 12
+
+    steps:
+      type: string
+      format: uri
+
+    units:
+      const: metric

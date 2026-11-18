@@ -1,0 +1,10 @@
+package: "@by-example/open-for"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: open-for
+exports:
+  kinds: [Recipe, Ingredient]
+  links: [usesIngredient]
+openFor:
+  - extend: Recipe
+  - under: usesIngredient

@@ -1,0 +1,25 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    price:
+      type: integer
+    cost:
+      type: integer
+
+dishSellsAboveCost:
+  is: Constraint
+  says: The price of a dish is above its cost.
+
+  match:
+    - kind: { name: Dish, as: $dish }
+
+  filter:
+    - node:  $dish
+      field: price
+      is at most:
+        same as:
+          node:  $dish
+          field: cost
+
+  message: "{$dish} must have a price above its cost."

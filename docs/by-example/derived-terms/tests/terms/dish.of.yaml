@@ -1,0 +1,29 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish, madeAtStation, makesRecipe, usesRecipe, usesSauce]
+
+dishIsARecipe:
+  is: Test
+  says: >
+    A dish is a recipe, so a dish can have a station. A sauce is one of the
+    recipes that a dish uses.
+  expect:
+    derived:
+
+      - kind: Dish
+        is a: Recipe
+      - kind: Dish
+        can have: madeAtStation
+
+      - link: usesSauce
+        implies: usesRecipe
+      - link: usesRecipe
+        chains: true
+      - link: makesRecipe
+        inverse of: madeAtStation
+
+    notDerived:
+      - kind: Recipe
+        is a: Dish
+      - link: usesRecipe
+        implies: usesSauce

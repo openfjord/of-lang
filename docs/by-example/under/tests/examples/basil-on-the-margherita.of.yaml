@@ -1,0 +1,22 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Ingredient, usesIngredient, usesGarnish]
+
+ingredient/basil:
+  is: Fact
+  kind: Ingredient
+
+recipe/margherita:
+  is: Fact
+  kind: Recipe
+  links:
+    usesGarnish: ingredient/basil
+
+basilOnTheMargherita:
+  is: Test
+  says: Basil is a garnish on the margherita, so the margherita uses basil.
+  expect:
+    derived:
+      - link: usesIngredient
+        from: recipe/margherita
+        to:   ingredient/basil

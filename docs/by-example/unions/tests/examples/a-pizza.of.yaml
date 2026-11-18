@@ -1,0 +1,34 @@
+import:
+  - from: file:../../defs/food.of.yaml
+    use: [Recipe, Ingredient, Food, usesFood]
+
+ingredient/mozzarella:
+  is: Fact
+  kind: Ingredient
+  fields:
+    name: mozzarella
+
+recipe/tomato_sauce:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: tomato_sauce
+
+recipe/margherita:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: margherita
+  links:
+    usesFood: [recipe/tomato_sauce, ingredient/mozzarella]
+
+aPizza:
+  is: Test
+  says: The margherita uses a recipe and an ingredient, and each one is a food.
+  expect:
+    derived:
+      - kind: Recipe
+        is a: Food
+      - kind: Recipe
+        never is: Ingredient
+    rejected: []

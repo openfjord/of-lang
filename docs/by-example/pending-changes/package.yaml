@@ -1,0 +1,4 @@
+package: "@by-example/pending-changes"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: pending-changes

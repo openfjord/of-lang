@@ -1,0 +1,13 @@
+import:
+  - from: pkg:@by-example/open-for
+    use: [Recipe]
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+dishIsARecipe:
+  is: Test
+  says: A dish is a recipe.
+  expect:
+    derived:
+      - kind: Dish
+        is a: Recipe

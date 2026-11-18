@@ -1,0 +1,17 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+
+    price:
+      type: number
+    servings:
+      type: integer
+    vegetarian:
+      type: boolean
+
+    chefNote:
+      type: string
+      optional: true

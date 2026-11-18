@@ -1,0 +1,25 @@
+Drink:
+  is: Kind
+  pending: added
+  definition: A liquid that the restaurant sells to guests.
+
+Snack:
+  is: Kind
+  pending: removed
+  definition: A small food that the restaurant sells at the bar.
+
+Dish:
+  is: Kind
+  pending: updated
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+    course:
+      enum: [starter, main, dessert]
+      default: main
+  was:
+    definition: A food that the restaurant sells to guests.
+    fields:
+      name:
+        type: string

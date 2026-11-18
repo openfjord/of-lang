@@ -1,0 +1,22 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+
+Ingredient:
+  is: Kind
+  definition: A food that the kitchen buys and does not make.
+  fields:
+    name:
+      type: string
+    storage:
+      enum: [fresh, frozen]
+
+usesIngredient:
+  is: Link
+  from: Dish
+  to: Ingredient
+  reads: "{from} uses {to}"
+  definition: The dish has the ingredient in it.

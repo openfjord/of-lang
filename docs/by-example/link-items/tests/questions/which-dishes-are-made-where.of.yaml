@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/kitchen.of.yaml
+    use: [Dish, Station, madeAtStation]
+
+whichDishesAreMadeWhere:
+  is: Question
+  asks: Which dishes do cooks make at which stations?
+  given: file:../examples/dishes-at-stations.of.yaml
+  match:
+    - kind: { name: Dish, as: $dish }
+    - kind: { name: Station, as: $station }
+
+    - link: madeAtStation
+      from: $dish
+      to:   $station
+
+  expect:
+    $dish: [dish/margherita]
+    $station: [station/pizza]

@@ -1,0 +1,28 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    plating:
+      plate: wooden board
+      garnish: basil
+    allergens: [gluten, milk]
+
+dish/minestrone:
+  is: Fact
+  kind: Dish
+  fields:
+    name: minestrone
+    plating:
+      plate: deep bowl
+    allergens: []
+
+twoDishes:
+  is: Test
+  says: A dish with a garnish and a dish without one are both valid.
+  expect:
+    rejected: []

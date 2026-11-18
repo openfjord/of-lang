@@ -1,0 +1,18 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe]
+
+whichRecipesGivePortions:
+  is: Question
+  asks: Which recipes give their yield in portions?
+  given: file:../examples/two-recipes.of.yaml
+  match:
+    - kind: { name: Recipe, as: $recipe }
+  filter:
+    - node: $recipe
+      field: yield
+      part: variant
+      equals:
+        value: portions
+  expect:
+    $recipe: [recipe/risotto]

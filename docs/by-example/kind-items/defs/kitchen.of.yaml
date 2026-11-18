@@ -1,0 +1,13 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    name:
+      type: string
+
+Station:
+  is: Kind
+  definition: A place in the kitchen where cooks make food.
+  fields:
+    name:
+      type: string

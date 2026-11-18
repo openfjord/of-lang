@@ -1,0 +1,29 @@
+Batch:
+  is: Kind
+  definition: An amount of one ingredient that the kitchen received on one day.
+  fields:
+    keepAtMostCelsius:
+      type: integer
+    keptAtCelsius:
+      type: integer
+    shelf:
+      type: string
+      optional: true
+
+batchKeptColdEnough:
+  is: Constraint
+  says: The cooks keep each batch cold enough.
+  match:
+    - kind: { name: Batch, as: $batch }
+  filter:
+    - node:  $batch
+      field: keptAtCelsius
+      is above:
+        same as:
+          node:  $batch
+          field: keepAtMostCelsius
+
+  message: >-
+    {$batch} on shelf {$batch: shelf} must be kept at
+    {$batch: keepAtMostCelsius} °C or colder, but it is at
+    {$batch: keptAtCelsius} °C.

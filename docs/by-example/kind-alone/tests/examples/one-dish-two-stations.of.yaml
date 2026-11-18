@@ -1,0 +1,29 @@
+import:
+  - from: file:../../defs/kitchen.of.yaml
+    use: [Dish, Station, madeAtStation]
+
+station/pizza:
+  is: Fact
+  kind: Station
+  fields:
+    name: pizza
+
+station/grill:
+  is: Fact
+  kind: Station
+  fields:
+    name: grill
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+  links:
+    madeAtStation: station/pizza
+
+oneDishTwoStations:
+  is: Test
+  says: A station that makes a dish and a station that makes no dish are both valid.
+  expect:
+    rejected: []

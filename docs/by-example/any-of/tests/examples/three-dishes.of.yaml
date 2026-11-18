@@ -1,0 +1,33 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    price: 12
+    status: active
+
+dish/lobster:
+  is: Fact
+  kind: Dish
+  fields:
+    name: lobster
+    price: 45
+    status: active
+
+dish/fondue:
+  is: Fact
+  kind: Dish
+  fields:
+    name: fondue
+    price: 28
+    status: retired
+
+threeDishes:
+  is: Test
+  says: Active dishes and a retired dish are valid.
+  expect:
+    rejected: []

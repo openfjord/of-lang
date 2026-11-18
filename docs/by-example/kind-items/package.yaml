@@ -1,0 +1,4 @@
+package: "@by-example/kind-items"
+version: 0.1.0
+owner: kitchen
+rdfNamespace: kind-items

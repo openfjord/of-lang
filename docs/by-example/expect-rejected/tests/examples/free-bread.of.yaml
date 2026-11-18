@@ -1,0 +1,21 @@
+import:
+  - from: file:../../defs/dish.of.yaml
+    use: [Dish, dishIsNotFree]
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 12
+
+dish/bread:
+  is: Fact
+  kind: Dish
+  fields:
+    price: 0
+
+freeBread:
+  is: Test
+  says: The bread has a price of 0, so the package rejects it.
+  expect:
+    rejected: [dishIsNotFree]

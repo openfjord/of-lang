@@ -1,0 +1,39 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Dish]
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: pesto
+    status: active
+    prepMinutes: 15
+
+recipe/stock:
+  is: Fact
+  kind: Recipe
+  fields:
+    name: stock
+    status: retired
+
+dish/margherita:
+  is: Fact
+  kind: Dish
+  fields:
+    name: margherita
+    status: seasonal
+    prepMinutes: 20
+
+dish/fondue:
+  is: Fact
+  kind: Dish
+  fields:
+    name: fondue
+    status: active
+
+fourRecipes:
+  is: Test
+  says: Two recipes and two dishes are valid, with or without a number of minutes.
+  expect:
+    rejected: []

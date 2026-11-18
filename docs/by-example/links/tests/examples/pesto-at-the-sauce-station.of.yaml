@@ -1,0 +1,19 @@
+import:
+  - from: file:../../defs/recipe.of.yaml
+    use: [Recipe, Station, madeAtStation]
+
+station/sauce:
+  is: Fact
+  kind: Station
+
+recipe/pesto:
+  is: Fact
+  kind: Recipe
+  links:
+    madeAtStation: station/sauce
+
+pestoAtTheSauceStation:
+  is: Test
+  says: Cooks make the pesto at the sauce station.
+  expect:
+    rejected: []

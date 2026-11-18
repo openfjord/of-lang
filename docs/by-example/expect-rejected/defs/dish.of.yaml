@@ -1,0 +1,18 @@
+Dish:
+  is: Kind
+  definition: A food that the restaurant sells to guests.
+  fields:
+    price:
+      type: number
+
+dishIsNotFree:
+  is: Constraint
+  says: A dish must not be free.
+  match:
+    - kind: { name: Dish, as: $dish }
+  filter:
+    - node: $dish
+      field: price
+      equals:
+        value: 0
+  message: "{$dish} must have a price above 0."
