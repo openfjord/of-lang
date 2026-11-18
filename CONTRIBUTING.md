@@ -133,6 +133,12 @@ Text that makes sense on GitHub but not on the site, such as the link to
 the site, goes between a line `<!-- not on the site -->` and a line
 `<!-- end -->`. GitHub shows it, and the site leaves it out.
 
+A diagram is an SVG file whose top element has the class `d-root`, such as
+`docs/images/of-lang-flow.svg`. Its colors are variables, and one block
+gives the light colors for a reader whose system is set to light. GitHub
+shows the file as an image. The site draws it into the page, where the same
+block follows the light and dark switch of the site.
+
 The site workflow (`.github/workflows/site.yml`) builds the site on each
 pull request, and publishes it to GitHub Pages on each push to `main`.
 

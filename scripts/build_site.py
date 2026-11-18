@@ -59,6 +59,11 @@ NOT_ON_SITE = re.compile(
 DARK_STYLE = "github-dark"
 LIGHT_STYLE = "default"
 LOGO = "docs/images/openfjord.png"
+SVG_IMAGE = re.compile(r'<img src="([^"]+\.svg)"[^>]*>')
+THEMED = 'class="d-root"'
+LIGHT_COLORS = re.compile(
+    r"@media \(prefers-color-scheme:\s*light\)\s*\{\s*\.d-root\s*\{([^}]*)\}\s*\}"
+)
 ANALYTICS_TOKEN = re.compile(r"^[0-9a-f]{32}$")
 ANALYTICS_BEACON = "https://static.cloudflareinsights.com/beacon.min.js"
 VOCABULARY = ("language/README.md", "Vocabulary")
@@ -470,6 +475,31 @@ def add_icons(page: Page) -> None:
             inline.children = [icon, *(inline.children or [])]
 
 
+def inline_diagrams(page: Page, files: frozenset[str]) -> None:
+    """Draw each diagram into the page, so that it follows the theme of the site.
+
+    A diagram is an SVG file that marks its top element with the class
+    ``d-root`` and gives its light colors in one block for readers whose system
+    is set to light. As an image, the file follows the system. In the page, the
+    same block applies when the site is set to light.
+    """
+
+    def drawn(found: re.Match[str]) -> str:
+        path = repo_path(page.path, html.unescape(found.group(1)))
+        if path not in files:
+            return found.group(0)
+        svg = (REPO / path).read_text()
+        if THEMED not in svg:
+            return found.group(0)
+        return LIGHT_COLORS.sub(
+            lambda light: f':root[data-theme="light"] .d-root{{{light.group(1)}}}', svg
+        )
+
+    for token in page.tokens:
+        if token.type == "html_block":
+            token.content = SVG_IMAGE.sub(drawn, token.content)
+
+
 def links_html(
     paths: Sequence[str], group: str, pages: Mapping[str, Page], current: Page
 ) -> str:
@@ -622,6 +652,7 @@ def main(arguments: Sequence[str]) -> int:
     shutil.copy(REPO / LOGO, out / LOGO)
     (out / ".nojekyll").write_text("")
     for page in pages.values():
+        inline_diagrams(page, files)
         assets, found = rewritten(page, pages, files)
         problems.extend(found)
         add_icons(page)
