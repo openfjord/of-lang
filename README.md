@@ -37,282 +37,201 @@ Or download a binary for macOS or Linux from the
 
 ## Three small examples
 
-Each example below is complete. It needs nothing from the other two.
-
-Each example is a **package**: a folder with three files.
+Each example is complete, and needs nothing from the other two. Each one is
+a **package**: a folder with a manifest, definitions and facts.
 
 ```
-wrong-value/                 # the root of the package
-  package.yaml               # the manifest: the name and the owner of the package
+wrong-value/
+  package.yaml           # the manifest: the name and the owner of the package
   defs/
-    menu.of.yaml             # the definitions: what can exist, and the rules
+    services.of.yaml     # the definitions: what can exist, and the rules
   tests/
-    examples/
-      margherita.of.yaml     # the facts: what does exist, in one example
+    facts.of.yaml        # the facts: what does exist, in one example
 ```
 
 The manifest is four lines. Only the name is different in each example:
 
 ```yaml
 # wrong-value/package.yaml
-package: "@bistro/wrong-value"
+package: "@acme/wrong-value"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: wrong-value
 ```
 
-To try an example, make these files, or use the copies in
-[`examples/quickstart`](examples/quickstart/). Run the commands in the
-folder that holds the package.
+The packages are also in [`examples/quickstart`](examples/quickstart/). Run
+the commands in the folder that holds the package.
 
 ### 1. Catch a wrong value
 
-The definitions say what a dish is. A **kind** is a category of things, with
-a definition in plain words. A **field** is a value that each thing of the
-kind has. Here, each dish has a price, and the price is a number.
+A **kind** is a category of things. A **field** is a value that each thing
+of the kind has. Each service has a tier, which is one of two words.
 
 ```yaml
-# wrong-value/defs/menu.of.yaml
-Dish:
+# wrong-value/defs/services.of.yaml
+Service:
   is: Kind
-  definition: A food that the restaurant sells to guests.
+  definition: A program that runs in production and answers requests.
   fields:
-    price:
-      type: number
-      minimum: 0
+    tier:
+      enum: [critical, standard]
 ```
 
-A **fact** states one real thing. This file states one dish, the margherita,
-and gives it a price that is not a number. The `import` block at the top
-tells where the name `Dish` comes from. A file of facts ends with a
-**test**, which tells what must follow from the facts. This one expects no
-problem.
+A **fact** states one real thing. This service has a tier that is not one of
+the two words. The `import` block tells where the name `Service` comes from.
 
 ```yaml
-# wrong-value/tests/examples/margherita.of.yaml
+# wrong-value/tests/facts.of.yaml
 import:
-  - from: file:../../defs/menu.of.yaml
-    use: [Dish]
+  - from: file:../defs/services.of.yaml
+    use: [Service]
 
-dish/margherita:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   fields:
-    price: twelve
-
-oneDish:
-  is: Test
-  says: The margherita is a dish with a price.
-  expect:
-    rejected: []
+    tier: important
 ```
 
-The tool finds the wrong value, and tells the file, the line and the rule:
+The tool finds the wrong value, and gives the file, the line and the rule:
 
 ```console
-$ of-lang test wrong-value
-wrong-value/tests/examples/margherita.of.yaml:9:5: price: twelve is not of type number (FC4)
+$ of-lang run wrong-value wrong-value/tests/facts.of.yaml
+wrong-value/tests/facts.of.yaml:9:5: tier: important is not one of critical, standard (FC4)
 ```
 
-### 2. Let the tool conclude something
+### 2. Find what breaks when the database is down
 
-A guest with a nut allergy must know which dishes contain nuts. The kitchen
-does not write that down for each dish. It writes down which ingredients
-have nuts, and which dish uses which ingredient.
-
-The definitions have three kinds. A **link** is a named relationship from
-one kind to a different kind: a dish uses an ingredient. A **derivative**
-is a rule that adds what follows. `match` finds each dish with one of its
-ingredients, `filter` keeps the ingredients with nuts, and `derive` says
-what follows: the dish is a dish with nuts.
+A **link** is a named relationship between two things. `chains: true` tells
+that the link passes on: if A depends on B, and B depends on C, then A
+depends on C.
 
 ```yaml
-# with-nuts/defs/menu.of.yaml
-Ingredient:
+# depends-on/defs/services.of.yaml
+Service:
   is: Kind
-  definition: A food that the kitchen buys and does not make.
-  fields:
-    hasNuts:
-      type: boolean
+  definition: A program that runs in production and answers requests.
 
-Dish:
-  is: Kind
-  definition: A food that the restaurant sells to guests.
-
-DishWithNuts:
-  is: Kind
-  extends: Dish
-  definition: A dish that a guest with a nut allergy must not eat.
-
-usesIngredient:
+dependsOn:
   is: Link
-  from: Dish
-  to: Ingredient
-  reads: "{from} uses {to}"
-  definition: The dish needs the ingredient.
-
-dishWithNutsFromIngredient:
-  is: Derivative
-  says: A dish that uses an ingredient with nuts is a dish with nuts.
-  match:
-    - kind: { name: Dish, as: $dish }
-    - kind: { name: Ingredient, as: $ingredient }
-    - link: usesIngredient
-      from: $dish
-      to:   $ingredient
-  filter:
-    - node:  $ingredient
-      field: hasNuts
-      equals:
-        value: true
-  derive:
-    - node: $dish
-      becomes: DishWithNuts
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot work when the second service is down.
+  chains: true
 ```
 
-The facts state two ingredients and two dishes. No fact says that a dish
-has nuts.
+The facts state that checkout depends on orders, and that orders depends on
+the database. No fact states that checkout depends on the database.
 
 ```yaml
-# with-nuts/tests/examples/pesto-pasta.of.yaml
+# depends-on/tests/facts.of.yaml
 import:
-  - from: file:../../defs/menu.of.yaml
-    use: [Ingredient, Dish, DishWithNuts, usesIngredient]
+  - from: file:../defs/services.of.yaml
+    use: [Service, dependsOn]
 
-ingredient/pine_nuts:
+service/database:
   is: Fact
-  kind: Ingredient
-  fields:
-    hasNuts: true
+  kind: Service
 
-ingredient/tomatoes:
+service/orders:
   is: Fact
-  kind: Ingredient
-  fields:
-    hasNuts: false
-
-dish/pesto_pasta:
-  is: Fact
-  kind: Dish
+  kind: Service
   links:
-    usesIngredient: [ingredient/pine_nuts, ingredient/tomatoes]
+    dependsOn: service/database
 
-dish/tomato_soup:
+service/checkout:
   is: Fact
-  kind: Dish
+  kind: Service
   links:
-    usesIngredient: ingredient/tomatoes
-
-pestoPastaHasNuts:
-  is: Test
-  says: >
-    The pesto pasta uses pine nuts, so it is a dish with nuts. The tomato
-    soup is not.
-  expect:
-    derived:
-      - node: dish/pesto_pasta
-        becomes: DishWithNuts
-    notDerived:
-      - node: dish/tomato_soup
-        becomes: DishWithNuts
+    dependsOn: service/orders
 ```
 
-`run` shows what follows from the facts. The tool concludes that the pesto
-pasta is a dish with nuts, and names the derivative that says so:
+The tool concludes it:
 
 ```console
-$ of-lang run with-nuts with-nuts/tests/examples/pesto-pasta.of.yaml
+$ of-lang run depends-on depends-on/tests/facts.of.yaml
 derived:
-  dish/pesto_pasta is a DishWithNuts  (derivative dishWithNutsFromIngredient)
+  service/checkout depends on service/database  (chains)
 rejected:
   nothing
 ```
 
-`test` makes sure that the conclusion stays correct when the definitions
-change:
+### 3. Make sure that each service has an owner
 
-```console
-$ of-lang test with-nuts
-pass  test pestoPastaHasNuts  (with-nuts/tests/examples/pesto-pasta.of.yaml)
-1 passed, 0 failed
-```
-
-### 3. Enforce a rule
-
-A restaurant must not sell a dish for less than the dish costs to make. A
-**constraint** is a rule that rejects facts. `match` finds each dish, and
-`filter` keeps the dishes whose price is at most their cost. Each dish that
-is left breaks the rule. `message` is what the tool tells about it.
+A **constraint** is a rule that rejects facts. `match` finds each service.
+`filter` keeps the services that have no `ownedBy` link to a team. Each
+service that is left breaks the rule.
 
 ```yaml
-# below-cost/defs/menu.of.yaml
-Dish:
+# no-owner/defs/services.of.yaml
+Team:
   is: Kind
-  definition: A food that the restaurant sells to guests.
-  fields:
-    price:
-      type: number
-    cost:
-      type: number
+  definition: A group of people who build and run services.
 
-dishSellsAboveCost:
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+ownedBy:
+  is: Link
+  from: Service
+  to: Team
+  reads: "{from} is owned by {to}"
+  definition: The team that answers for the service.
+
+serviceHasOwner:
   is: Constraint
-  says: The price of a dish must be above what the dish costs to make.
+  says: Each service must have an owner.
   match:
-    - kind: { name: Dish, as: $dish }
+    - kind: { name: Service, as: $service }
   filter:
-    - node:  $dish
-      field: price
-      is at most:
-        same as: { node: $dish, field: cost }
-  message: "{$dish} sells for {$dish: price} and costs {$dish: cost}."
+    - none:
+        match:
+          - link: ownedBy
+            from: $service
+            to:   Team
+  message: "{$service} has no owner."
 ```
 
-The facts state two dishes. The truffle pasta costs more than its price.
+The facts state two services. Only one has an owner.
 
 ```yaml
-# below-cost/tests/examples/two-dishes.of.yaml
+# no-owner/tests/facts.of.yaml
 import:
-  - from: file:../../defs/menu.of.yaml
-    use: [Dish, dishSellsAboveCost]
+  - from: file:../defs/services.of.yaml
+    use: [Team, Service, ownedBy]
 
-dish/margherita:
+team/payments:
   is: Fact
-  kind: Dish
-  fields:
-    price: 12
-    cost: 4
+  kind: Team
 
-dish/truffle_pasta:
+service/checkout:
   is: Fact
-  kind: Dish
-  fields:
-    price: 18
-    cost: 21
+  kind: Service
+  links:
+    ownedBy: team/payments
 
-truffleDishLosesMoney:
-  is: Test
-  says: The truffle pasta sells below its cost, so the constraint rejects it.
-  expect:
-    rejected: [dishSellsAboveCost]
+service/search:
+  is: Fact
+  kind: Service
 ```
 
-`run` rejects the truffle pasta, with the message of the constraint:
+The tool rejects the other one, with the message of the constraint:
 
 ```console
-$ of-lang run below-cost below-cost/tests/examples/two-dishes.of.yaml
+$ of-lang run no-owner no-owner/tests/facts.of.yaml
 derived:
   nothing
 rejected:
-  dishSellsAboveCost: dish/truffle_pasta sells for 18 and costs 21.
+  serviceHasOwner: service/search has no owner.
 ```
 
 ## Where to go next
 
-- [The introduction](docs/introduction/README.md) builds the model of one
-  kitchen in eight chapters. Each chapter is a question of the kitchen,
-  such as "Which dishes contain nuts?", and ends with the answer of the
-  tool.
+- [The introduction](docs/introduction/README.md) builds one larger model
+  in eight chapters, with the kitchen of a restaurant as its example. Each
+  chapter is a question, and ends with the answer of the tool.
 - [The language by example](docs/by-example/README.md) has one short page
   for each thing in the language, with the text next to the code.
 - [The language specification](language/README.md) tells what the language
@@ -322,7 +241,7 @@ rejected:
   - [The reference](language/README.md#reference) has every rule.
 - [The `of-lang` tool](cli/README.md) tells about each command and its
   output, and what is planned.
-- [The full example package](examples/restaurant/) is the kitchen that the
+- [The full example package](examples/restaurant/) is the model that the
   introduction builds. It depends on
   [a second package](examples/suppliers/), the restaurant's suppliers.
 - [Why a model](docs/why.md) tells which problems a model solves, who it is

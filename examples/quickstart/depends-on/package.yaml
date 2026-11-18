@@ -1,0 +1,4 @@
+package: "@acme/depends-on"
+version: 0.1.0
+owner: platform
+rdfNamespace: depends-on

@@ -1,0 +1,19 @@
+import:
+  - from: file:../defs/services.of.yaml
+    use: [Service, dependsOn]
+
+service/database:
+  is: Fact
+  kind: Service
+
+service/orders:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/database
+
+service/checkout:
+  is: Fact
+  kind: Service
+  links:
+    dependsOn: service/orders

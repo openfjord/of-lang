@@ -1,0 +1,11 @@
+Service:
+  is: Kind
+  definition: A program that runs in production and answers requests.
+
+dependsOn:
+  is: Link
+  from: Service
+  to: Service
+  reads: "{from} depends on {to}"
+  definition: The first service cannot work when the second service is down.
+  chains: true

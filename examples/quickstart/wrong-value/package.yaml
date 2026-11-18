@@ -1,4 +1,4 @@
-package: "@bistro/wrong-value"
+package: "@acme/wrong-value"
 version: 0.1.0
-owner: kitchen
+owner: platform
 rdfNamespace: wrong-value

@@ -39,12 +39,12 @@
 <text class="d-label" x="40" y="128">PACKAGES</text>
 <rect class="d-card" x="40" y="150" width="260" height="70" rx="14"/>
 <g class="d-ico" transform="translate(56,169)"><path d="M16 4l11 6v12l-11 6l-11-6V10z"/><path d="M5 10l11 6l11-6M16 16v12"/></g>
-<text class="d-title d-mono" x="102" y="181" font-size="15">@bistro/kitchen</text>
-<text class="d-sub" x="102" y="201" font-size="13">recipes, dishes, allergens</text>
+<text class="d-title d-mono" x="102" y="181" font-size="15">@acme/services</text>
+<text class="d-sub" x="102" y="201" font-size="13">services, teams, owners</text>
 <rect class="d-card" x="40" y="245" width="260" height="70" rx="14"/>
 <g class="d-ico" transform="translate(56,264)"><path d="M16 4l11 6v12l-11 6l-11-6V10z"/><path d="M5 10l11 6l11-6M16 16v12"/></g>
-<text class="d-title d-mono" x="102" y="276" font-size="15">@bistro/suppliers</text>
-<text class="d-sub" x="102" y="296" font-size="13">suppliers, products</text>
+<text class="d-title d-mono" x="102" y="276" font-size="15">@acme/data</text>
+<text class="d-sub" x="102" y="296" font-size="13">tables, jobs</text>
 <rect class="d-card" x="40" y="340" width="260" height="70" rx="14"/>
 <g class="d-ico" transform="translate(56,359)"><path d="M16 4l11 6v12l-11 6l-11-6V10z"/><path d="M5 10l11 6l11-6M16 16v12"/></g>
 <text class="d-title d-mono" x="102" y="371" font-size="15">your package</text>

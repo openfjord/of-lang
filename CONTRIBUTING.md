@@ -74,7 +74,7 @@ file. A page can leave out the manifest. The snippets check also runs
 
 The top `README.md` shows the three packages in `examples/quickstart`. Each
 of its YAML blocks starts with a comment that names a package and a file,
-such as `# with-nuts/defs/menu.of.yaml`, and must be exactly that file. Each
+such as `# depends-on/defs/services.of.yaml`, and must be exactly that file. Each
 console block holds one `of-lang` command and its output. The snippets check
 runs each command in `examples/quickstart` and compares the output.
 

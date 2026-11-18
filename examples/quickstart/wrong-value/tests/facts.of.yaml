@@ -1,0 +1,9 @@
+import:
+  - from: file:../defs/services.of.yaml
+    use: [Service]
+
+service/checkout:
+  is: Fact
+  kind: Service
+  fields:
+    tier: important

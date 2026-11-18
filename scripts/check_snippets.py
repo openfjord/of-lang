@@ -23,7 +23,7 @@ comment that names it. A page can leave out the manifest.
 
 ``README.md`` shows the packages in ``examples/quickstart``. Each of its YAML
 blocks starts with a comment that names a package and a file, such as
-``# with-nuts/defs/menu.of.yaml``, and must be exactly that file. Each of its
+``# depends-on/defs/services.of.yaml``, and must be exactly that file. Each of its
 console blocks holds one ``of-lang`` command and its output, and the command
 must give that output when it runs in ``examples/quickstart``.
 

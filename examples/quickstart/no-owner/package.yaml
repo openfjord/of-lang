@@ -1,0 +1,4 @@
+package: "@acme/no-owner"
+version: 0.1.0
+owner: platform
+rdfNamespace: no-owner
