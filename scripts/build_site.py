@@ -17,6 +17,7 @@ is missing from the navigation.
 Usage: uv run scripts/build_site.py [output folder, default _site]
 """
 
+import hashlib
 import html
 import posixpath
 import re
@@ -515,7 +516,7 @@ def code_colors() -> str:
     return "\n".join((rules(DARK_STYLE, "pre"), reset, rules(LIGHT_STYLE, light)))
 
 
-def page_html(page: Page, nav: str, template: str) -> str:
+def page_html(page: Page, nav: str, template: str, version: str) -> str:
     """Return the whole HTML file of a page."""
     body = markdown().renderer.render(list(page.tokens), markdown().options, {})
     values = {
@@ -524,11 +525,27 @@ def page_html(page: Page, nav: str, template: str) -> str:
         "home": html.escape(relative_url(page.path, output_path(HOME))),
         "assets": html.escape(relative_url(page.path, "assets")),
         "logo": html.escape(relative_url(page.path, LOGO)),
+        "version": version,
         "source": html.escape(f"{GITHUB}/blob/main/{page.path}"),
         "nav": nav,
         "body": body,
     }
     return re.sub(r"\{\{(\w+)\}\}", lambda found: values[found.group(1)], template)
+
+
+def assets_version(generated: Mapping[str, str]) -> str:
+    """Return a short name for the content of the style, script and font files.
+
+    Each page asks for these files with this name in the address. Thus, a
+    browser that kept an earlier copy of a file gets the file again when its
+    content is different.
+    """
+    digest = hashlib.sha256()
+    for path in sorted(ASSETS.iterdir()):
+        digest.update(path.read_bytes())
+    for name in sorted(generated):
+        digest.update(generated[name].encode())
+    return digest.hexdigest()[:10]
 
 
 def repo_files() -> frozenset[str]:
@@ -564,13 +581,15 @@ def main(arguments: Sequence[str]) -> int:
         *icon_problems(pages),
     ]
     template = (ASSETS / "page.html").read_text()
+    generated = {"code.css": code_colors(), "icons.css": icon_rules()}
+    version = assets_version(generated)
 
     shutil.rmtree(out, ignore_errors=True)
     (out / "assets").mkdir(parents=True)
     for name in ("style.css", "theme.js", "tabler-icons.woff2", "tabler-icons.LICENSE"):
         shutil.copy(ASSETS / name, out / "assets" / name)
-    (out / "assets" / "code.css").write_text(code_colors())
-    (out / "assets" / "icons.css").write_text(icon_rules())
+    for name, text in generated.items():
+        (out / "assets" / name).write_text(text)
     (out / LOGO).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(REPO / LOGO, out / LOGO)
     (out / ".nojekyll").write_text("")
@@ -581,7 +600,7 @@ def main(arguments: Sequence[str]) -> int:
         target = out / output_path(page.path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
-            page_html(page, navigation_html(groups, pages, page), template)
+            page_html(page, navigation_html(groups, pages, page), template, version)
         )
         for asset in assets:
             (out / asset).parent.mkdir(parents=True, exist_ok=True)
