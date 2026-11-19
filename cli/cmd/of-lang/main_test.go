@@ -128,3 +128,37 @@ func TestBrokenPackages(t *testing.T) {
 		})
 	}
 }
+
+// A condition on a part of a oneOf field allows the value of each choice, and
+// rejects a value that no choice allows.
+func TestPartOfEachChoice(t *testing.T) {
+	t.Parallel()
+	const variants = "../../../docs/by-example/variants"
+	const question = "tests/questions/which-services-have-fixed-replicas.of.yaml"
+	copyOf := func(old, replacement string) string {
+		root := t.TempDir()
+		if err := os.CopyFS(root, os.DirFS(variants)); err != nil {
+			t.Fatalf("copy variants: %v", err)
+		}
+		path := filepath.Join(root, question)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", question, err)
+		}
+		if !bytes.Contains(data, []byte(old)) {
+			t.Fatalf("%s does not contain %q", question, old)
+		}
+		if err := os.WriteFile(path, bytes.ReplaceAll(data, []byte(old), []byte(replacement)), 0o600); err != nil {
+			t.Fatalf("write %s: %v", question, err)
+		}
+		return root
+	}
+	second := copyOf("value: fixed", "value: automatic")
+	if code, out := runTool(t, "check", second); code != exitOK {
+		t.Errorf("the value of the second choice: exit %d, output:\n%s", code, out)
+	}
+	none := copyOf("value: fixed", "value: manual")
+	if code, out := runTool(t, "test", none); code != exitProblems || !strings.Contains(out, "(TS8)") {
+		t.Errorf("a value of no choice: exit %d, want TS8 in output:\n%s", code, out)
+	}
+}

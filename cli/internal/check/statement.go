@@ -150,6 +150,7 @@ func (c *stmt) condition(cond model.Condition, env map[string]model.QName) {
 		return
 	}
 	var schema *model.Schema
+	var choices []model.Schema
 	if cond.Field != "" {
 		f, _, ok := world.Field(c.w, kind, cond.Field)
 		if !ok {
@@ -164,17 +165,34 @@ func (c *stmt) condition(cond model.Condition, env map[string]model.QName) {
 				return
 			}
 			s = ps
+			choices = world.Parts(c.w, f.Schema, cond.Part)
 		}
 		schema = &s
 	}
 	if cond.Type != model.CondCompare {
 		return
 	}
-	c.compared(cond, kind, schema, env)
+	c.compared(cond, kind, schema, choices, env)
 }
 
-// compared checks what a comparison compares with.
-func (c *stmt) compared(cond model.Condition, kind model.QName, schema *model.Schema, env map[string]model.QName) {
+// allowed tells why a schema does not allow a value. A part that several
+// choices of a oneOf define allows each value that one of those choices
+// allows.
+func (c *stmt) allowed(schema model.Schema, choices []model.Schema, v model.Value) []string {
+	if len(choices) < 2 {
+		return value.Validate(c.w, schema, v)
+	}
+	for _, choice := range choices {
+		if len(value.Validate(c.w, choice, v)) == 0 {
+			return nil
+		}
+	}
+	return []string{"no choice of oneOf allows it"}
+}
+
+// compared checks what a comparison compares with. choices holds each schema
+// that the part can have, when the condition names a part.
+func (c *stmt) compared(cond model.Condition, kind model.QName, schema *model.Schema, choices []model.Schema, env map[string]model.QName) {
 	than := cond.Than
 	literals := than.Values
 	if than.Value != nil {
@@ -183,7 +201,7 @@ func (c *stmt) compared(cond model.Condition, kind model.QName, schema *model.Sc
 	for _, v := range literals {
 		switch {
 		case schema != nil:
-			for _, msg := range value.Validate(c.w, *schema, v) {
+			for _, msg := range c.allowed(*schema, choices, v) {
 				c.add(than.Pos, c.rules.Types, "%s does not allow %s: %s", cond.Field, value.Format(v), msg)
 			}
 		case v.Kind != model.ValueString:

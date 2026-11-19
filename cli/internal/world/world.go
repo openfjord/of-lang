@@ -236,17 +236,39 @@ func Part(w model.World, s model.Schema, path []string) (model.Schema, bool) {
 }
 
 func partOf(w model.World, s model.Schema, name string) (model.Schema, bool) {
+	all := partsOf(w, s, name)
+	if len(all) == 0 {
+		return model.Schema{}, false
+	}
+	return all[0], true
+}
+
+// Parts finds each schema that a part of an object field can have, following
+// a path of part names like Part. A part that several choices of a oneOf
+// define has one schema for each of those choices.
+func Parts(w model.World, s model.Schema, path []string) []model.Schema {
+	cur := []model.Schema{s}
+	for _, name := range path {
+		var next []model.Schema
+		for _, c := range cur {
+			next = append(next, partsOf(w, Resolved(w, c), name)...)
+		}
+		cur = next
+	}
+	return cur
+}
+
+func partsOf(w model.World, s model.Schema, name string) []model.Schema {
+	var out []model.Schema
 	for _, p := range s.Properties {
 		if p.Name == name {
-			return p.Schema, true
+			out = append(out, p.Schema)
 		}
 	}
 	for _, c := range s.OneOf {
-		if found, ok := partOf(w, Resolved(w, c), name); ok {
-			return found, true
-		}
+		out = append(out, partsOf(w, Resolved(w, c), name)...)
 	}
-	return model.Schema{}, false
+	return out
 }
 
 // Reads renders a link's reads sentence for two things.
