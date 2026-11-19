@@ -6,8 +6,8 @@
 """Build the documentation site from the Markdown files of this repository.
 
 A Markdown file is a page of the site when it starts with a block that gives
-its ``title``. ``README.md`` becomes the ``index.html`` of its folder, and any
-other file keeps its name, with ``.html``. Links between pages are rewritten,
+its ``title``. ``docs/home.md`` is the home page, a ``README.md`` becomes the
+``index.html`` of its folder, and any other file keeps its name, with ``.html``. Links between pages are rewritten,
 and a link to any other file of the repository goes to GitHub. The site
 leaves out the text between a line ``<!-- not on the site -->`` and a line
 ``<!-- end -->``, which GitHub shows. The build fails
@@ -47,7 +47,7 @@ REPO = Path(__file__).resolve().parents[1]
 ASSETS = Path(__file__).resolve().parent / "site"
 GITHUB = "https://github.com/openfjord/of-lang"
 SITE_NAME = "The OpenFjord modeling language"
-HOME = "README.md"
+HOME = "docs/home.md"
 SKIPPED_FOLDERS = frozenset({"_site", "node_modules"})
 IMAGE_ENDINGS = frozenset({".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp"})
 HAS_SCHEME = re.compile(r"^[a-zA-Z][a-zA-Z0-9+.-]*:|^//")
@@ -178,6 +178,8 @@ class Target:
 
 def output_path(path: str) -> str:
     """Return where a page lands in the site."""
+    if path == HOME:
+        return "index.html"
     folder, name = posixpath.split(path)
     stem = "index" if name == "README.md" else name.removesuffix(".md")
     return posixpath.join(folder, stem + ".html")

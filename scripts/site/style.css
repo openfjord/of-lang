@@ -144,6 +144,18 @@ main table:not(.steps) th,
 main table:not(.steps) td { border: 1px solid var(--line); padding: 6px 13px; }
 main table:not(.steps) th { background: var(--code); text-align: left; }
 
+/* The home page: a larger first paragraph, and cards for what a model is good for. */
+main p.lead { font-size: 1.15em; }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; background: var(--code); }
+.card h3 { margin: 0 0 6px; font-size: 1.05em; }
+.card p { margin: 0; font-size: 0.95em; }
+.planned {
+  font-size: 11px; font-weight: 600; color: var(--muted); border: 1px solid var(--line);
+  border-radius: 999px; padding: 1px 8px; margin-left: 4px; vertical-align: middle; white-space: nowrap;
+}
+@media (max-width: 1100px) { .cards { grid-template-columns: 1fr; } }
+
 /* A by-example page: the text on the left, and one panel of code on the right. */
 table.steps {
   width: 100%;

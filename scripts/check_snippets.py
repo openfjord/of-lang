@@ -64,7 +64,7 @@ INTRODUCTION = REPO / "docs" / "introduction"
 STEPS = INTRODUCTION / "steps"
 STEP_PREFIX = "step-"
 QUICKSTART = EXAMPLES / "quickstart"
-QUICKSTART_PAGE = REPO / "README.md"
+QUICKSTART_PAGES = (REPO / "README.md", REPO / "docs" / "home.md")
 QUICKSTART_HEADER = re.compile(
     r"^# ([a-z0-9-]+/(?:(?:defs|tests)/\S+\.of\.ya?ml|package\.ya?ml))\s*$"
 )
@@ -361,9 +361,16 @@ def console_blocks(text: str) -> tuple[tuple[int, str, str], ...]:
 
 
 def check_quickstart(tool: Path) -> tuple[str, ...]:
-    """Compare the README with the packages that it shows, and run its commands."""
-    where = QUICKSTART_PAGE.relative_to(REPO)
-    shown = shown_files(QUICKSTART_PAGE, QUICKSTART_HEADER)
+    """Compare the README and the home page with the packages that they show."""
+    return tuple(
+        problem for page in QUICKSTART_PAGES for problem in check_quickstart_page(tool, page)
+    )
+
+
+def check_quickstart_page(tool: Path, page: Path) -> tuple[str, ...]:
+    """Compare one page with the quickstart packages, and run its commands."""
+    where = page.relative_to(REPO)
+    shown = shown_files(page, QUICKSTART_HEADER)
     real = {
         file.relative_to(QUICKSTART).as_posix(): [
             line.rstrip() for line in file.read_text().splitlines() if line.strip()
@@ -384,7 +391,7 @@ def check_quickstart(tool: Path) -> tuple[str, ...]:
         for path in sorted(real.keys() - shown.keys())
         if Path(path).name not in MANIFESTS
     )
-    for line, command, output in console_blocks(QUICKSTART_PAGE.read_text()):
+    for line, command, output in console_blocks(page.read_text()):
         done = subprocess.run(  # noqa: S603 — runs the tool this script just built
             [str(tool), *command.split()],
             cwd=QUICKSTART,

@@ -1,6 +1,0 @@
-Service:
-  is: Kind
-  definition: A program that runs in production and answers requests.
-  fields:
-    tier:
-      enum: [critical, standard]

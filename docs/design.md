@@ -6,7 +6,7 @@ title: Design of the language — The OpenFjord modeling language
 
 Why the language looks the way it does: the reasons ontologies are hard for
 software people, what the language leaves out, the roads not taken, and what
-is still open. [The README](../README.md) gives the short version; [the
+is still open. [The home page](home.md) gives the short version; [the
 language specification](../language/README.md) gives the rules.
 
 ## The question

@@ -42,7 +42,7 @@ causes problems:
 
 ## What a model gives
 
-A model writes these things down one time, in files next to the code. It
+A model writes these things down one time. It
 contains four types of information:
 
 | Information | Example |
@@ -87,7 +87,7 @@ what follows from the links.
 
 ## Who it is for
 
-- **Developers** who write the model in files next to their code, review it
+- **Developers** who write the model in text files, review it
   like code, and check it in CI (continuous integration).
 - **Product people** who own what the terms mean. Each definition is a
   plain sentence with examples, and each link reads as a sentence, so they

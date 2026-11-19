@@ -10,7 +10,7 @@ title: The OpenFjord modeling language
 
 The language describes the parts of a software product. The description is
 a set of statements. By default, the statements are in YAML files, which are
-in git next to the code. The statements describe:
+in git. The statements describe:
 
 - the kinds of things in the product
 - how these things link to each other

@@ -1,4 +1,0 @@
-package: "@acme/wrong-value"
-version: 0.1.0
-owner: platform
-rdfNamespace: wrong-value

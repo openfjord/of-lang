@@ -72,8 +72,8 @@ file, such as `# defs/service.of.yaml`, and the blocks after it continue that
 file. A page can leave out the manifest. The snippets check also runs
 `of-lang check` and `of-lang test` on each package.
 
-The top `README.md` shows the three packages in `examples/quickstart`. Each
-of its YAML blocks starts with a comment that names a package and a file,
+The top `README.md` and the home page of the site, `docs/home.md`, show the
+package in `examples/quickstart`. Each of their YAML blocks starts with a comment that names a package and a file,
 such as `# depends-on/defs/services.of.yaml`, and must be exactly that file. Each
 console block holds one `of-lang` command and its output. The snippets check
 runs each command in `examples/quickstart` and compares the output.
@@ -128,6 +128,9 @@ The build fails when a link points at a file or a heading that does not
 exist, or when a page is missing from the navigation. The template, the
 stylesheet and the theme script are in `scripts/site/`. The groups of the
 navigation are at the top of the script.
+
+The home page of the site is `docs/home.md`. The top `README.md` is for
+readers on GitHub: it is shorter, and it is not a page of the site.
 
 Text that makes sense on GitHub but not on the site, such as the link to
 the site, goes between a line `<!-- not on the site -->` and a line
