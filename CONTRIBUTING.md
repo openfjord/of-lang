@@ -133,6 +133,10 @@ Text that makes sense on GitHub but not on the site, such as the link to
 the site, goes between a line `<!-- not on the site -->` and a line
 `<!-- end -->`. GitHub shows it, and the site leaves it out.
 
+Each page carries the tags that a link preview reads: its title, its first
+paragraph as the description, its address, and the picture
+`docs/images/share.png`, which is 1200 by 630 pixels.
+
 A diagram is an SVG file whose top element has the class `d-root`, such as
 `docs/images/of-lang-flow.svg`. Its colors are variables, and one block
 gives the light colors for a reader whose system is set to light. GitHub

@@ -59,6 +59,9 @@ NOT_ON_SITE = re.compile(
 DARK_STYLE = "github-dark"
 LIGHT_STYLE = "default"
 LOGO = "docs/images/openfjord.png"
+SITE_URL = "https://lang.openfjord.io/"
+SHARE_IMAGE = "docs/images/share.png"
+SUMMARY_LENGTH = 200
 SVG_IMAGE = re.compile(r'<img src="([^"]+\.svg)"[^>]*>')
 THEMED = 'class="d-root"'
 LIGHT_COLORS = re.compile(
@@ -567,6 +570,27 @@ def analytics_html(token: str) -> str:
     return f'<script defer src="{ANALYTICS_BEACON}" data-cf-beacon="{beacon}"></script>'
 
 
+def summary(page: Page) -> str:
+    """Return the first paragraph of a page as plain text, for the preview of a link."""
+    for index, token in enumerate(page.tokens):
+        if token.type == "paragraph_open" and token.level == 0:
+            words = "".join(
+                " " if child.type == "softbreak" else child.content
+                for child in page.tokens[index + 1].children or ()
+                if child.type in {"text", "code_inline", "softbreak"}
+            )
+            text = " ".join(words.split())
+            if len(text) <= SUMMARY_LENGTH:
+                return text
+            return text[:SUMMARY_LENGTH].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+    return SITE_NAME
+
+
+def page_url(page: Page) -> str:
+    """Return the address of a page on the site."""
+    return SITE_URL + output_path(page.path).removesuffix("index.html")
+
+
 def page_html(page: Page, nav: str, template: str, version: str, analytics: str) -> str:
     """Return the whole HTML file of a page."""
     body = markdown().renderer.render(list(page.tokens), markdown().options, {})
@@ -578,6 +602,9 @@ def page_html(page: Page, nav: str, template: str, version: str, analytics: str)
         "logo": html.escape(relative_url(page.path, LOGO)),
         "version": version,
         "repo": html.escape(GITHUB),
+        "description": html.escape(summary(page)),
+        "url": html.escape(page_url(page)),
+        "share": html.escape(SITE_URL + SHARE_IMAGE),
         "nav": nav,
         "body": body,
         "analytics": analytics,
@@ -648,8 +675,9 @@ def main(arguments: Sequence[str]) -> int:
         shutil.copy(ASSETS / name, out / "assets" / name)
     for name, text in generated.items():
         (out / "assets" / name).write_text(text)
-    (out / LOGO).parent.mkdir(parents=True, exist_ok=True)
-    shutil.copy(REPO / LOGO, out / LOGO)
+    for image in (LOGO, SHARE_IMAGE):
+        (out / image).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO / image, out / image)
     (out / ".nojekyll").write_text("")
     for page in pages.values():
         inline_diagrams(page, files)
