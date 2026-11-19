@@ -57,11 +57,11 @@ dependsOn:
   "@acme/org": ^1.2               # semantic-version range; package.lock.yaml pins the exact version
 exports:                          # what other packages may use; the rest is internal
   kinds: [Service, PublicService, SharedService, Table, DataClass]
-  links: [ownedByTeam, callsService, usesTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
+  links: [ownedBy, dependsOn, readsTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
   valueTypes: [Name, Seconds, Percent, URL]
 openFor:                          # extension points: what other packages may add to
   - extend: Service               #   another package may declare a kind of service
-  - under: usesTable              #   another package may declare a narrower link under usesTable
+  - under: readsTable              #   another package may declare a narrower link under readsTable
 tags:                             # the labels that definitions of this package can carry
   - name: privacy
     description: What a privacy review needs to tell customers which services handle which sorts of data.
@@ -171,7 +171,7 @@ reader sees the text and the definitions together:
 
 Personal data is data about a person, such as a name or an address. A service
 handles each data class of its tables, and each data class that the services
-that it calls handle:
+that it depends on handle:
 
 ![](../defs/privacy.of.yaml#dataFromTable)
 

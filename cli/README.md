@@ -82,7 +82,7 @@ Each problem is one line, with the file, line and column:
 
 ```
 $ of-lang check platform
-platform/defs/service.of.yaml:53:3: the reads of ownedByTeam must use both {from} and {to} (LK2)
+platform/defs/service.of.yaml:53:3: the reads of ownedBy must use both {from} and {to} (LK2)
 ```
 
 Each problem names the rule it breaks, such as `(LK2)`. A package with a
@@ -99,7 +99,7 @@ Every derived fact as its `reads` sentence, with what derived it: a derivative, 
 ```
 $ of-lang run platform platform/tests/examples/personal-data-through-a-call.of.yaml
 derived:
-  service/checkout uses table/payments  (under)
+  service/checkout reads table/payments  (under)
   service/accounts handles data/personal  (derivative dataFromTable)
   service/checkout handles data/payment  (derivative dataFromTable)
   service/checkout handles data/personal  (derivative dataFromService)
@@ -129,22 +129,22 @@ indented below it.
 ```
 $ of-lang explain platform platform/tests/examples/personal-data-through-a-call.of.yaml service/checkout handlesData data/personal
 service/checkout handles data/personal  (derivative dataFromService)
-  A service that calls a second service handles each data class that the second service handles.
+  A service that depends on a second service handles each data class that the second service handles.
   with $called = service/accounts, $data = data/personal, $service = service/checkout
   because:
-    service/checkout calls service/accounts  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:119:5)
+    service/checkout depends on service/accounts  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:119:5)
     service/accounts handles data/personal  (derivative dataFromTable)
       A service handles each data class that one of its tables holds.
       with $data = data/personal, $service = service/accounts, $table = table/customers
       because:
-        service/accounts uses table/customers  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:98:5)
+        service/accounts reads table/customers  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:98:5)
         table/customers holds data/personal  (written at platform/tests/examples/personal-data-through-a-call.of.yaml:74:5)
 ```
 
 ```
 $ of-lang explain platform platform/tests/examples/shared-service.of.yaml service/catalog SharedService
 service/catalog is a SharedService  (derivative sharedServiceFromCalls)
-  A service that more than two services call, directly or through other services, is a shared service.
+  A service that more than two services depend on, directly or through other services, is a shared service.
   with $service = service/catalog
 ```
 
@@ -154,14 +154,14 @@ What changes from one facts file to the other, in three parts: facts stated,
 facts derived, and rejections. `+` is added, `-` is gone. A field value is a
 fact of its own, so a changed value shows as one `-` and one `+`.
 
-In this example, a copy of the test file makes the search service call the
+In this example, a copy of the test file makes the search service depend on the
 accounts service and increases its availability. The file is
 `search-with-accounts.of.yaml`.
 
 ```
 $ of-lang diff platform platform/tests/examples/personal-data-through-a-call.of.yaml search-with-accounts.of.yaml
 stated:
-  + service/search calls service/accounts
+  + service/search depends on service/accounts
   + service/search has availability 99.9
   - service/search has availability 99.5
 derived:
@@ -184,12 +184,12 @@ $ of-lang test platform
 pass  test backupInWrongRegion  (platform/tests/examples/backup-in-wrong-region.of.yaml)
 FAIL  test personalDataThroughACall  (platform/tests/examples/personal-data-through-a-call.of.yaml)
       expected derived, but not: service/checkout handles data/payment
-      expected derived, but not: service/checkout uses table/payments
+      expected derived, but not: service/checkout reads table/payments
 pass  test serviceWithoutDeclaredData  (platform/tests/examples/service-without-declared-data.of.yaml)
 pass  test catalogCalledByThreeServices  (platform/tests/examples/shared-service.of.yaml)
 pass  question whichPublicServicesHandlePersonalData  (platform/tests/questions/which-public-services-handle-personal-data.of.yaml)
 pass  question whichTeamsStopWithTheCoreTeam  (platform/tests/questions/which-teams-stop-with-the-core-team.of.yaml)
-pass  test writeIsAUse  (platform/tests/terms/write.of.yaml)
+pass  test writeIsARead  (platform/tests/terms/write.of.yaml)
 6 passed, 1 failed
 ```
 
@@ -264,8 +264,8 @@ what newly follows and why, what no longer follows, and what is rejected.
 
 ```
 Stated (2)
-  + service/checkout calls service/accounts
-  + service/search calls service/accounts
+  + service/checkout depends on service/accounts
+  + service/search depends on service/accounts
 
 Derived (3)
   + team/web depends on team/core
@@ -273,7 +273,7 @@ Derived (3)
       match   $team = team/web, $service = service/checkout,
               $called = service/accounts, $other = team/core
       links   service/checkout is owned by team/web
-              service/checkout calls service/accounts
+              service/checkout depends on service/accounts
               service/accounts is owned by team/core
       filter  team/core does not equal team/web
   + service/checkout handles data/personal

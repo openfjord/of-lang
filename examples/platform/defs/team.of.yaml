@@ -2,7 +2,7 @@ import:
   - from: pkg:@acme/org
     use: [Team]
   - from: file:service.of.yaml
-    use: [Service, ownedByTeam, ownsService, callsService]
+    use: [Service, ownedBy, ownsService, dependsOn]
 
 dependsOnTeam:
   is: Link
@@ -15,7 +15,7 @@ teamDependsOnTeam:
   is: Derivative
   says: >
     A team depends on each different team that owns a service that one of
-    its own services calls.
+    its own services depends on.
   match:
     - kind: { name: Team, as: $team }
     - kind: { name: Service, as: $service }
@@ -24,10 +24,10 @@ teamDependsOnTeam:
     - link: ownsService
       from: $team
       to:   $service
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
-    - link: ownedByTeam
+    - link: ownedBy
       from: $called
       to:   $other
   filter:

@@ -31,7 +31,7 @@ import:
   - from: file:../../defs/team.of.yaml
     use: [dependsOnTeam]
   - from: file:../../defs/service.of.yaml
-    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
+    use: [Service, PublicService, ownedBy, dependsOn, readsTable, writesTable]
   - from: file:../../defs/table.of.yaml
     use: [Table, DataClass, holdsData]
   - from: file:../../defs/privacy.of.yaml
@@ -40,7 +40,7 @@ import:
 personalDataThroughACall:
   is: Test
   says: >
-    The checkout service calls the accounts service, which uses a table with
+    The checkout service depends on the accounts service, which reads a table with
     personal data. The checkout service also writes the payments table, which
     holds payment data. Thus, the checkout service handles personal data and
     payment data. The privacy notice names the two data classes, so the
@@ -53,7 +53,7 @@ personalDataThroughACall:
       - link: handlesData
         from: service/checkout
         to:   data/payment
-      - link: usesTable
+      - link: readsTable
         from: service/checkout
         to:   table/payments
       - link: dependsOnTeam
@@ -121,8 +121,8 @@ service/accounts:
     name: accounts
     repository: https://code.example.com/accounts
   links:
-    ownedByTeam: team/core
-    usesTable: table/customers
+    ownedBy: team/core
+    readsTable: table/customers
 
 service/catalog:
   is: Fact
@@ -131,8 +131,8 @@ service/catalog:
     name: catalog
     repository: https://code.example.com/catalog
   links:
-    ownedByTeam: team/core
-    usesTable: table/products
+    ownedBy: team/core
+    readsTable: table/products
 
 service/checkout:
   is: Fact
@@ -142,8 +142,8 @@ service/checkout:
     repository: https://code.example.com/checkout
     availability: 99.9
   links:
-    ownedByTeam: team/web
-    callsService: [service/catalog, service/accounts]
+    ownedBy: team/web
+    dependsOn: [service/catalog, service/accounts]
     writesTable: table/payments
     declaresData: [data/personal, data/payment]
 
@@ -155,8 +155,8 @@ service/search:
     repository: https://code.example.com/search
     availability: 99.5
   links:
-    ownedByTeam: team/web
-    callsService: service/catalog
+    ownedBy: team/web
+    dependsOn: service/catalog
 ```
 
 | Key under `expect` | Value |
@@ -201,26 +201,26 @@ information under `derived` and `notDerived`, next to facts or alone:
 # tests/terms/write.of.yaml
 import:
   - from: file:../../defs/service.of.yaml
-    use: [Service, PublicService, ownedByTeam, callsService, usesTable, writesTable]
+    use: [Service, PublicService, ownedBy, dependsOn, readsTable, writesTable]
 
-writeIsAUse:
+writeIsARead:
   is: Test
   says: >
-    A service that writes a table also uses the table. A public service is
+    A service that writes a table also reads the table. A public service is
     a service, so a public service can have a team that owns it. A service
-    can call a service that calls another service.
+    can depend on a service that depends on another service.
   expect:
     derived:
       - kind: PublicService
         is a: Service
       - kind: PublicService
-        can have: ownedByTeam
+        can have: ownedBy
       - link: writesTable
-        implies: usesTable
-      - link: callsService
+        implies: readsTable
+      - link: dependsOn
         chains: true
     notDerived:
-      - link: usesTable
+      - link: readsTable
         implies: writesTable
 ```
 

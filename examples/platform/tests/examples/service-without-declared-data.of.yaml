@@ -2,7 +2,7 @@ import:
   - from: pkg:@acme/org
     use: [Team]
   - from: file:../../defs/service.of.yaml
-    use: [Service, PublicService, ownedByTeam, callsService, usesTable]
+    use: [Service, PublicService, ownedBy, dependsOn, readsTable]
   - from: file:../../defs/table.of.yaml
     use: [Table, DataClass, holdsData]
   - from: file:../../defs/privacy.of.yaml
@@ -11,8 +11,8 @@ import:
 serviceWithoutDeclaredData:
   is: Test
   says: >
-    The checkout service calls the accounts service, and the accounts
-    service uses a table with personal data. The privacy notice does not
+    The checkout service depends on the accounts service, and the accounts
+    service reads a table with personal data. The privacy notice does not
     name personal data, so the constraint rejects the service.
   expect:
     rejected: [publicServiceDeclaresItsData]
@@ -50,8 +50,8 @@ service/accounts:
     name: accounts
     repository: https://code.example.com/accounts
   links:
-    ownedByTeam: team/core
-    usesTable: table/customers
+    ownedBy: team/core
+    readsTable: table/customers
 
 service/checkout:
   is: Fact
@@ -61,5 +61,5 @@ service/checkout:
     repository: https://code.example.com/checkout
     availability: 99.9
   links:
-    ownedByTeam: team/web
-    callsService: service/accounts
+    ownedBy: team/web
+    dependsOn: service/accounts

@@ -31,11 +31,11 @@ dependsOn:
   "@acme/org": ^1.2
 exports:
   kinds: [Service]
-  links: [ownedByTeam]
+  links: [ownedBy]
   valueTypes: [Name]
 openFor:
   - extend: Service
-  - under: usesTable
+  - under: readsTable
 tags:                                # each label that definitions can carry
   - name: privacy
     description: What a privacy review needs to tell customers which services handle which sorts of data.
@@ -93,14 +93,14 @@ Resource:
   definition: Something that a service needs to do its work.
   oneOf: [Service, Table]                # a union: each resource is exactly one; closed; no fields or links
 
-callsService:                            # lowerCamelCase, two words or more
+dependsOn:                            # lowerCamelCase, two words or more
   is: Link
   from: Service
   to: Service
-  reads: "{from} calls {to}"             # required, with both {from} and {to}
+  reads: "{from} depends on {to}"             # required, with both {from} and {to}
   definition: The first service needs an answer from the second service, directly or through other services.
   chains: true                           # optional: a→b and b→c means a→c
-  inverse: calledByService               # optional: the name read the other way
+  inverse: neededBy               # optional: the name read the other way
 
 writesTable:
   is: Link
@@ -108,7 +108,7 @@ writesTable:
   to: Table
   reads: "{from} writes {to}"
   definition: The service adds, changes or deletes rows of the table.
-  under: usesTable                       # optional: every writesTable is a usesTable
+  under: readsTable                       # optional: every writesTable is a readsTable
 
 Name:
   is: ValueType
@@ -155,9 +155,9 @@ match:                                             # things and links that must 
   - link: ownsService                              # a link or an inverse name
     from: Team                                     # a kind alone: nothing else refers to this end
     to:   $service
-  - link: callsService
+  - link: dependsOn
     from: $service
-    to:   $called                                  # callsService chains, so this also finds longer chains
+    to:   $called                                  # dependsOn chains, so this also finds longer chains
 filter:                                            # conditions; all must hold
   - node: $called
     does not equal: { same as: $service }
@@ -231,8 +231,8 @@ service/checkout:                        # a fact's id
     repository: https://code.example.com/checkout
     availability: 99.9
   links:
-    ownedByTeam: team/web
-    callsService: [service/catalog, service/accounts]   # a link: an id, or a list of ids
+    ownedBy: team/web
+    dependsOn: [service/catalog, service/accounts]   # a link: an id, or a list of ids
 
 someExample:
   is: Test
@@ -243,15 +243,15 @@ someExample:
     rejected:   [publicServiceDeclaresItsData]
 
 # tests/terms/write.of.yaml — no facts: what the definitions derive about kinds and links
-writeIsAUse:
+writeIsARead:
   is: Test
-  says: A service that writes a table also uses the table.
+  says: A service that writes a table also reads the table.
   expect:
     derived:
       - { kind: PublicService, is a: Service }        # also: never is, can have
-      - { link: writesTable, implies: usesTable }     # also: chains, inverse of
+      - { link: writesTable, implies: readsTable }     # also: chains, inverse of
     notDerived:
-      - { link: usesTable, implies: writesTable }
+      - { link: readsTable, implies: writesTable }
 
 # tests/questions/which-public-services-handle-personal-data.of.yaml
 whichPublicServicesHandlePersonalData:

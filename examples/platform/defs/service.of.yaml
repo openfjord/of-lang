@@ -44,9 +44,9 @@ PublicService:
 SharedService:
   is: Kind
   extends: Service
-  definition: A service that many other services call, so a change to it needs extra care.
+  definition: A service that many other services depend on, so a change to it needs extra care.
 
-ownedByTeam:
+ownedBy:
   is: Link
   from: Service
   to: Team
@@ -54,23 +54,23 @@ ownedByTeam:
   definition: The team that builds and runs the service.
   inverse: ownsService
 
-callsService:
+dependsOn:
   is: Link
   tags: [privacy]
   from: Service
   to: Service
-  reads: "{from} calls {to}"
+  reads: "{from} depends on {to}"
   definition: The first service needs an answer from the second service, directly or through other services.
   chains: true
-  inverse: calledByService
+  inverse: neededBy
 
-usesTable:
+readsTable:
   is: Link
   tags: [privacy]
   from: Service
   to: Table
-  reads: "{from} uses {to}"
-  definition: The service reads or writes rows of the table.
+  reads: "{from} reads {to}"
+  definition: The service reads rows of the table.
 
 writesTable:
   is: Link
@@ -79,19 +79,19 @@ writesTable:
   to: Table
   reads: "{from} writes {to}"
   definition: The service adds, changes or deletes rows of the table.
-  under: usesTable
+  under: readsTable
 
 sharedServiceFromCalls:
   is: Derivative
   says: >
-    A service that more than two services call, directly or through other
+    A service that more than two services depend on, directly or through other
     services, is a shared service.
   match:
     - kind: { name: Service, as: $service }
   filter:
     - count:
         match:
-          - link: callsService
+          - link: dependsOn
             from: Service
             to:   $service
       is above:
@@ -108,7 +108,7 @@ serviceHasOneOwner:
   filter:
     - count:
         match:
-          - link: ownedByTeam
+          - link: ownedBy
             from: $service
             to:   Team
       does not equal:

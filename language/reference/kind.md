@@ -98,7 +98,7 @@ serviceHasOneOwner:
   filter:
     - count:
         match:
-          - link: ownedByTeam
+          - link: ownedBy
             from: $service
             to:   Team
       does not equal:

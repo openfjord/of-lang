@@ -31,7 +31,7 @@ definitions. Together, the definitions are the model.
 
 A **fact** tells what does exist: one thing, with its kind, its fields and
 its links. "A public service is a service that customers call" is a definition.
-"Checkout is a public service, and it calls the accounts service" is two facts.
+"Checkout is a public service, and it depends on the accounts service" is two facts.
 
 A package holds definitions. The only facts in a package are in its tests,
 where they are examples: they show what the definitions derive and reject.
@@ -50,7 +50,7 @@ the facts of many products.
 | run it | [the `of-lang` tool](../cli/README.md) |
 
 Every example uses one small, fictional software product. Teams own
-services, services call services and use tables, and tables hold data
+services, services depend on services and read tables, and tables hold data
 classes. [examples/platform](../examples/platform/) holds the full
 domain as one package, with the teams in a second package,
 [examples/org](../examples/org/). [The introduction](../docs/introduction/README.md)

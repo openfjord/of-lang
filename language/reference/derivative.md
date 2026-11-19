@@ -20,7 +20,7 @@ dataFromTable:
     - kind: { name: Service, as: $service }
     - kind: { name: Table, as: $table }
     - kind: { name: DataClass, as: $data }
-    - link: usesTable
+    - link: readsTable
       from: $service
       to:   $table
     - link: holdsData
@@ -32,7 +32,7 @@ dataFromTable:
       to:   $data
 ```
 
-Read it as follows: for each service `$service` that uses a table
+Read it as follows: for each service `$service` that reads a table
 `$table` that holds a data class `$data`, add "`$service` handles
 `$data`".
 
@@ -69,7 +69,7 @@ variable has exactly one kind item, so its kind is written in one place.
 Every other mention of the variable is the variable alone.
 
 A link item is one link that must exist between two things, such as the
-`usesTable` link from `$service` to `$table` in
+`readsTable` link from `$service` to `$table` in
 `dataFromTable`.
 
 `from` and `to` are each a variable or a kind. A variable is for a thing
@@ -81,12 +81,12 @@ combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. An
 end with a kind alone only has to exist. In a nested block, a row also gives
 one thing to each end with a kind alone. Thus `count` counts the different
-things there, for example the services that call a service in `sharedServiceFromCalls`. Two
+things there, for example the services that depend on a service in `sharedServiceFromCalls`. Two
 variables can represent the same thing, unless a condition prevents it.
 
 The inverse name of a link reads the link in the opposite direction:
 `link: ownsService, from: $team, to: $service` matches exactly the same
-things as `link: ownedByTeam, from: $service, to: $team`.
+things as `link: ownedBy, from: $service, to: $team`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
@@ -98,7 +98,7 @@ things is still one match. Explanations list the steps. The constraint
 already holds for each longer chain.
 
 A narrower kind limits the matches. For example, with
-`kind: { name: SharedService, as: $called }`, a `callsService` link item from
+`kind: { name: SharedService, as: $called }`, a `dependsOn` link item from
 `$service` to `$called` matches only services that call shared services.
 
 ## Filter
@@ -119,7 +119,7 @@ teamDependsOnTeam:
   is: Derivative
   says: >
     A team depends on each different team that owns a service that one of
-    its own services calls.
+    its own services depends on.
   match:
     - kind: { name: Team, as: $team }
     - kind: { name: Service, as: $service }
@@ -128,10 +128,10 @@ teamDependsOnTeam:
     - link: ownsService
       from: $team
       to:   $service
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
-    - link: ownedByTeam
+    - link: ownedBy
       from: $called
       to:   $other
   filter:
@@ -144,7 +144,7 @@ teamDependsOnTeam:
       to:   $other
 ```
 
-Read it as follows. A team owns a service that calls a second service, and
+Read it as follows. A team owns a service that depends on a second service, and
 another team owns the second service. When the two teams are different, the
 first team depends on the second.
 
@@ -193,14 +193,14 @@ negative cases, and each condition stays easy to read alone.
 sharedServiceFromCalls:
   is: Derivative
   says: >
-    A service that more than two services call, directly or through other
+    A service that more than two services depend on, directly or through other
     services, is a shared service.
   match:
     - kind: { name: Service, as: $service }
   filter:
     - count:
         match:
-          - link: callsService
+          - link: dependsOn
             from: Service
             to:   $service
       is above:
@@ -211,8 +211,8 @@ sharedServiceFromCalls:
 ```
 
 `$service` represents each service in turn, and the nested block counts the
-services that call it. The end `from: Service` has no variable, because nothing
-else refers to the service that calls `$service`.
+services that depend on it. The end `from: Service` has no variable, because nothing
+else refers to the service that depends on `$service`.
 
 A derivative can match a link that a derivative adds. For example,
 `dataFromService` matches `handlesData`, and `dataFromTable` adds
@@ -224,12 +224,12 @@ step. `chains: true` on the link adds the longer chains.
 dataFromService:
   is: Derivative
   tags: [privacy]
-  says: A service that calls a second service handles each data class that the second service handles.
+  says: A service that depends on a second service handles each data class that the second service handles.
   match:
     - kind: { name: Service, as: $service }
     - kind: { name: Service, as: $called }
     - kind: { name: DataClass, as: $data }
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
     - link: handlesData

@@ -2,13 +2,13 @@ import:
   - from: pkg:@acme/org
     use: [Team]
   - from: file:../../defs/service.of.yaml
-    use: [Service, PublicService, SharedService, ownedByTeam, callsService]
+    use: [Service, PublicService, SharedService, ownedBy, dependsOn]
 
 catalogCalledByThreeServices:
   is: Test
   says: >
-    A service that three services call is a shared service. A service that
-    only one service calls is not a shared service.
+    A service that three services depend on is a shared service. A service that
+    only one service depends on is not a shared service.
   expect:
     derived:
       - node:    service/catalog
@@ -36,7 +36,7 @@ service/catalog:
     name: catalog
     repository: https://code.example.com/catalog
   links:
-    ownedByTeam: team/core
+    ownedBy: team/core
 
 service/accounts:
   is: Fact
@@ -45,7 +45,7 @@ service/accounts:
     name: accounts
     repository: https://code.example.com/accounts
   links:
-    ownedByTeam: team/core
+    ownedBy: team/core
 
 service/checkout:
   is: Fact
@@ -55,8 +55,8 @@ service/checkout:
     repository: https://code.example.com/checkout
     availability: 99.9
   links:
-    ownedByTeam: team/web
-    callsService: [service/catalog, service/accounts]
+    ownedBy: team/web
+    dependsOn: [service/catalog, service/accounts]
 
 service/search:
   is: Fact
@@ -66,8 +66,8 @@ service/search:
     repository: https://code.example.com/search
     availability: 99.5
   links:
-    ownedByTeam: team/web
-    callsService: service/catalog
+    ownedBy: team/web
+    dependsOn: service/catalog
 
 service/cart:
   is: Fact
@@ -77,5 +77,5 @@ service/cart:
     repository: https://code.example.com/cart
     availability: 99.5
   links:
-    ownedByTeam: team/web
-    callsService: service/catalog
+    ownedBy: team/web
+    dependsOn: service/catalog

@@ -2,7 +2,7 @@
 
 Personal data is data about a person, such as a name or an address. A service
 handles each data class of its tables, and each data class that the services
-that it calls handle:
+that it depends on handle:
 
 ![](../defs/privacy.of.yaml#dataFromTable)
 

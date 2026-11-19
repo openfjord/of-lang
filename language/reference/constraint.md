@@ -51,17 +51,17 @@ class next to the service.
 # defs/service.of.yaml
 noCallLoop:
   is: Constraint
-  says: A service must not call itself, directly or through other services.
+  says: A service must not depend on itself, directly or through other services.
   match:
     - kind: { name: Service, as: $service }
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $service
-  message: "{$service} must not call itself."
+  message: "{$service} must not depend on itself."
 ```
 
-Each match is a violation. The link `callsService` chains, so this constraint
-also finds a service that calls itself through other services.
+Each match is a violation. The link `dependsOn` chains, so this constraint
+also finds a service that depends on itself through other services.
 
 Four principles apply to constraints:
 
@@ -93,7 +93,7 @@ Four principles apply to constraints:
 # defs/service.of.yaml
 sharedServiceWritesNoTable:
   is: Constraint
-  says: A shared service writes no table, so that it gives the same answer to each service that calls it.
+  says: A shared service writes no table, so that it gives the same answer to each service that depends on it.
   match:
     - kind: { name: SharedService, as: $service }
     - kind: { name: Table, as: $table }
@@ -122,13 +122,13 @@ combination is one match: a row that gives one thing to each variable. Two
 matches that give the same things to the same variables are one match. An
 end with a kind alone only has to exist. In a nested block, a row also gives
 one thing to each end with a kind alone. Thus `count` counts the different
-things there, for example the services that call a service in `sharedServiceFromCalls`. Two
+things there, for example the services that depend on a service in `sharedServiceFromCalls`. Two
 variables can represent the same thing, unless a condition prevents it. One
 variable at two ends, as in `noCallLoop`, is the same thing at both ends.
 
 The inverse name of a link reads the link in the opposite direction:
 `link: ownsService, from: $team, to: $service` matches exactly the same
-things as `link: ownedByTeam, from: $service, to: $team`.
+things as `link: ownedBy, from: $service, to: $team`.
 
 `repeated: true` matches the link one or more times in a sequence. The things
 between the two ends have no names. Thus a longer chain between the same two
@@ -173,11 +173,11 @@ and `field`). Then it gives a comparison word and what to compare with:
 # defs/service.of.yaml
 publicServiceWaitsLongest:
   is: Constraint
-  says: A public service waits longer for an answer than each other service that it calls.
+  says: A public service waits longer for an answer than each other service that it depends on.
   match:
     - kind: { name: PublicService, as: $service }
     - kind: { name: Service, as: $called }
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
   filter:
@@ -198,7 +198,7 @@ publicServiceWaitsLongest:
   message: "{$service} must have a longer timeout than {$called}."
 ```
 
-Read it as follows. A public service calls another service that waits as long
+Read it as follows. A public service depends on another service that waits as long
 as the public service or longer. This is a violation, unless the public
 service is retired.
 

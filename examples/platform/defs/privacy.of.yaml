@@ -1,6 +1,6 @@
 import:
   - from: file:service.of.yaml
-    use: [Service, PublicService, callsService, usesTable]
+    use: [Service, PublicService, dependsOn, readsTable]
   - from: file:table.of.yaml
     use: [Table, DataClass, holdsData]
 
@@ -14,7 +14,7 @@ handlesData:
   from: Service
   to: DataClass
   reads: "{from} handles {to}"
-  definition: The service gets data of this sort, from one of its tables or from one of the services that it calls.
+  definition: The service gets data of this sort, from one of its tables or from one of the services that it depends on.
 
 declaresData:
   is: Link
@@ -32,7 +32,7 @@ dataFromTable:
     - kind: { name: Service, as: $service }
     - kind: { name: Table, as: $table }
     - kind: { name: DataClass, as: $data }
-    - link: usesTable
+    - link: readsTable
       from: $service
       to:   $table
     - link: holdsData
@@ -46,12 +46,12 @@ dataFromTable:
 dataFromService:
   is: Derivative
   tags: [privacy]
-  says: A service that calls a second service handles each data class that the second service handles.
+  says: A service that depends on a second service handles each data class that the second service handles.
   match:
     - kind: { name: Service, as: $service }
     - kind: { name: Service, as: $called }
     - kind: { name: DataClass, as: $data }
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
     - link: handlesData

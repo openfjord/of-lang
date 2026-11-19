@@ -51,12 +51,12 @@ tags. They are exported with their kind.
 dataFromService:
   is: Derivative
   tags: [privacy]
-  says: A service that calls a second service handles each data class that the second service handles.
+  says: A service that depends on a second service handles each data class that the second service handles.
   match:
     - kind: { name: Service, as: $service }
     - kind: { name: Service, as: $called }
     - kind: { name: DataClass, as: $data }
-    - link: callsService
+    - link: dependsOn
       from: $service
       to:   $called
     - link: handlesData
@@ -98,7 +98,7 @@ does is still open (see [the design notes](../../docs/design.md#open-questions))
 For example, `PublicService` extends `Service`. When `PublicService` has the
 tag `privacy`, `Service` must also have it. Otherwise the tool rejects the
 package and names `Service`. In the same way, when `dataFromService` has the
-tag `privacy`, so must `Service`, `DataClass`, `callsService` and
+tag `privacy`, so must `Service`, `DataClass`, `dependsOn` and
 `handlesData`.
 
 ## Rules

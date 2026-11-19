@@ -14,7 +14,7 @@ at a kind that its kind extends, or at a union
 
 ```yaml
 # defs/service.of.yaml
-ownedByTeam:
+ownedBy:
   is: Link
   from: Service
   to: Team
@@ -29,17 +29,17 @@ writesTable:
   to: Table
   reads: "{from} writes {to}"
   definition: The service adds, changes or deletes rows of the table.
-  under: usesTable                   # every writesTable is also a usesTable
+  under: readsTable                   # every writesTable is also a readsTable
 
-callsService:
+dependsOn:
   is: Link
   tags: [privacy]
   from: Service
   to: Service
-  reads: "{from} calls {to}"
+  reads: "{from} depends on {to}"
   definition: The first service needs an answer from the second service, directly or through other services.
-  chains: true                       # a calls b and b calls c means a calls c
-  inverse: calledByService
+  chains: true                       # a depends on b, b on c: a depends on c
+  inverse: neededBy
 ```
 
 | Key | Required | Value |
@@ -61,14 +61,14 @@ that it uses.
 ## Rules
 
 - **LK1.** A link's name, and its inverse name, MUST be lowerCamelCase, with
-  two or more words that tell what the link connects and how: `callsService`,
-  never `calls` (reason 2 in [the design notes](../../docs/design.md#why-ontologies-are-hard-for-software-people)).
+  two or more words that tell what the link connects and how: `dependsOn`,
+  never `depends` (reason 2 in [the design notes](../../docs/design.md#why-ontologies-are-hard-for-software-people)).
 - **LK2.** A link MUST have a `definition` and a `reads` sentence. `reads`
   MUST contain both `{from}` and `{to}` (reason 7).
 - **LK3.** `from` and `to` MUST each name a kind that the file defines or
   imports. A name that is not a kind, or that names nothing, is an error.
   `from` and `to` are checks: the language
-  rejects a fact that links a team with `callsService`. A link never gives a
+  rejects a fact that links a team with `dependsOn`. A link never gives a
   thing a kind.
 - **LK4.** `under` MUST name a declared link, not an inverse name. The `from`
   of the narrower link MUST be the `from` of the broader link, or a kind that
@@ -85,6 +85,6 @@ records its reason.
 
 | Declared | Adds |
 |---|---|
-| `inverse: ownsService` on `ownedByTeam` | nothing new: `ownsService` is every `ownedByTeam` in the opposite direction, in all derivatives, constraints, questions and facts |
-| `under: usesTable` on `writesTable` | a `usesTable` for every `writesTable` |
-| `chains: true` on `callsService` | `a callsService c` each time that `a callsService b` and `b callsService c` |
+| `inverse: ownsService` on `ownedBy` | nothing new: `ownsService` is every `ownedBy` in the opposite direction, in all derivatives, constraints, questions and facts |
+| `under: readsTable` on `writesTable` | a `readsTable` for every `writesTable` |
+| `chains: true` on `dependsOn` | `a dependsOn c` each time that `a dependsOn b` and `b dependsOn c` |

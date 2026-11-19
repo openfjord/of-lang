@@ -112,7 +112,7 @@ includes keys that a later version of the language adds.
 | Statement | Written as | Examples |
 |---|---|---|
 | kind, value type, doc | UpperCamelCase | `Service`, `SharedService`, `Seconds`, `PersonalDataCare` |
-| link, link inverse | lowerCamelCase, two words or more | `ownedByTeam`, `callsService`, `ownsService` |
+| link, link inverse | lowerCamelCase, two words or more | `ownedBy`, `dependsOn`, `ownsService` |
 | constraint, derivative, test, question | lowerCamelCase | `publicServiceDeclaresItsData`, `whichPublicServicesHandlePersonalData` |
 | fact | an id: any text, usually a path | `service/checkout` |
 
@@ -191,8 +191,8 @@ scheme for a different source. The other import rules apply to all schemes.
 - **FL12.** Two names in one file MUST NOT be the same; use `as` to rename one
   of them.
 - **FL13.** A file MAY import the inverse name of a link alone, as for any
-  other name. For example, `ownsService` is the inverse of `ownedByTeam`, and a
-  file can import `ownsService` without `ownedByTeam`.
+  other name. For example, `ownsService` is the inverse of `ownedBy`, and a
+  file can import `ownsService` without `ownedBy`.
 - **FL14.** Field names are not imported: a field belongs to its kind.
 - **FL19.** Files of one package MAY import each other, also in a circle.
 

@@ -27,7 +27,7 @@ serviceHasOneOwner:          # the change removes this statement
   filter:
     - count:
         match:
-          - link: ownedByTeam
+          - link: ownedBy
             from: $service
             to:   Team
       does not equal:
@@ -38,10 +38,10 @@ SharedService:               # the change updates this statement
   is: Kind
   pending: updated
   extends: Service
-  definition: A service that three or more other services call, so a change to it needs extra care.
+  definition: A service that three or more other services depend on, so a change to it needs extra care.
   was:
     extends: Service
-    definition: A service that many other services call, so a change to it needs extra care.
+    definition: A service that many other services depend on, so a change to it needs extra care.
 ```
 
 `pending` and `was` are annotations: keys that the language adds to any

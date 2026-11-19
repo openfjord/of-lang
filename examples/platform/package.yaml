@@ -6,11 +6,11 @@ dependsOn:
   "@acme/org": ^1.2
 exports:
   kinds: [Service, PublicService, SharedService, Table, DataClass]
-  links: [ownedByTeam, callsService, usesTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
+  links: [ownedBy, dependsOn, readsTable, writesTable, holdsData, handlesData, declaresData, dependsOnTeam]
   valueTypes: [Name, Seconds, Percent, URL]
 openFor:
   - extend: Service
-  - under: usesTable
+  - under: readsTable
 tags:
   - name: privacy
     description: What a privacy review needs to tell customers which services handle which sorts of data.
