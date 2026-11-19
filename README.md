@@ -49,7 +49,7 @@ wrong-value/
     facts.of.yaml        # the facts: what does exist, in one example
 ```
 
-The manifest is four lines. Only the name is different in each example:
+The manifest of the first example:
 
 ```yaml
 # wrong-value/package.yaml
