@@ -37,8 +37,8 @@ Or download a binary for macOS or Linux from the
 
 ## Three small examples
 
-Each example is complete, and needs nothing from the other two. Each one is
-a **package**: a folder with a manifest, definitions and facts.
+Each example is a **package**: a folder with a manifest, definitions and
+facts.
 
 ```
 wrong-value/
