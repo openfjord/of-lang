@@ -75,7 +75,7 @@ Then a tool can do things that text in a wiki page cannot do:
   gets answers with their steps. The tool checks each change that the agent
   makes, and rejects a change that breaks a rule.
 
-In `of-lang` 0.1.0, `check`, `run` and `explain` check and derive, `test`
+In `of-lang` 0.2.0, `check`, `run` and `explain` check and derive, `test`
 answers the questions that a package writes as tests, and `diff` shows what
 a change to the facts does. The report for a change to the model, the pages
 and the export are planned; [the tool's page](../cli/README.md) describes them.

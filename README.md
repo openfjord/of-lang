@@ -17,7 +17,7 @@ Knowledge and facts go into the language, which produces a model. The model
 is used to generate code, to give knowledge to an agent, and as the base of a
 semantic layer and of a knowledge base.
 
-> **Version 0.1.0.** Before version 1.0, the language can change in ways
+> **Version 0.2.0.** Before version 1.0, the language can change in ways
 > that break a package.
 
 <!-- not on the site -->

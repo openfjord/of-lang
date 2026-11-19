@@ -13,6 +13,7 @@ minor version may break what came before.
 A modeling language for software people: kinds, links, derivatives,
 constraints and tests, written in YAML and checked by a command-line tool.
 
+- **[0.2.0](v0.md#020---2026-11-19)** — docs and tags in the language, a rule against unused imports, an introduction, the language by example, a second full example about a software product, and a documentation site
 - **[0.1.0](v0.md#010---2026-11-17)** — the first public release: the specification, the `of-lang` tool, and a restaurant example package
 
 ---
