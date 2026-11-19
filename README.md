@@ -10,12 +10,12 @@ Its tool, `of-lang`, checks those files, derives the facts that nobody wrote
 down, explains each one, and runs the model's tests.
 
 <p align="center">
-  <img src="docs/images/of-lang-flow.svg" alt="Packages go into the OpenFjord modeling language, which checks, derives, explains and tests. An agent, an MCP server, a coding factory, a knowledge base and a semantic layer use what it knows." width="100%">
+  <img src="docs/images/of-lang-flow.svg" alt="Knowledge and facts go into the OpenFjord modeling language, which produces a model. The model is used to generate code, to give knowledge to an agent, and as the base of a semantic layer and of a knowledge base." width="100%">
 </p>
 
-Packages go into the language. An agent, an MCP (Model Context Protocol)
-server, a coding factory, a knowledge base and a semantic layer use what it
-knows.
+Knowledge and facts go into the language, which produces a model. The model
+is used to generate code, to give knowledge to an agent, and as the base of a
+semantic layer and of a knowledge base.
 
 > **Version 0.1.0.** Before version 1.0, the language can change in ways
 > that break a package.
