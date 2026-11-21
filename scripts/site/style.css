@@ -184,6 +184,15 @@ table.steps tr:last-child > td:last-child { border-bottom-right-radius: 8px; }
   table.steps tr:first-child > td, table.steps tr:last-child > td { padding-top: 4px; padding-bottom: 4px; }
 }
 
+/* The end of each page: links to the page before and the page after. */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 48px 0 0; padding-top: 24px; border-top: 1px solid var(--line); }
+.pager a { display: block; border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; }
+.pager a:hover { border-color: var(--link); text-decoration: none; }
+.pager .next { grid-column: 2; text-align: right; }
+.pager .next.new { background: var(--code); }
+.pager .label, .pager .section { display: block; font-size: 13px; color: var(--muted); }
+.pager .title { display: block; font-weight: 600; }
+
 /* A small screen: the navigation opens from the Menu button in the header. */
 @media (max-width: 860px) {
   header { position: sticky; top: 0; z-index: 2; padding: 10px 16px; gap: 10px; background: var(--bg); }
@@ -199,4 +208,6 @@ table.steps tr:last-child > td:last-child { border-bottom-right-radius: 8px; }
   main { padding: 4px 16px 60px; }
   main h1 { font-size: 1.6em; }
   pre { padding: 12px; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .next { grid-column: 1; }
 }

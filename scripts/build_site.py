@@ -544,6 +544,95 @@ def navigation_html(
     return "\n".join(parts)
 
 
+@dataclass(frozen=True)
+class Place:
+    """Where a page is in the navigation: its group, and its smaller group if it has one."""
+
+    path: str
+    group: str
+    part: str = ""
+
+    def section(self) -> str:
+        """Return the name of the smallest group that holds the page."""
+        return self.part or self.group
+
+
+def reading_order(groups: Sequence[Group]) -> tuple[Place, ...]:
+    """Return every page in the order of the navigation, with where it is."""
+    return tuple(
+        place
+        for group in groups
+        for place in (
+            *(Place(path, group.title) for path in group.pages),
+            *(
+                Place(path, group.title, part)
+                for part, paths in group.parts
+                for path in paths
+            ),
+        )
+    )
+
+
+def starts_section(before: Place, after: Place) -> bool:
+    """Tell whether the page after another is in a new section.
+
+    A smaller group is a section too, but the first page of a smaller group
+    does not start a section when the page before is the overview of its group.
+    """
+    if before.group != after.group:
+        return True
+    return bool(before.part) and before.part != after.part
+
+
+def pager_html(order: Sequence[Place], pages: Mapping[str, Page], current: Page) -> str:
+    """Return the links to the page before and the page after a page.
+
+    When the page after starts a new section, its link names the section.
+    When the page before is in another section, its link names that section.
+    """
+    index = next(i for i, place in enumerate(order) if place.path == current.path)
+    here = order[index]
+
+    def link(place: Place, kind: str, label_text: str, title: str, note: str) -> str:
+        url = html.escape(relative_url(current.path, output_path(place.path)))
+        extra = f'<span class="section">{html.escape(note)}</span>' if note else ""
+        return (
+            f'<a class="{kind}" href="{url}"><span class="label">{label_text}</span>'
+            f'<span class="title">{html.escape(title)}</span>{extra}</a>'
+        )
+
+    links: list[str] = []
+    if index > 0:
+        before = order[index - 1]
+        name = label(pages[before.path], before.group)
+        note = ""
+        if starts_section(before, here):
+            note = " › ".join(t for t in (before.group, before.part) if t)
+            if before.group == here.group:
+                note = before.part
+        links.append(link(before, "prev", "← Previous", name, note))
+    if index + 1 < len(order):
+        after = order[index + 1]
+        name = label(pages[after.path], after.group)
+        if starts_section(here, after):
+            links.append(
+                link(
+                    after,
+                    "next new",
+                    "Next section →",
+                    after.section(),
+                    f"Starts with: {name}",
+                )
+            )
+        else:
+            links.append(link(after, "next", "Next →", name, ""))
+    return (
+        '<div class="pager" role="navigation" aria-label="Previous and next page">\n'
+        + "\n".join(links)
+        + "\n</div>"
+    )
+
+
 def code_colors() -> str:
     """Return the style rules that color code, for the dark and the light theme."""
 
@@ -593,7 +682,9 @@ def page_url(page: Page) -> str:
     return SITE_URL + output_path(page.path).removesuffix("index.html")
 
 
-def page_html(page: Page, nav: str, template: str, version: str, analytics: str) -> str:
+def page_html(
+    page: Page, nav: str, pager: str, template: str, version: str, analytics: str
+) -> str:
     """Return the whole HTML file of a page."""
     body = markdown().renderer.render(list(page.tokens), markdown().options, {})
     values = {
@@ -609,6 +700,7 @@ def page_html(page: Page, nav: str, template: str, version: str, analytics: str)
         "share": html.escape(SITE_URL + SHARE_IMAGE),
         "nav": nav,
         "body": body,
+        "pager": pager,
         "analytics": analytics,
     }
     return re.sub(r"\{\{(\w+)\}\}", lambda found: values[found.group(1)], template)
@@ -653,6 +745,7 @@ def main(arguments: Sequence[str]) -> int:
     )
     pages = {page.path: page for page in parsed if page is not None}
     groups = navigation(pages)
+    order = reading_order(groups)
     in_navigation = {path for group in groups for path in group_pages(group)}
     problems = [
         *(
@@ -690,7 +783,12 @@ def main(arguments: Sequence[str]) -> int:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(
             page_html(
-                page, navigation_html(groups, pages, page), template, version, analytics
+                page,
+                navigation_html(groups, pages, page),
+                pager_html(order, pages, page),
+                template,
+                version,
+                analytics,
             )
         )
         for asset in assets:
